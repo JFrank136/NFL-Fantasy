@@ -29,6 +29,8 @@ import os
 import sys
 from pathlib import Path
 
+import requests
+
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
 from scripts.push_to_supabase import (
@@ -44,6 +46,18 @@ from scripts.push_to_supabase import (
 )
 
 
+def _table_row_count(table: str, base_url: str, headers: dict) -> int:
+    check_headers = dict(headers)
+    check_headers["Prefer"] = "count=exact"
+    resp = requests.get(
+        f"{base_url}/rest/v1/{table}", headers=check_headers,
+        params={"select": "*", "limit": "0"}, timeout=30,
+    )
+    resp.raise_for_status()
+    content_range = resp.headers.get("content-range", "0-0/0")
+    return int(content_range.split("/")[-1])
+
+
 def main() -> int:
     _load_env_file(BASE_DIR / ".env")
     base_url = os.environ.get("SUPABASE_URL")
@@ -55,6 +69,24 @@ def main() -> int:
         "apikey": service_key, "Authorization": f"Bearer {service_key}",
         "Content-Type": "application/json", "Prefer": "return=minimal",
     }
+
+    rankings_count = _table_row_count("in_season_rankings", base_url, headers)
+    trade_values_count = _table_row_count("in_season_trade_values", base_url, headers)
+    if rankings_count or trade_values_count:
+        print(
+            "Refusing to run: this is a one-time full-history backfill and "
+            "the target tables are append-only with no unique constraint, so "
+            "re-running it against non-empty tables would create duplicates.\n"
+            f"  in_season_rankings currently has {rankings_count} row(s).\n"
+            f"  in_season_trade_values currently has {trade_values_count} row(s).\n"
+            "If this is intentional (e.g. a prior small verification push left "
+            "rows in place), clear them by hand first, e.g.:\n"
+            "    delete from in_season_rankings;\n"
+            "    delete from in_season_trade_values;\n"
+            "(Do NOT touch in_season_pull_status -- that table is a normal "
+            "upsert table.)"
+        )
+        return 1
 
     # Ignore any existing watermark file -- this is a one-time full-history
     # backfill into tables that must already be empty. _push_new_rows()
