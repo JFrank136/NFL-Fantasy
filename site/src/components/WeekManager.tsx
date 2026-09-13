@@ -47,7 +47,7 @@ export default function WeekManager(){
           <div className="subtle">Drag a folder or choose files — we auto-detect week & source</div>
         </div>
         <div className="flex items-center gap-2">
-          <input ref={dirInputRef} type="file" multiple /* @ts-ignore */ webkitdirectory="true" className="hidden" onChange={e=> e.target.files && onFiles(e.target.files)} />
+          <input ref={dirInputRef} type="file" multiple webkitdirectory="true" className="hidden" onChange={e=> e.target.files && onFiles(e.target.files)} />
           <button className="btn" onClick={()=>dirInputRef.current?.click()}>Upload Folder</button>
         </div>
       </div>

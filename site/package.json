@@ -9,26 +9,27 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@tanstack/react-table": "^8.11.8",
+    "immer": "^10.1.1",
+    "lucide-react": "^0.460.0",
+    "papaparse": "^5.4.1",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
-    "zustand": "^4.5.2",
-    "papaparse": "^5.4.1",
-    "@tanstack/react-table": "^8.11.8",
     "recharts": "^2.10.3",
-    "lucide-react": "^0.460.0",
-    "immer": "^10.1.1"
+    "zustand": "^4.5.2"
   },
   "devDependencies": {
-    "typescript": "^5.5.4",
-    "vite": "^5.3.4",
-    "@vitejs/plugin-react": "^4.3.1",
+    "@types/papaparse": "^5.5.2",
     "@types/react": "^18.2.66",
     "@types/react-dom": "^18.2.22",
-    "tailwindcss": "^3.4.10",
-    "postcss": "^8.4.45",
+    "@typescript-eslint/eslint-plugin": "^7.18.0",
+    "@typescript-eslint/parser": "^7.18.0",
+    "@vitejs/plugin-react": "^4.3.1",
     "autoprefixer": "^10.4.20",
     "eslint": "^8.57.0",
-    "@typescript-eslint/parser": "^7.18.0",
-    "@typescript-eslint/eslint-plugin": "^7.18.0"
+    "postcss": "^8.4.45",
+    "tailwindcss": "^3.4.10",
+    "typescript": "^5.5.4",
+    "vite": "^5.3.4"
   }
 }
