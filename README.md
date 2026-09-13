@@ -36,12 +36,21 @@ and Jared wants the history preserved, not just the latest snapshot.
   source-labeled value columns, e.g. HALF/PPR for RB/WR/TE but 1QB/2QB for
   QB) doesn't fit `RankingRow`.
 
-## Storage (for now)
+## Storage
 
-Local files only — `data/raw/` (immutable timestamped snapshots) and
-`data/processed/rankings_long.csv` (append-only, standardized long format).
-Supabase comes later, once the schema has proven itself against a few real
-weeks of data; see `docs/DATA.md` for the planned table shape.
+Two layers, both populated on every pull:
+
+- **Local files** — `data/raw/` (immutable timestamped snapshots) and
+  `data/processed/rankings_long.csv` / `trade_values_long.csv` (append-only,
+  standardized long format). This remains the source of truth and audit trail.
+- **Supabase** ("Fantasy Football" project, `tdtchffawcmkvgrccjza` — same
+  project Vampire and BigBallerLeague use) — `in_season_rankings`,
+  `in_season_trade_values`, `in_season_pull_status` tables, pushed
+  incrementally by `scripts/push_to_supabase.py` (wired into
+  `scripts/scheduled_pull.ps1`, runs after every pull). A push failure doesn't
+  fail the scheduled run or lose data — the local CSV already has it, and the
+  next run retries from a persisted watermark
+  (`data/supabase_push_state.json`). See `docs/DATA.md` for the exact schema.
 
 ## Name matching
 

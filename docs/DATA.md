@@ -110,11 +110,49 @@ flags — does not silently drop — a Smyth pull whose player order matches
 Boone's beyond a small overlap threshold, so a human looks at it rather than
 the pipeline trusting bad data by default.
 
-## Planned Supabase shape (not built yet — local files only per current decision)
+## Supabase shape (`supabase/migrations/0001_in_season_foundation.sql`)
 
-One long-format table, e.g. `in_season_rankings`: `season, week, source,
-scoring, pulled_at, source_player_id, player_name, team, position, rank,
-projection, floor_proj, ceiling_proj, tier, bye, opponent`. Append-only —
-a new `pulled_at` for the same `(season, week, source, scoring, player)` is a
-new row, never an overwrite, so re-pulling a not-yet-played week to catch
-DraftSharks' mid-week updates preserves the full history Jared asked for.
+Live in the "Fantasy Football" Supabase project (`tdtchffawcmkvgrccjza` — same
+project Vampire and BigBallerLeague use). Pushed incrementally after every
+pull by `scripts/push_to_supabase.py`; local files remain the source of
+truth, Supabase is a secondary copy. Three tables — the two ranking/value
+tables are append-only for the same reason the local CSVs are: a new
+`pulled_at` for the same logical row is a new row, never an overwrite, so
+re-pulling a not-yet-played week to catch DraftSharks' mid-week updates
+preserves the full history Jared asked for. The third (`in_season_pull_status`)
+is a small mutable status table, one row per dataset:
+
+- **`in_season_rankings`** — `season, week, source, scoring, pulled_at,
+  source_player_id, player_name, canonical_name, team, position, rank,
+  projection, floor_proj, ceiling_proj, tier, bye, opponent`, plus `id`
+  (bigserial PK) and `created_at`. Indexed on
+  `(season, week, source, scoring, canonical_name)`.
+- **`in_season_trade_values`** — mirrors `TradeValueRow`: `season, week,
+  source, position, pulled_at, source_url, rank, player_name,
+  canonical_name, team, value_col1_label, value_col1, value_col2_label,
+  value_col2`, plus `id` and `created_at`. Indexed on
+  `(season, week, source, position, canonical_name)`.
+- **`in_season_pull_status`** — one row per `dataset` (primary key, not
+  append-only): `last_success_at, last_attempt_at, status, message,
+  row_count`. Lets a consumer (or a human) check whether a pull is stale
+  without scanning the append-only tables.
+
+Two views, both `select distinct on (...) ... order by ..., pulled_at desc`
+over their base table — i.e. "latest pull per logical key" without the
+caller having to write that query themselves: `in_season_rankings_latest`
+(keyed on `season, week, source, scoring, canonical_name`) and
+`in_season_trade_values_latest` (keyed on `season, week, source, position,
+canonical_name`).
+
+**`canonical_name` on every row**: resolved via `src/player_identity.py`
+from `Draft/data/aliases.csv` (the same alias file `Draft/src/matching.py`
+and Vampire's `name-matching.js` already read). That file is keyed by
+`(raw_name, raw_team, source)` where `source` means the *site* a name was
+scraped from ("yahoo", "footballguys") — none of in-season's own sources
+(`draftsharks`, `boone`, `smythe`) ever appear in that column, so lookups
+here deliberately ignore `source`/`team` and match on normalized name only
+(punctuation/case/suffix-stripped). The file is small and curated
+(~20 rows), so name-only collisions aren't a practical risk — but this does
+**not** solve cross-dataset gaps like a player missing entirely from one
+source's pull; see `docs/superpowers/specs/2026-09-12-supabase-foundation-design.md`
+for what's explicitly out of scope.
