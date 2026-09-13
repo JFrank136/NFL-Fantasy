@@ -7,7 +7,7 @@ def make_row(player_name="Player", rank=1, **kw):
         season=2026, week=1, source="boone", position="RB",
         pulled_at="2026-09-11T00:00:00+00:00",
         source_url="https://sports.yahoo.com/fantasy/article/x.html",
-        rank=rank, player_name=player_name, team=None,
+        rank=rank, player_name=player_name, canonical_name=player_name, team=None,
         value_col1_label="HALF", value_col1=50.0,
         value_col2_label="PPR", value_col2=55.0,
     )

@@ -14,8 +14,8 @@ def make_row(player_name="Player", position="RB", rank=1, source_player_id="1", 
     defaults = dict(
         season=2026, week=1, source="draftsharks", scoring="half-ppr",
         pulled_at="2026-09-08T00:00:00+00:00", source_player_id=source_player_id,
-        player_name=player_name, team="DET", position=position, rank=rank,
-        projection=15.0,
+        player_name=player_name, canonical_name=player_name, team="DET",
+        position=position, rank=rank, projection=15.0,
     )
     defaults.update(kw)
     return RankingRow(**defaults)

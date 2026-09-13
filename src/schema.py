@@ -10,7 +10,7 @@ from dataclasses import dataclass, asdict, fields
 
 LONG_FORMAT_COLUMNS = [
     "season", "week", "source", "scoring", "pulled_at",
-    "source_player_id", "player_name", "team", "position",
+    "source_player_id", "player_name", "canonical_name", "team", "position",
     "rank", "projection", "floor_proj", "ceiling_proj", "tier",
     "bye", "opponent",
 ]
@@ -25,6 +25,7 @@ class RankingRow:
     pulled_at: str         # ISO 8601 timestamp, UTC
     source_player_id: str
     player_name: str
+    canonical_name: str
     team: str | None
     position: str
     rank: int | None
@@ -48,8 +49,8 @@ assert [f.name for f in fields(RankingRow)] == LONG_FORMAT_COLUMNS, (
 
 TRADE_VALUE_COLUMNS = [
     "season", "week", "source", "position", "pulled_at", "source_url",
-    "rank", "player_name", "team", "value_col1_label", "value_col1",
-    "value_col2_label", "value_col2",
+    "rank", "player_name", "canonical_name", "team", "value_col1_label",
+    "value_col1", "value_col2_label", "value_col2",
 ]
 
 
@@ -63,6 +64,7 @@ class TradeValueRow:
     source_url: str
     rank: int | None
     player_name: str
+    canonical_name: str
     team: str | None          # not present in the source table -- always None today
     value_col1_label: str      # e.g. "HALF" (RB/WR/TE) or "1QB" (QB)
     value_col1: float | None
