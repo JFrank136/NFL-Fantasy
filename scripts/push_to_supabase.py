@@ -38,6 +38,8 @@ RANKINGS_FLOAT_COLS = {"projection", "floor_proj", "ceiling_proj"}
 TRADE_INT_COLS = {"season", "week", "rank"}
 TRADE_FLOAT_COLS = {"value_col1", "value_col2"}
 
+CHUNK = 500
+
 
 def _load_env_file(path: Path) -> None:
     if not path.exists():
@@ -47,7 +49,7 @@ def _load_env_file(path: Path) -> None:
         if not line or line.startswith("#") or "=" not in line:
             continue
         key, _, value = line.partition("=")
-        os.environ.setdefault(key.strip(), value.strip())
+        os.environ.setdefault(key.strip(), value.strip().strip('"\''))
 
 
 def _coerce_row(row: dict, int_cols: set, float_cols: set) -> dict:
@@ -104,6 +106,61 @@ def _upsert_status(dataset: str, payload: dict, base_url: str, headers: dict) ->
     resp.raise_for_status()
 
 
+def _push_new_rows(
+    csv_path: Path, table: str, int_cols: set, float_cols: set,
+    state: dict, state_key: str, base_url: str, headers: dict,
+) -> bool:
+    """Pushes unpushed rows from csv_path to table in chunks, writing the
+    watermark to disk after each successful chunk. Returns True if this
+    dataset's push fully succeeded (or had nothing to do), False on any
+    failure (state reflects whatever chunk(s) DID succeed before the
+    failure)."""
+    already_pushed = state[state_key]
+
+    if csv_path.exists():
+        with csv_path.open(newline="", encoding="utf-8") as f:
+            total_rows = sum(1 for _ in csv.DictReader(f))
+        if total_rows < already_pushed:
+            print(
+                f"WARNING: {csv_path} has fewer rows ({total_rows}) than the "
+                f"push watermark ({already_pushed}) -- was it manually edited "
+                "or regenerated? Not pushing anything for this file until "
+                "this is resolved by hand."
+            )
+            return False
+
+    raw_rows = _read_new_rows(csv_path, already_pushed)
+    if not raw_rows:
+        print(f"No new rows to push for {table}.")
+        return True
+
+    pushed = 0
+    try:
+        for i in range(0, len(raw_rows), CHUNK):
+            chunk = [
+                _coerce_row(r, int_cols, float_cols) for r in raw_rows[i:i + CHUNK]
+            ]
+            _insert(table, chunk, base_url, headers)
+            pushed += len(chunk)
+            state[state_key] = already_pushed + pushed
+            _write_state(state)
+        print(f"Pushed {pushed} new row(s) to {table}.")
+        return True
+    except requests.RequestException as e:
+        print(
+            f"WARNING: push to {table} failed after {pushed}/{len(raw_rows)} "
+            f"new row(s) this run (watermark saved through the successful "
+            f"part, will retry the rest next run): {e}"
+        )
+        return False
+    except (ValueError, KeyError) as e:
+        print(
+            f"WARNING: failed to process rows for {table} after {pushed}/"
+            f"{len(raw_rows)} new row(s) pushed this run: {e}"
+        )
+        return False
+
+
 def main() -> int:
     _load_env_file(BASE_DIR / ".env")
     base_url = os.environ.get("SUPABASE_URL")
@@ -120,30 +177,19 @@ def main() -> int:
     }
 
     state = _read_state()
+    any_failure = False
 
-    new_rankings = [
-        _coerce_row(r, RANKINGS_INT_COLS, RANKINGS_FLOAT_COLS)
-        for r in _read_new_rows(RANKINGS_CSV, state["rankings_rows_pushed"])
-    ]
-    try:
-        _insert("in_season_rankings", new_rankings, base_url, headers)
-        state["rankings_rows_pushed"] += len(new_rankings)
-        print(f"Pushed {len(new_rankings)} new rankings row(s).")
-    except requests.RequestException as e:
-        print(f"WARNING: rankings push failed, will retry next run: {e}")
+    if not _push_new_rows(
+        RANKINGS_CSV, "in_season_rankings", RANKINGS_INT_COLS, RANKINGS_FLOAT_COLS,
+        state, "rankings_rows_pushed", base_url, headers,
+    ):
+        any_failure = True
 
-    new_trade_values = [
-        _coerce_row(r, TRADE_INT_COLS, TRADE_FLOAT_COLS)
-        for r in _read_new_rows(TRADE_VALUES_CSV, state["trade_values_rows_pushed"])
-    ]
-    try:
-        _insert("in_season_trade_values", new_trade_values, base_url, headers)
-        state["trade_values_rows_pushed"] += len(new_trade_values)
-        print(f"Pushed {len(new_trade_values)} new trade-value row(s).")
-    except requests.RequestException as e:
-        print(f"WARNING: trade-value push failed, will retry next run: {e}")
-
-    _write_state(state)
+    if not _push_new_rows(
+        TRADE_VALUES_CSV, "in_season_trade_values", TRADE_INT_COLS, TRADE_FLOAT_COLS,
+        state, "trade_values_rows_pushed", base_url, headers,
+    ):
+        any_failure = True
 
     for status_path, dataset_prefix, key_field in (
         (RUN_STATUS_PATH, "rankings", "combos"),
@@ -156,8 +202,11 @@ def main() -> int:
             dataset = f"{dataset_prefix}/{key}"
             ok = value == "ok"
             try:
-                current = _get_current_status(dataset, base_url, headers)
-                last_success_at = status["run_at"] if ok else (current or {}).get("last_success_at")
+                if ok:
+                    last_success_at = status["run_at"]
+                else:
+                    current = _get_current_status(dataset, base_url, headers)
+                    last_success_at = (current or {}).get("last_success_at")
                 _upsert_status(dataset, {
                     "last_attempt_at": status["run_at"],
                     "last_success_at": last_success_at,
@@ -167,8 +216,9 @@ def main() -> int:
                 }, base_url, headers)
             except requests.RequestException as e:
                 print(f"WARNING: status upsert failed for {dataset}: {e}")
+                any_failure = True
 
-    return 0
+    return 1 if any_failure else 0
 
 
 if __name__ == "__main__":
