@@ -166,6 +166,10 @@ try {
     $tradeValuesExit = $LASTEXITCODE
     Log "pull_trade_values.py exit code: $tradeValuesExit"
 
+    Log "Running push_to_supabase.py..."
+    & $PythonExe "scripts\push_to_supabase.py" 2>&1 | ForEach-Object { Log $_ }
+    Log "push_to_supabase.py exit code: $LASTEXITCODE"
+
     $currentWeek = (& $PythonExe -c "import sys; sys.path.insert(0, '.'); from src.season_config import current_week; print(current_week())").Trim()
     $lastWeek = (& $PythonExe -c "import sys; sys.path.insert(0, '.'); from src.season_config import LAST_WEEK; print(LAST_WEEK)").Trim()
     Log "Current active week: $currentWeek (season ends at week $lastWeek)"
