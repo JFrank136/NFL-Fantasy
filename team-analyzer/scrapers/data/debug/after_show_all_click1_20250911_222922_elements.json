@@ -1,0 +1,134 @@
+{
+  "els": [
+    {
+      "cls": "col-sm-6 col-md-4 col-lg-3 col-xl-2 value-list-container position",
+      "id": "",
+      "pos": {
+        "bottom": 2025.375,
+        "height": 4243.390625,
+        "left": 662.5,
+        "right": 852.5,
+        "top": -2218.015625,
+        "width": 190,
+        "x": 662.5,
+        "y": -2218.015625
+      },
+      "tag": "DIV",
+      "z": "auto"
+    },
+    {
+      "cls": "row",
+      "id": "",
+      "pos": {
+        "bottom": 2025.375,
+        "height": 4243.390625,
+        "left": 92.5,
+        "right": 1232.5,
+        "top": -2218.015625,
+        "width": 1140,
+        "x": 92.5,
+        "y": -2218.015625
+      },
+      "tag": "DIV",
+      "z": "auto"
+    },
+    {
+      "cls": "col-12 pick-detail-tables",
+      "id": "",
+      "pos": {
+        "bottom": 2025.375,
+        "height": 4243.390625,
+        "left": 92.5,
+        "right": 1232.5,
+        "top": -2218.015625,
+        "width": 1140,
+        "x": 92.5,
+        "y": -2218.015625
+      },
+      "tag": "DIV",
+      "z": "auto"
+    },
+    {
+      "cls": "row",
+      "id": "",
+      "pos": {
+        "bottom": 2025.375,
+        "height": 4243.390625,
+        "left": 92.5,
+        "right": 1232.5,
+        "top": -2218.015625,
+        "width": 1140,
+        "x": 92.5,
+        "y": -2218.015625
+      },
+      "tag": "DIV",
+      "z": "auto"
+    },
+    {
+      "cls": "container view-",
+      "id": "",
+      "pos": {
+        "bottom": 2025.375,
+        "height": 4243.390625,
+        "left": 92.5,
+        "right": 1232.5,
+        "top": -2218.015625,
+        "width": 1140,
+        "x": 92.5,
+        "y": -2218.015625
+      },
+      "tag": "DIV",
+      "z": "auto"
+    },
+    {
+      "cls": "blue-diagonals-bg trade-value-chart loaded",
+      "id": "app",
+      "pos": {
+        "bottom": 2025.375,
+        "height": 4935.375,
+        "left": 0,
+        "right": 1325,
+        "top": -2910,
+        "width": 1325,
+        "x": 0,
+        "y": -2910
+      },
+      "tag": "DIV",
+      "z": "auto"
+    },
+    {
+      "cls": "trade-value-chart-index ",
+      "id": "",
+      "pos": {
+        "bottom": 3782.078125,
+        "height": 6792.078125,
+        "left": 0,
+        "right": 1325,
+        "top": -3010,
+        "width": 1325,
+        "x": 0,
+        "y": -3010
+      },
+      "tag": "BODY",
+      "z": "auto"
+    },
+    {
+      "cls": "",
+      "id": "",
+      "pos": {
+        "bottom": 3782.078125,
+        "height": 6792.078125,
+        "left": 0,
+        "right": 1325,
+        "top": -3010,
+        "width": 1325,
+        "x": 0,
+        "y": -3010
+      },
+      "tag": "HTML",
+      "z": "auto"
+    }
+  ],
+  "x": 670,
+  "y": 624
+}

@@ -1,0 +1,279 @@
+PosRank,Name,Position,half_ppr,full_ppr
+1,Josh Allen,QB,46,46
+2,Lamar Jackson,QB,45,45
+3,Jayden Daniels,QB,44,44
+4,Jalen Hurts,QB,36,36
+5,Joe Burrow,QB,24,24
+6,Patrick Mahomes II,QB,18,18
+7,Bo Nix,QB,18,18
+8,Brock Purdy,QB,17,17
+9,Baker Mayfield,QB,16,16
+10,Caleb Williams,QB,15,15
+11,Dak Prescott,QB,14,14
+12,Kyler Murray,QB,13,13
+13,Drake Maye,QB,13,13
+14,Justin Herbert,QB,12,12
+15,J.J. McCarthy,QB,11,11
+16,Justin Fields,QB,11,11
+17,Jordan Love,QB,10,10
+18,Jared Goff,QB,10,10
+19,Trevor Lawrence,QB,9,9
+20,C.J. Stroud,QB,8,8
+21,Bryce Young,QB,8,8
+22,Geno Smith,QB,7,7
+23,Michael Penix Jr.,QB,6,6
+24,Cam Ward,QB,5,5
+25,Tua Tagovailoa,QB,4,4
+26,Matthew Stafford,QB,3,3
+27,Sam Darnold,QB,3,3
+28,Daniel Jones,QB,2,2
+29,Aaron Rodgers,QB,2,2
+30,Jaxson Dart,QB,2,2
+31,Russell Wilson,QB,1,1
+32,Anthony Richardson Sr.,QB,0,0
+33,Spencer Rattler,QB,0,0
+34,Tyler Shough,QB,0,0
+35,Joe Flacco,QB,0,0
+36,Dillon Gabriel,QB,0,0
+37,Jalen Milroe,QB,0,0
+38,Shedeur Sanders,QB,0,0
+39,Jimmy Garoppolo,QB,0,0
+40,Malik Willis,QB,0,0
+41,Kirk Cousins,QB,0,0
+42,Tyrod Taylor,QB,0,0
+43,Jameis Winston,QB,0,0
+44,Mac Jones,QB,0,0
+45,Jake Browning,QB,0,0
+46,Gardner Minshew II,QB,0,0
+47,Marcus Mariota,QB,0,0
+48,Cooper Rush,QB,0,0
+1,Bijan Robinson,RB,72,74
+2,Saquon Barkley,RB,71,72
+3,Jahmyr Gibbs,RB,70,72
+4,Christian McCaffrey,RB,69,71
+5,Ashton Jeanty,RB,61,63
+6,Chase Brown,RB,59,61
+7,Derrick Henry,RB,59,60
+8,De'Von Achane,RB,56,58
+9,Bucky Irving,RB,54,56
+10,Josh Jacobs,RB,52,54
+11,Jonathan Taylor,RB,51,53
+12,Omarion Hampton,RB,45,47
+13,Kyren Williams,RB,43,44
+14,Kenneth Walker III,RB,41,43
+15,James Cook,RB,40,41
+16,TreVeyon Henderson,RB,37,39
+17,Alvin Kamara,RB,34,36
+18,James Conner,RB,31,33
+19,Breece Hall,RB,29,31
+20,Chuba Hubbard,RB,29,30
+21,RJ Harvey,RB,28,30
+22,Tony Pollard,RB,27,29
+23,Isiah Pacheco,RB,26,27
+24,Tyrone Tracy Jr.,RB,24,26
+25,D'Andre Swift,RB,24,26
+26,David Montgomery,RB,23,25
+27,Aaron Jones Sr.,RB,23,25
+28,Jaylen Warren,RB,23,25
+29,Jordan Mason,RB,23,24
+30,Kaleb Johnson,RB,22,23
+31,Jacory Croskey-Merritt,RB,21,22
+32,J.K. Dobbins,RB,19,21
+33,Braelon Allen,RB,18,20
+34,Zach Charbonnet,RB,18,20
+35,Tank Bigsby,RB,17,18
+36,Bhayshul Tuten,RB,16,18
+37,Travis Etienne Jr.,RB,16,18
+38,Trey Benson,RB,16,18
+39,Austin Ekeler,RB,16,18
+40,Rhamondre Stevenson,RB,15,17
+41,Jaydon Blue,RB,15,17
+42,Javonte Williams,RB,14,16
+43,Cam Skattebo,RB,14,16
+44,Ray Davis,RB,14,16
+45,Nick Chubb,RB,14,15
+46,Brian Robinson Jr.,RB,14,15
+47,Dylan Sampson,RB,14,15
+48,Quinshon Judkins,RB,14,15
+49,Ollie Gordon II,RB,14,15
+50,Rachaad White,RB,13,15
+51,Will Shipley,RB,13,14
+52,Tyler Allgeier,RB,13,14
+53,Rico Dowdle,RB,12,14
+54,Woody Marks,RB,12,14
+55,Kyle Monangai,RB,12,13
+56,Chris Rodriguez Jr.,RB,12,13
+57,Jerome Ford,RB,12,13
+58,Najee Harris,RB,12,13
+59,Jarquez Hunter,RB,11,12
+60,DJ Giddens,RB,11,12
+61,Tahj Brooks,RB,11,12
+62,Keaton Mitchell,RB,11,12
+63,Sean Tucker,RB,10,11
+64,Blake Corum,RB,10,11
+65,Kendre Miller,RB,10,11
+66,Dameon Pierce,RB,9,10
+67,Brashard Smith,RB,9,10
+68,Tyjae Spears,RB,8,9
+69,Joe Mixon,RB,8,9
+70,Roschon Johnson,RB,7,8
+71,Kareem Hunt,RB,6,7
+72,Chris Brooks,RB,5,6
+73,Justice Hill,RB,5,6
+74,Zamir White,RB,5,6
+75,Jaylen Wright,RB,4,5
+76,Isaac Guerendo,RB,3,4
+77,MarShawn Lloyd,RB,3,4
+78,Trevor Etienne,RB,2,3
+79,Devin Neal,RB,1,2
+80,Devin Singletary,RB,1,1
+81,Miles Sanders,RB,1,1
+82,George Holani,RB,0,0
+83,Isaiah Davis,RB,0,0
+84,Jaleel McLaughlin,RB,0,0
+85,LeQuint Allen Jr.,RB,0,0
+86,Antonio Gibson,RB,0,0
+87,Hassan Haskins,RB,0,0
+88,Emanuel Wilson,RB,0,0
+89,Kalel Mullings,RB,0,0
+90,Kenneth Gainwell,RB,0,0
+1,Ja'Marr Chase,WR,74,76
+2,Justin Jefferson,WR,70,72
+3,CeeDee Lamb,WR,69,71
+4,Malik Nabers,WR,66,68
+5,Nico Collins,WR,65,67
+6,Amon-Ra St. Brown,WR,63,65
+7,Drake London,WR,62,64
+8,Brian Thomas Jr.,WR,62,64
+9,Puka Nacua,WR,60,62
+10,A.J. Brown,WR,55,57
+11,Ladd McConkey,WR,47,49
+12,Jaxon Smith-Njigba,WR,41,43
+13,Tee Higgins,WR,41,42
+14,Mike Evans,WR,39,40
+15,Garrett Wilson,WR,35,37
+16,Terry McLaurin,WR,35,37
+17,Marvin Harrison Jr.,WR,34,36
+18,Tetairoa McMillan,WR,33,35
+19,Tyreek Hill,WR,31,33
+20,Davante Adams,WR,31,33
+21,Xavier Worthy,WR,31,33
+22,DK Metcalf,WR,30,32
+23,DeVonta Smith,WR,30,32
+24,Travis Hunter,WR,29,31
+25,George Pickens,WR,28,30
+26,Emeka Egbuka,WR,28,30
+27,Rome Odunze,WR,28,30
+28,Rashee Rice,WR,27,29
+29,Jaylen Waddle,WR,27,29
+30,Jameson Williams,WR,27,29
+31,Calvin Ridley,WR,27,29
+32,Courtland Sutton,WR,26,28
+33,DJ Moore,WR,26,28
+34,Ricky Pearsall,WR,25,27
+35,Zay Flowers,WR,25,27
+36,Matthew Golden,WR,25,27
+37,Chris Olave,WR,25,27
+38,Jordan Addison,WR,23,25
+39,Jerry Jeudy,WR,23,25
+40,Jauan Jennings,WR,22,24
+41,Stefon Diggs,WR,22,24
+42,Jakobi Meyers,WR,21,23
+43,Keon Coleman,WR,21,23
+44,Deebo Samuel Sr.,WR,21,23
+45,Khalil Shakir,WR,21,23
+46,Josh Downs,WR,20,22
+47,Cooper Kupp,WR,18,20
+48,Darnell Mooney,WR,18,20
+49,Rashid Shaheed,WR,17,18
+50,Michael Pittman Jr.,WR,15,17
+51,Christian Kirk,WR,15,17
+52,Jayden Reed,WR,14,16
+53,Chris Godwin Jr.,WR,14,16
+54,Luther Burden III,WR,14,16
+55,Brandon Aiyuk,WR,14,16
+56,Keenan Allen,WR,14,16
+57,Rashod Bateman,WR,13,15
+58,Marvin Mims Jr.,WR,13,14
+59,Jayden Higgins,WR,13,14
+60,Cedric Tillman,WR,12,13
+61,DeMario Douglas,WR,12,13
+62,Joshua Palmer,WR,11,12
+63,Tre' Harris,WR,11,12
+64,Kyle Williams,WR,11,12
+65,Wan'Dale Robinson,WR,10,12
+66,Marquise Brown,WR,10,11
+67,Xavier Legette,WR,10,11
+68,Romeo Doubs,WR,10,11
+69,Pat Bryant,WR,10,11
+70,Isaac TeSlaa,WR,10,11
+71,Tory Horton,WR,10,11
+72,Dont'e Thornton Jr.,WR,10,11
+73,Elic Ayomanor,WR,10,11
+74,Jalen Coker,WR,9,10
+75,Jalen Royals,WR,8,9
+76,Troy Franklin,WR,8,9
+77,Adam Thielen,WR,7,8
+78,DeAndre Hopkins,WR,7,8
+79,Amari Cooper,WR,7,8
+80,Adonai Mitchell,WR,7,8
+81,Malik Washington,WR,7,8
+82,Quentin Johnston,WR,7,8
+83,Darius Slayton,WR,7,8
+84,Alec Pierce,WR,7,8
+85,KeAndre Lambert-Smith,WR,7,8
+86,Dyami Brown,WR,6,7
+87,Jack Bech,WR,6,7
+88,Michael Wilson,WR,5,6
+89,Dontayvion Wicks,WR,5,6
+90,Andrei Iosivas,WR,4,5
+91,Calvin Austin III,WR,4,5
+92,Josh Reynolds,WR,4,5
+93,Ray-Ray McCloud III,WR,4,5
+94,Tyler Lockett,WR,4,5
+95,Jordan Whittington,WR,3,4
+96,Noah Brown,WR,2,3
+97,KaVontae Turpin,WR,1,2
+98,Kayshon Boutte,WR,1,2
+99,Jaylin Lane,WR,1,2
+100,Olamide Zaccheaus,WR,1,2
+1,Brock Bowers,TE,50,52
+2,Trey McBride,TE,49,51
+3,George Kittle,TE,44,46
+4,Sam LaPorta,TE,26,28
+5,T.J. Hockenson,TE,22,24
+6,Tucker Kraft,TE,21,23
+7,Mark Andrews,TE,20,21
+8,Travis Kelce,TE,19,20
+9,David Njoku,TE,18,20
+10,Tyler Warren,TE,17,19
+11,Evan Engram,TE,15,17
+12,Dalton Kincaid,TE,15,17
+13,Colston Loveland,TE,15,17
+14,Dallas Goedert,TE,13,15
+15,Jake Ferguson,TE,12,14
+16,Kyle Pitts Sr.,TE,11,13
+17,Chig Okonkwo,TE,11,13
+18,Zach Ertz,TE,10,12
+19,Hunter Henry,TE,9,10
+20,Jonnu Smith,TE,9,10
+21,Brenton Strange,TE,9,10
+22,Mason Taylor,TE,8,9
+23,Darren Waller,TE,7,8
+24,Elijah Arroyo,TE,7,8
+25,Theo Johnson,TE,7,8
+26,Ja'Tavion Sanders,TE,7,8
+27,Pat Freiermuth,TE,6,7
+28,Cade Otton,TE,5,6
+29,Mike Gesicki,TE,4,5
+30,Isaiah Likely,TE,3,4
+31,Harold Fannin Jr.,TE,3,4
+32,Juwan Johnson,TE,2,3
+33,Tyler Higbee,TE,2,3
+34,Cole Kmet,TE,1,2
+35,Terrance Ferguson,TE,1,2
+36,Dalton Schultz,TE,1,2
+37,Noah Gray,TE,1,2
+38,Tyler Conklin,TE,1,2
+39,Oronde Gadsden II,TE,1,2
+40,AJ Barner,TE,1,2

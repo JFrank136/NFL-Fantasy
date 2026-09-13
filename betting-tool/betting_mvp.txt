@@ -1,0 +1,125 @@
+PROJECT SUMMARY — BETTING WORKFLOW AUTOMATION (BET HUB MVP)
+
+Goal:
+I want a lightweight local app that centralizes all my betting workflow — specifically for player props and research I pull from multiple sources (Twitter/X, Reddit, CBS, etc.). The goal is to save time entering and tracking picks while keeping everything persistent locally.
+
+Platform:
+- Local app built in Streamlit (Python)
+- Stores data in SQLite (autosaves progress)
+- Data files stored in OneDrive folder: roster, schedule, CBS stats, exports
+
+---
+
+CURRENT WORKFLOW PROBLEMS
+1. I manually gather picks from multiple sources (MattLocks, Cody Brown / CB Mismatch, NovelCalendar, DoughNation, Hit Rate, etc.)
+2. I manually enter player name, pick, and team into Excel.
+3. The time sink is assigning the correct TEAM for each player and reformatting the picks.
+4. I manually filter games and make notes on which picks I like/love.
+5. I track all bets and legs in Excel, manually updating yards left, potential payout, and removing bets as they settle.
+
+---
+
+MVP REQUIREMENTS
+✅ Must save all progress automatically (SQLite, no resets)
+✅ Must work fully offline (local files only)
+✅ Must be very fast to enter data (especially picks)
+✅ Must support quick filtering by game, team, and source
+
+---
+
+CORE FEATURES (built or planned)
+
+1. **Picks Inbox**
+   - Single-pick entry form (Player, Pick Text, Source, Like/Love, Notes)
+   - Automatically fills TEAM based on player (from roster/depth chart)
+   - Stores everything in `picks` table
+   - Manual correction possible
+
+2. **Bulk Add Picks**
+   - Paste multiple picks (one per line) from Reddit or X
+   - Choose Source once (e.g., MattLocks)
+   - App auto-finds Player + Team via fuzzy match against roster
+   - You can edit before saving
+   - One-click "Auto-fill team from player" for blank entries
+   - Saves all rows in one go
+
+3. **Games Browser**
+   - Displays all picks for a selected game (two teams)
+   - Pulls schedule from CSV or scraper
+   - Used for research, not tracking
+
+4. **Likes/Loves**
+   - Quick view showing all picks marked Like or Love
+   - Filter by week
+   - Used for building betting cards
+
+5. **Bet Tracker**
+   - Add bets (name, stake, total payout)
+   - Add legs under each bet (player, team, target yards, etc.)
+   - Update live current yards → auto-calculates yards needed
+   - Legs turn green when hit
+   - “Include in Estimate” checkbox for pessimistic payout estimates
+   - Estimated payout total updates automatically
+
+6. **Roster & Schedule Management**
+   - Button: “Run Depth Chart Scraper” → calls `depth_chart_scraper.py`
+   - Button: “Load roster CSV” → imports into DB
+   - Button: “Load schedule CSV” → imports into DB
+   - Exports (picks, bets, legs) → one-click CSV download
+   - All data lives in SQLite (`bethub.db`)
+
+---
+
+SUPPORTING FILES
+
+**depth_chart_scraper.py**
+- Scrapes ESPN depth charts for all NFL teams
+- Saves data/roster_latest.csv (columns: player, team)
+- Called directly from Streamlit via subprocess
+- Used to auto-fill TEAM fields
+
+**schedule_scraper.py** (optional)
+- Scrapes weekly schedule from ESPN API
+- Saves data/schedule_weekX.csv
+- Uploadable via sidebar
+
+**CBS scraper**
+- Already exists separately (user’s local script)
+- Not part of Streamlit app but data can be imported manually
+
+---
+
+PENDING IMPROVEMENTS
+1. Integrate schedule scraper button into Streamlit sidebar (like the depth chart scraper)
+2. Optional OCR support for CB Mismatch images (Cody Brown) — extract text from cards and feed into Bulk Add
+3. Add a one-click "refresh roster/schedule" weekly routine
+4. Maybe add live yard tracking integration later (API-based)
+
+---
+
+TECH STACK
+- Python 3.11+ (local venv)
+- Streamlit
+- SQLite3
+- Pandas
+- BeautifulSoup4 + Requests
+- RapidFuzz (for fuzzy name matching)
+- Pytesseract (planned, optional OCR)
+
+---
+
+KEY DESIGN POINTS
+- Persistent local database (no resets)
+- Data-first structure (DB drives app)
+- CSV import/export for easy debugging
+- Built for speed and minimal manual typing
+- Each screen maps directly to a real part of the workflow:
+  • Picks Inbox → Gathering
+  • Games → Research
+  • Likes/Loves → Card building
+  • Bet Tracker → Tracking
+
+---
+
+IN SUMMARY
+This is a local Streamlit app that acts as a personal “betting hub.” It merges all my manual workflows — pick entry, team auto-fill, filtering, bet tracking — into one persistent dashboard. The hardest parts are depth chart scraping and image OCR for CB Mismatch, which are optional but would make it nearly zero manual work.
