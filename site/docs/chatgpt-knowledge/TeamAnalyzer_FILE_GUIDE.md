@@ -41,10 +41,6 @@ A single global Zustand store holding everything: blend weights, which sources a
 ### `src/types.ts`
 Shared TypeScript types (`SourceRow`, `BlendedRow`, `LeagueSettings`, `TeamProfile`, `PPR`, etc.) that tie the modules above together.
 
-## `scrapers/` — standalone data-pulling scripts (separate from the web app)
+## Data sourcing
 
-- **`boone.py`** — browser-automation scraper that pulls Boone's weekly rankings (Boone's site apparently requires clicking through UI states — the `data/debug/` folder is full of screenshots/HTML dumps captured while building this, showing the trial-and-error involved).
-- **`draftsharks.py`** — scraper for DraftSharks' weekly rankings.
-- **`debug_boone.py`** — a debugging/inspection variant of the Boone scraper.
-- **`run_all.py`** / **`run_all.bat`** — runs both scrapers in sequence.
-- **`data/`** — output CSVs from past scraper runs (both sources, several past weeks, plus half-PPR/full-PPR variants for DraftSharks), and a `debug/` subfolder of scraper development artifacts. This is scraped output, not source code — treat it as historical/disposable.
+This project used to have its own standalone `scrapers/` folder (Python scripts pulling Boone and DraftSharks CSVs directly) as an alternate way to get data in besides manual CSV upload. That folder has been removed — the `in-season` Python pipeline now handles pulling Boone/DraftSharks rankings, so any future work that wants automated data should draw from that pipeline's output rather than reviving separate scrapers here.

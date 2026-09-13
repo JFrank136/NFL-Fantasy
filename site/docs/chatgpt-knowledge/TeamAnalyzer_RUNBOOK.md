@@ -2,7 +2,7 @@
 
 ## Running the app locally
 
-From `in-season/team-analyzer/`:
+From `in-season/site/`:
 
 ```bash
 npm i
@@ -29,16 +29,9 @@ The app expects two CSV files per week, uploaded through its UI (drag a folder):
 
 File names need to include the week number and which source it is (e.g. something containing `week3` and `boone`, case-insensitive) — the app auto-detects the week from the filename.
 
-## Producing those CSVs via the scrapers (optional, alternate path)
+## Producing those CSVs automatically (optional, alternate path)
 
-Instead of manually exporting from each source's site, the `scrapers/` folder has Python scripts that attempt to pull the data automatically:
-
-```bash
-cd scrapers
-python run_all.py
-```
-
-This is browser-automation-based for Boone and more likely to break if either source's site changes layout — the `data/debug/` folder full of screenshots suggests this needed real trial-and-error to get working last time. **This has not been verified to still work** — it hasn't been run or checked since last season, and the new `in-season/` pipeline (see that project's own runbook) now does something similar more reliably. If reviving Team Analyzer, it's worth checking whether it makes more sense to feed it from that pipeline's output instead of re-running these scrapers.
+Instead of manually exporting from each source's site, data now comes from the `in-season` Python pipeline (see that project's own runbook), which pulls Boone and DraftSharks weekly rankings on a schedule. The standalone scrapers that used to live in this project's own `scrapers/` folder have been removed in favor of that pipeline; if reviving Team Analyzer, feed it from the pipeline's output rather than writing new scraping scripts here.
 
 ## Common things to check when something looks wrong
 
