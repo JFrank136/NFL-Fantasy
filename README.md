@@ -1,8 +1,9 @@
 # In-Season Tools
 
-Weekly fantasy football data pipeline (Draft Sharks, Justin Boone, and — pending
-a confirmed weekly source — Joel Smyth) feeding a set of in-season tools:
-start/sit, trade, waiver wire, rest-of-season, and whatever else comes later.
+Weekly fantasy football data pipeline (Draft Sharks, Justin Boone, and Joel
+Smyth, with more sources likely to be added over time) feeding a set of
+in-season tools: start/sit, trade, waiver wire, rest-of-season, and whatever
+else comes later.
 
 ## Why this exists separately from `Draft/`
 
@@ -15,16 +16,19 @@ and Jared wants the history preserved, not just the latest snapshot.
 
 - **Draft Sharks weekly rankings** — public, unauthenticated `load-rows` endpoint.
   No login needed (unlike `Draft/`'s draft-day CSV export, which does require one).
-- **Justin Boone (via Yahoo)** — Yahoo's article embeds a FantasyPros partner
-  widget; pulled directly from FantasyPros' own public JSON endpoint instead of
-  scraping Yahoo's bot-protected HTML.
-- **Joel Smyth** — same FantasyPros mechanism is assumed (`id=7604`, the same ID
-  `Draft/src/sources/yahoo_consensus.py` already resolved by name for the
-  draft-day board), but this is **unconfirmed for weekly rankings** — his Week 1
-  numbers aren't published yet as of this writing (his page says PPR rankings
-  come Thursday). `validate.py` flags a Smyth pull that looks identical to
-  Boone's, since an invalid/unpublished expert ID has been observed to silently
-  fall back to a default rather than erroring.
+- **Justin Boone (via Yahoo)** — pulled via Yahoo's own public, unauthenticated
+  `api/fanPro/` endpoint (`src/sources/yahoo_weekly_consensus.py`), the same
+  endpoint `Draft/src/sources/yahoo_consensus.py` uses for the draft-day
+  board, extended here with a `week` param. Experts are resolved by name from
+  the response's own `expertNames` map, not a hardcoded id.
+- **Joel Smyth** — same Yahoo `fanPro` mechanism as Boone (`src/sources/yahoo_weekly_consensus.py`,
+  expert resolved by name, not a hardcoded id). Confirmed live as a normal
+  weekly-rankings source alongside Boone. Like Boone, Smyth typically hasn't
+  posted a given week's rankings until Thursday — a pull attempted before then
+  returns zero rows, which `validate.py`'s `check_nonempty` flags as a
+  validation failure (`"Pull returned zero rows."`) rather than a true scrape
+  break; `scripts/scheduled_pull.ps1`'s status email treats that specific
+  message as "not yet published," distinct from a real failure.
 - **Justin Boone rest-of-season trade values** — scraped directly from
   Boone's Yahoo article pages (`fantasy-football-week-N-justin-boones-{pos}-trade-value-charts`)
   since there's no JSON API for this data. Article URLs aren't
@@ -52,13 +56,46 @@ Two layers, both populated on every pull:
   next run retries from a persisted watermark
   (`data/supabase_push_state.json`). See `docs/DATA.md` for the exact schema.
 
+## Scheduled runs & notifications
+
+`scripts/scheduled_pull.ps1` is the Windows Task Scheduler entry point — runs
+`pull_week.py`, `pull_trade_values.py`, the Supabase push, and the Vampire
+weekly-projection refresh, with a network-readiness wait for wake-from-sleep
+races. It emails Jared an HTML status summary via Gmail SMTP (credential at
+`%LOCALAPPDATA%\FantasyInSeasonPull\gmail_cred.xml`) built from
+`data/last_run_status.json` / `data/last_trade_values_status.json`, one
+section per scoring format, one row per source. Sources are discovered
+dynamically from the status JSON's own keys rather than hardcoded, so a new
+source added to `pull_week.py`'s `ALL_SOURCES` shows up with no changes to
+the email script. Each row distinguishes three states — ok, not yet
+published (Boone/Smyth pre-Thursday), and a real failure — rather than
+collapsing "not published yet" into a false failure alarm.
+
 ## Name matching
 
-Deliberately **not duplicated here**. `Draft/data/aliases.csv` is the single
-source of truth (same file Vampire's `name-matching.js` already reads from) —
-read it directly rather than forking a third copy. The Draft Sharks → Vampire
+`src/player_identity.py` resolves a `canonical_name` for every row at
+ingestion, reading `Draft/data/aliases.csv` directly (same file Vampire's
+`name-matching.js` already reads independently — read it, don't fork a copy
+of the data). **Gotcha**: that file's `source` column (`yahoo`,
+`footballguys`) is the site that spelled a name a certain way, not a
+fantasy-analyst source — none of this project's own sources (`draftsharks`,
+`boone`, `smythe`) ever appear there, so matching ignores source/team
+entirely and keys on normalized name alone. The Draft Sharks → Vampire
 weekly-projection handoff (see `../Vampire/matchup-tool/scripts/refresh-weekly-projection.js`)
-reuses Vampire's own `normalizeName` instead of re-implementing matching here.
+still reuses Vampire's own separate `normalizeName` for its own matching —
+the two aren't unified, just both reading the same source CSV.
+
+## Site (`site/`)
+
+A Vite+React+TS+Tailwind app — the future home of the roadmap's consolidated
+tools (Start/Sit, Trade Analyzer, etc., see `../SITE_ROADMAP.md` at the repo
+root above this one). Deployed via Vercel from
+`https://github.com/JFrank136/NFL-Fantasy.git`, live at
+`https://nfl-fantasy-sigma.vercel.app`. `site/src/lib/supabase.ts` has a
+working Supabase client (verified against the live project) but **no page
+queries it yet** — the current tabs still render pre-Supabase placeholder
+components. Building real pages against `in_season_rankings_latest` /
+`in_season_trade_values_latest` is the next work here.
 
 ## Usage
 
