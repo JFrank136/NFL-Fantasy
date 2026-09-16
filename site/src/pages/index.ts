@@ -1,3 +1,5 @@
+export { default as Rankings }    from './Rankings'
+export { default as TradeValues } from './TradeValues'
 export { default as Players }  from './Players'
 export { default as Trends }   from './Trends'
 export { default as Roster }   from './Roster'

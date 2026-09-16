@@ -4,13 +4,23 @@ import Header from './components/Header'
 import BlendEngine from './components/BlendEngine'
 
 // Using your barrel file at src/pages/index.ts
-import { Players, Trends, Roster, Trade, Weeks, Settings } from './pages'
+import { Rankings, TradeValues, Players, Trends, Roster, Trade, Weeks, Settings } from './pages'
 
-type Tab = 'players' | 'trends' | 'roster' | 'trade' | 'weeks' | 'settings'
-const TABS: Tab[] = ['players', 'trends', 'roster', 'trade', 'weeks', 'settings']
+type Tab = 'rankings' | 'tradevalues' | 'players' | 'trends' | 'roster' | 'trade' | 'weeks' | 'settings'
+const TABS: Tab[] = ['rankings', 'tradevalues', 'players', 'trends', 'roster', 'trade', 'weeks', 'settings']
+const TAB_LABELS: Record<Tab, string> = {
+  rankings: 'Rankings',
+  tradevalues: 'Trade Values',
+  players: 'Players',
+  trends: 'Trends',
+  roster: 'Roster',
+  trade: 'Trade',
+  weeks: 'Weeks',
+  settings: 'Settings',
+}
 
 export default function App() {
-  const [tab, setTab] = useState<Tab>('players')
+  const [tab, setTab] = useState<Tab>('rankings')
 
   return (
     <div className="max-w-6xl mx-auto p-4 space-y-4">
@@ -24,11 +34,13 @@ export default function App() {
             className={`tab ${tab === t ? 'tab-active' : ''}`}
             onClick={() => setTab(t)}
           >
-            {t[0].toUpperCase() + t.slice(1)}
+            {TAB_LABELS[t]}
           </button>
         ))}
       </div>
 
+      {tab === 'rankings' && <Rankings />}
+      {tab === 'tradevalues' && <TradeValues />}
       {tab === 'players' && <Players />}
       {tab === 'trends' && <Trends />}
       {tab === 'roster' && <Roster />}

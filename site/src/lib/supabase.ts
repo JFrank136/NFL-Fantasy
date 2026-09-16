@@ -25,6 +25,7 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey)
 // against, not the raw append-only tables, unless a page specifically
 // needs historical rows (e.g. Movers & Fallers).
 export interface RankingLatestRow {
+  id: number
   season: number
   week: number
   source: string
@@ -45,6 +46,7 @@ export interface RankingLatestRow {
 }
 
 export interface TradeValueLatestRow {
+  id: number
   season: number
   week: number
   source: string
