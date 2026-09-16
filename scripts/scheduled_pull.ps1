@@ -23,7 +23,7 @@ function Log($msg) {
     Add-Content -Path $LogFile -Value $line
 }
 
-function Send-FailureEmail($subject, $body) {
+function Send-FailureEmail($subject, $body, [switch]$Html) {
     if (-not (Test-Path $CredPath)) {
         Log "No stored Gmail credential at $CredPath -- skipping failure email. See in-season/README.md to set one up."
         return
@@ -31,7 +31,7 @@ function Send-FailureEmail($subject, $body) {
     try {
         $cred = Import-Clixml -Path $CredPath
         Send-MailMessage -SmtpServer "smtp.gmail.com" -Port 587 -UseSsl -Credential $cred `
-            -From $cred.UserName -To $cred.UserName -Subject $subject -Body $body
+            -From $cred.UserName -To $cred.UserName -Subject $subject -Body $body -BodyAsHtml:$Html
         Log "Failure email sent to $($cred.UserName)."
     } catch {
         Log "Failed to send failure email: $_"
@@ -63,7 +63,7 @@ function Save-NotifyState($state) {
     $state | ConvertTo-Json | Set-Content -Path $NotifyStatePath -Encoding utf8
 }
 
-function Send-SuccessEmail($subject, $body) {
+function Send-SuccessEmail($subject, $body, [switch]$Html) {
     if (-not (Test-Path $CredPath)) {
         Log "No stored Gmail credential at $CredPath -- skipping success email."
         return
@@ -71,11 +71,173 @@ function Send-SuccessEmail($subject, $body) {
     try {
         $cred = Import-Clixml -Path $CredPath
         Send-MailMessage -SmtpServer "smtp.gmail.com" -Port 587 -UseSsl -Credential $cred `
-            -From $cred.UserName -To $cred.UserName -Subject $subject -Body $body
+            -From $cred.UserName -To $cred.UserName -Subject $subject -Body $body -BodyAsHtml:$Html
         Log "Success email sent to $($cred.UserName)."
     } catch {
         Log "Failed to send success email: $_"
     }
+}
+
+# A weekly-rankings combo that failed validation with "Pull returned zero
+# rows" (src/validate.py) means the source hasn't posted that week's
+# rankings yet (Boone/Smyth typically post Thursday) -- that's expected and
+# transient, not a scraper break, so it must read differently from a real
+# failure (network error, HTML/API shape change, etc).
+function Get-ComboState($value) {
+    if (-not $value) { return "missing" }
+    if ($value -eq "ok") { return "ok" }
+    if ($value -eq "not_yet_published") { return "pending" }
+    if ($value -match "Pull returned zero rows") { return "pending" }
+    return "failed"
+}
+
+# Gathers the same underlying status data once, as a plain structure, so the
+# plain-text renderer (Build-StatusSummary, used in logs/failure tails) and
+# the HTML renderer (Build-StatusSummaryHtml, used in the actual email body)
+# can't drift out of sync with each other.
+function Get-StatusData($CurrentWeek) {
+    $rankingsStatusPath = Join-Path $InSeasonDir "data\last_run_status.json"
+    $tradeValuesStatusPath = Join-Path $InSeasonDir "data\last_trade_values_status.json"
+
+    $rankingsStatus = $null
+    $rankingsDate = $null
+    if (Test-Path $rankingsStatusPath) {
+        $rankingsStatus = Get-Content $rankingsStatusPath -Raw | ConvertFrom-Json
+        $rankingsDate = ([DateTimeOffset]$rankingsStatus.run_at).ToString("yyyy-MM-dd")
+    }
+
+    $tvStatus = $null
+    $tvDate = $null
+    if (Test-Path $tradeValuesStatusPath) {
+        $tvStatus = Get-Content $tradeValuesStatusPath -Raw | ConvertFrom-Json
+        $tvDate = ([DateTimeOffset]$tvStatus.run_at).ToString("yyyy-MM-dd")
+    }
+
+    # Boone ROS (trade values) isn't split by scoring format -- it's the same
+    # pull surfaced under both sections below, per Jared's requested layout.
+    # A real failure on any position outranks "not yet published" on others,
+    # since that's the one worth his attention.
+    $boneRosState = "missing"
+    if ($tvStatus) {
+        $posStates = $tvStatus.positions.PSObject.Properties | ForEach-Object { Get-ComboState $_.Value }
+        if ($posStates -contains "failed") { $boneRosState = "failed" }
+        elseif ($posStates -contains "pending") { $boneRosState = "pending" }
+        elseif ($posStates.Count -gt 0 -and ($posStates | Where-Object { $_ -ne "ok" }).Count -eq 0) { $boneRosState = "ok" }
+    }
+
+    $sections = @()
+    foreach ($fmt in @(
+        @{ Key = "half-ppr"; Label = "Half PPR" },
+        @{ Key = "ppr"; Label = "Full PPR" }
+    )) {
+        $key = $fmt.Key
+        $items = @()
+
+        # Discover weekly-rankings sources dynamically from the combos data
+        # (rather than a hardcoded list) so a new source added to
+        # pull_week.py's ALL_SOURCES shows up here automatically.
+        $sourceNames = @()
+        if ($rankingsStatus) {
+            foreach ($combo in $rankingsStatus.combos.PSObject.Properties) {
+                if ($combo.Name -match "^week\d+/([a-zA-Z0-9_-]+)/$([regex]::Escape($key))$") {
+                    $sourceNames += $Matches[1]
+                }
+            }
+        }
+        $sourceNames = $sourceNames | Sort-Object -Unique
+
+        foreach ($src in $sourceNames) {
+            $srcCombo = "week$CurrentWeek/$src/$key"
+            $srcValue = if ($rankingsStatus) { $rankingsStatus.combos.$srcCombo } else { $null }
+            $srcState = Get-ComboState $srcValue
+
+            $capturedWeeks = @()
+            foreach ($combo in $rankingsStatus.combos.PSObject.Properties) {
+                if ($combo.Name -match "^week(\d+)/$([regex]::Escape($src))/$([regex]::Escape($key))$" -and $combo.Value -eq "ok") {
+                    $capturedWeeks += [int]$Matches[1]
+                }
+            }
+            $capturedWeeks = $capturedWeeks | Sort-Object
+
+            $label = (Get-Culture).TextInfo.ToTitleCase($src)
+            $items += @{
+                Label = "$label Weekly Rankings"
+                State = $srcState
+                Date = if ($srcState -eq "ok") { $rankingsDate } else { $null }
+                Weeks = $capturedWeeks
+            }
+        }
+
+        $items += @{
+            Label = "Boone ROS"
+            State = $boneRosState
+            Date = if ($boneRosState -eq "ok") { $tvDate } else { $null }
+            Weeks = @()
+        }
+
+        $sections += @{ Label = $fmt.Label; Items = $items }
+    }
+    return $sections
+}
+
+function Build-StatusSummary($CurrentWeek) {
+    $lines = @()
+    foreach ($section in Get-StatusData $CurrentWeek) {
+        $lines += "$($section.Label):"
+        foreach ($item in $section.Items) {
+            $weeksNote = if ($item.Weeks.Count -gt 0) { " -- weeks captured: $($item.Weeks -join ', ')" } else { "" }
+            $dateStr = if ($item.Date) { " ($($item.Date))" } else { "" }
+            $line = switch ($item.State) {
+                "ok"      { "  [x] $($item.Label)$dateStr$weeksNote" }
+                "pending" { "  [ ] $($item.Label) -- not yet published$weeksNote" }
+                "failed"  { "  [ ] $($item.Label) -- FAILED (see log)$weeksNote" }
+                default   { "  [ ] $($item.Label) -- no data$weeksNote" }
+            }
+            $lines += $line
+        }
+        $lines += ""
+    }
+    return ($lines -join "`n").TrimEnd()
+}
+
+function Build-StatusSummaryHtml($CurrentWeek) {
+    $stateStyle = @{
+        ok      = @{ Icon = "&#9989;"; Color = "#2f9e44"; Text = "Refreshed" }
+        pending = @{ Icon = "&#8987;";  Color = "#e8890c"; Text = "Not yet published" }
+        failed  = @{ Icon = "&#10060;"; Color = "#e03131"; Text = "FAILED" }
+        missing = @{ Icon = "&#9679;";  Color = "#adb5bd"; Text = "No data" }
+    }
+
+    $html = ""
+    foreach ($section in Get-StatusData $CurrentWeek) {
+        $html += "<h3 style=`"margin:20px 0 6px;font-size:14px;color:#212529;border-bottom:2px solid #1c7ed6;padding-bottom:4px;`">$($section.Label)</h3>"
+        $html += "<table style=`"width:100%;border-collapse:collapse;font-size:13px;`">"
+        foreach ($item in $section.Items) {
+            $style = $stateStyle[$item.State]
+            $detail = if ($item.State -eq "ok" -and $item.Date) { $item.Date } else { $style.Text }
+            if ($item.Weeks.Count -gt 0) { $detail += " &middot; weeks $($item.Weeks -join ', ')" }
+            $html += "<tr style=`"border-bottom:1px solid #f1f3f5;`">"
+            $html += "<td style=`"padding:6px 8px 6px 0;width:20px;`">$($style.Icon)</td>"
+            $html += "<td style=`"padding:6px 0;color:#212529;`">$($item.Label)</td>"
+            $html += "<td style=`"padding:6px 0 6px 12px;color:$($style.Color);text-align:right;white-space:nowrap;`">$detail</td>"
+            $html += "</tr>"
+        }
+        $html += "</table>"
+    }
+    return $html
+}
+
+function New-EmailHtml($title, $subtitle, $accentColor, $bodyHtml, $footerText) {
+    return @"
+<div style="font-family:-apple-system,'Segoe UI',Arial,sans-serif;max-width:520px;margin:0 auto;color:#212529;">
+  <div style="border-top:4px solid $accentColor;padding-top:14px;">
+    <h2 style="margin:0 0 2px;font-size:18px;">$title</h2>
+    <p style="margin:0;color:#868e96;font-size:12px;">$subtitle</p>
+  </div>
+  $bodyHtml
+  <p style="margin-top:22px;padding-top:10px;border-top:1px solid #f1f3f5;color:#adb5bd;font-size:11px;">$footerText</p>
+</div>
+"@
 }
 
 function Send-SuccessEmailIfWarranted($CurrentWeek, $CsvPath) {
@@ -127,8 +289,14 @@ function Send-SuccessEmailIfWarranted($CurrentWeek, $CsvPath) {
         "first publish of: $($newlyPublished -join ', ')"
     }
     Log "Sending success email ($reason)."
-    Send-SuccessEmail "Fantasy pull OK ($(Get-Date -Format 'yyyy-MM-dd')) -- $reason" `
-        "Week $CurrentWeek pull succeeded.`n`nReason for this email: $reason`n`nLog: $LogFile"
+    $summaryHtml = Build-StatusSummaryHtml -CurrentWeek $CurrentWeek
+    $htmlBody = New-EmailHtml `
+        "&#127944; Fantasy Pull -- Week $CurrentWeek" `
+        "$(Get-Date -Format 'dddd, MMMM d') &middot; $reason" `
+        "#2f9e44" `
+        $summaryHtml `
+        "Log: $LogFile"
+    Send-SuccessEmail -Html "Fantasy pull OK ($(Get-Date -Format 'yyyy-MM-dd')) -- $reason" $htmlBody
 }
 
 Log "=== Scheduled pull starting ==="
@@ -221,7 +389,16 @@ try {
         $failedParts = @()
         if ($pullExit -ne 0) { $failedParts += "pull_week.py exited $pullExit" }
         if ($tradeValuesExit -ne 0) { $failedParts += "pull_trade_values.py exited $tradeValuesExit" }
-        Send-FailureEmail "Fantasy pull FAILED ($(Get-Date -Format 'yyyy-MM-dd'))" "$($failedParts -join '; ').`n`nFull log: $LogFile`n`nTail of log:`n$(Get-Content $LogFile -Tail 40 | Out-String)"
+        $summaryHtml = Build-StatusSummaryHtml -CurrentWeek $currentWeek
+        $logTail = (Get-Content $LogFile -Tail 40 | Out-String) -replace '&', '&amp;' -replace '<', '&lt;' -replace '>', '&gt;'
+        $bodyHtml = @"
+        <p style="font-size:13px;color:#e03131;font-weight:600;">$($failedParts -join '; ')</p>
+        $summaryHtml
+        <p style="margin:16px 0 4px;font-size:12px;color:#868e96;">Tail of log ($LogFile):</p>
+        <pre style="background:#f8f9fa;border:1px solid #f1f3f5;border-radius:4px;padding:10px;font-size:11px;overflow-x:auto;white-space:pre-wrap;">$logTail</pre>
+"@
+        $htmlBody = New-EmailHtml "&#10060; Fantasy Pull FAILED" (Get-Date -Format 'dddd, MMMM d') "#e03131" $bodyHtml "Full log: $LogFile"
+        Send-FailureEmail -Html "Fantasy pull FAILED ($(Get-Date -Format 'yyyy-MM-dd'))" $htmlBody
     } else {
         Log "=== FINISHED OK ==="
         Send-SuccessEmailIfWarranted -CurrentWeek $currentWeek -CsvPath $csvPath
