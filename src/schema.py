@@ -80,3 +80,50 @@ assert [f.name for f in fields(TradeValueRow)] == TRADE_VALUE_COLUMNS, (
     "TradeValueRow fields drifted from TRADE_VALUE_COLUMNS -- keep them in "
     "sync, storage.py's CSV header depends on this exact order"
 )
+
+
+ROS_RANKING_COLUMNS = [
+    "season", "source", "scoring", "pulled_at", "as_of_week",
+    "source_player_id", "player_name", "canonical_name", "team", "position",
+    "rank", "tier_overall", "tier_positional",
+    "projection", "floor_proj", "ceiling_proj",
+    "ds_value", "strength_of_schedule", "games_played", "injury_risk", "bye",
+]
+
+
+@dataclass
+class RosRankingRow:
+    season: int
+    source: str            # "draftsharks" (room for another ROS source later)
+    scoring: str            # "half-ppr" | "ppr"
+    pulled_at: str            # ISO 8601 timestamp, UTC
+    as_of_week: int           # season_config.current_week() at pull time --
+                              # a snapshot marker, NOT a uniqueness key: ROS
+                              # rankings aren't published per-week the way
+                              # weekly rankings are.
+    source_player_id: str
+    player_name: str
+    canonical_name: str
+    team: str | None
+    position: str
+    rank: int | None
+    tier_overall: int | None
+    tier_positional: int | None
+    projection: float | None
+    floor_proj: float | None
+    ceiling_proj: float | None
+    ds_value: float | None
+    strength_of_schedule: str | None
+    games_played: int | None
+    injury_risk: str | None
+    bye: int | None
+
+    def as_dict(self) -> dict:
+        d = asdict(self)
+        return {col: d[col] for col in ROS_RANKING_COLUMNS}
+
+
+assert [f.name for f in fields(RosRankingRow)] == ROS_RANKING_COLUMNS, (
+    "RosRankingRow fields drifted from ROS_RANKING_COLUMNS -- keep them in "
+    "sync, storage.py's CSV header depends on this exact order"
+)
