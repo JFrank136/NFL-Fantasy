@@ -33,12 +33,22 @@ def test_state_roundtrip(tmp_path, monkeypatch):
     import scripts.push_to_supabase as mod
     state_path = tmp_path / "state.json"
     monkeypatch.setattr(mod, "PUSH_STATE_PATH", state_path)
-    assert _read_state() == {"rankings_rows_pushed": 0, "trade_values_rows_pushed": 0}
-    _write_state({"rankings_rows_pushed": 5, "trade_values_rows_pushed": 2})
+    assert _read_state() == {
+        "rankings_rows_pushed": 0, "trade_values_rows_pushed": 0,
+        "ros_rankings_rows_pushed": 0,
+    }
+    _write_state({
+        "rankings_rows_pushed": 5, "trade_values_rows_pushed": 2,
+        "ros_rankings_rows_pushed": 1,
+    })
     assert json.loads(state_path.read_text(encoding="utf-8")) == {
         "rankings_rows_pushed": 5, "trade_values_rows_pushed": 2,
+        "ros_rankings_rows_pushed": 1,
     }
-    assert _read_state() == {"rankings_rows_pushed": 5, "trade_values_rows_pushed": 2}
+    assert _read_state() == {
+        "rankings_rows_pushed": 5, "trade_values_rows_pushed": 2,
+        "ros_rankings_rows_pushed": 1,
+    }
 
 
 def _write_csv(path, n_rows):

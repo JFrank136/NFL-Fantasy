@@ -29,14 +29,21 @@ import requests
 BASE_DIR = Path(__file__).resolve().parent.parent
 RANKINGS_CSV = BASE_DIR / "data" / "processed" / "rankings_long.csv"
 TRADE_VALUES_CSV = BASE_DIR / "data" / "processed" / "trade_values_long.csv"
+ROS_RANKINGS_CSV = BASE_DIR / "data" / "processed" / "ros_rankings_long.csv"
 RUN_STATUS_PATH = BASE_DIR / "data" / "last_run_status.json"
 TRADE_STATUS_PATH = BASE_DIR / "data" / "last_trade_values_status.json"
+ROS_STATUS_PATH = BASE_DIR / "data" / "last_draftsharks_ros_status.json"
 PUSH_STATE_PATH = BASE_DIR / "data" / "supabase_push_state.json"
 
 RANKINGS_INT_COLS = {"season", "week", "rank", "tier", "bye"}
 RANKINGS_FLOAT_COLS = {"projection", "floor_proj", "ceiling_proj"}
 TRADE_INT_COLS = {"season", "week", "rank"}
 TRADE_FLOAT_COLS = {"value_col1", "value_col2"}
+ROS_RANKINGS_INT_COLS = {
+    "season", "as_of_week", "rank", "tier_overall", "tier_positional",
+    "games_played", "bye",
+}
+ROS_RANKINGS_FLOAT_COLS = {"projection", "floor_proj", "ceiling_proj", "ds_value"}
 
 CHUNK = 500
 
@@ -64,7 +71,10 @@ def _coerce_row(row: dict, int_cols: set, float_cols: set) -> dict:
 def _read_state() -> dict:
     if PUSH_STATE_PATH.exists():
         return json.loads(PUSH_STATE_PATH.read_text(encoding="utf-8"))
-    return {"rankings_rows_pushed": 0, "trade_values_rows_pushed": 0}
+    return {
+        "rankings_rows_pushed": 0, "trade_values_rows_pushed": 0,
+        "ros_rankings_rows_pushed": 0,
+    }
 
 
 def _write_state(state: dict) -> None:
@@ -177,6 +187,7 @@ def main() -> int:
     }
 
     state = _read_state()
+    state.setdefault("ros_rankings_rows_pushed", 0)
     any_failure = False
 
     if not _push_new_rows(
@@ -191,9 +202,16 @@ def main() -> int:
     ):
         any_failure = True
 
+    if not _push_new_rows(
+        ROS_RANKINGS_CSV, "in_season_ros_rankings", ROS_RANKINGS_INT_COLS, ROS_RANKINGS_FLOAT_COLS,
+        state, "ros_rankings_rows_pushed", base_url, headers,
+    ):
+        any_failure = True
+
     for status_path, dataset_prefix, key_field in (
         (RUN_STATUS_PATH, "rankings", "combos"),
         (TRADE_STATUS_PATH, "trade_values", "positions"),
+        (ROS_STATUS_PATH, "ros_rankings", "combos"),
     ):
         if not status_path.exists():
             continue
