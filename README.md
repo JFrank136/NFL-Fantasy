@@ -30,11 +30,12 @@ and Jared wants the history preserved, not just the latest snapshot.
   break; `scripts/scheduled_pull.ps1`'s status email treats that specific
   message as "not yet published," distinct from a real failure.
 - **Justin Boone rest-of-season trade values** — scraped directly from
-  Boone's Yahoo article pages (`fantasy-football-week-N-justin-boones-{pos}-trade-value-charts`)
-  since there's no JSON API for this data. Article URLs aren't
-  predictable/guessable week to week, so `src/sources/boone_trade_values.py`
-  discovers each week's 4 position URLs from Boone's author page
-  (`sports.yahoo.com/author/justin-boone/`) before scraping them. Stored
+  Boone's Yahoo article pages since there's no JSON API for this data.
+  Article URLs aren't predictable/guessable week to week, so
+  `src/sources/boone_trade_values.py` discovers each week's 4 position URLs
+  from Boone's author page (`sports.yahoo.com/author/justin-boone/`) before
+  scraping them — see `docs/DATA.md` for the exact URL slug format, which
+  Yahoo has already changed once (2026-09-17) with no warning. Stored
   separately from weekly rankings — `data/processed/trade_values_long.csv`,
   its own schema (`TradeValueRow`) — since the data shape (rank + two
   source-labeled value columns, e.g. HALF/PPR for RB/WR/TE but 1QB/2QB for
@@ -50,6 +51,38 @@ and Jared wants the history preserved, not just the latest snapshot.
   table, since neither existing shape fits: it needs floor/ceiling/SOS
   columns weekly's trade-value table doesn't have, and it isn't a
   per-week-published report the way weekly rankings are.
+- **CBS Sports (Dave Richard), FantasyPros, and Roto Street Journal (RSJ)
+  trade values** — three more trade-value sources added 2026-09-17,
+  **captured for accuracy analysis only, not yet wired into the site.**
+  Each appends `source="cbs"|"fantasypros"|"rsj"` rows to the same
+  `trade_values_long.csv` / `in_season_trade_values` table Boone uses — no
+  schema change needed, since `TradeValueRow`'s two-value-column shape fits
+  all of them once each is trimmed to its two most useful columns (CBS:
+  half-PPR/full-PPR, or 1QB/2QB for QB, dropping its third non-PPR/4pt
+  column; FantasyPros: its single blended "Value" plus a 2QB/TEP variant
+  where published; RSJ: full-PPR only, no second column). None of their
+  article URLs are predictable ahead of time, so each source module
+  (`src/sources/cbs_trade_values.py`, `fantasypros_trade_values.py`,
+  `rsj_trade_values.py`) discovers the current week's URL(s) from a stable
+  hub/archive page first, the same pattern Boone's module established — see
+  `docs/DATA.md` for each hub URL and exact table shape.
+- **USA Today trade values** — one combined weekly article covering
+  QB/RB/WR/TE, discovered automatically from USA Today's fantasy-football hub
+  (`usatoday.com/sports/fantasy/football/`). The source module
+  (`src/sources/usatoday_trade_values.py`) finds the current week's
+  `fantasy-football-trade-value-chart-week-N` article, fetches the
+  server-rendered HTML, and parses all four position tables.
+
+  USA Today's column names differ slightly by position: QB uses its `1QB`
+  value for both stored scoring columns; RB uses `Half` + `PPR`; WR/TE use
+  `Half` + `Full`. The parser handles those mappings explicitly and fails
+  loudly if a requested table is missing, its expected headers change, or a
+  numeric value cannot be parsed.
+
+  `scripts/pull_usatoday_trade_values.py` follows the same combined-article
+  flow as CBS/FantasyPros and appends `source="usatoday"` rows to the shared
+  `trade_values_long.csv` / `in_season_trade_values` table. Confirmed live
+  2026-09-17 for Week 2: 36 QB, 75 RB, 90 WR, and 37 TE rows.
 
 ## Storage
 
@@ -72,15 +105,24 @@ Two layers, both populated on every pull:
 `scripts/scheduled_pull.ps1` is the Windows Task Scheduler entry point — runs
 `pull_week.py`, `pull_trade_values.py`, `pull_draftsharks_ros.py`, the
 Supabase push, and the Vampire weekly-projection refresh, with a
-network-readiness wait for wake-from-sleep races. It emails Jared an HTML status summary via Gmail SMTP (credential at
-`%LOCALAPPDATA%\FantasyInSeasonPull\gmail_cred.xml`) built from
-`data/last_run_status.json` / `data/last_trade_values_status.json`, one
-section per scoring format, one row per source. Sources are discovered
-dynamically from the status JSON's own keys rather than hardcoded, so a new
-source added to `pull_week.py`'s `ALL_SOURCES` shows up with no changes to
-the email script. Each row distinguishes three states — ok, not yet
-published (Boone/Smyth pre-Thursday), and a real failure — rather than
-collapsing "not published yet" into a false failure alarm.
+network-readiness wait for wake-from-sleep races. **Gotcha**: this script
+lives under OneDrive, so a same-morning edit can lose the race against
+OneDrive's own sync-down if Task Scheduler fires right after — the task can
+end up running the pre-edit version with no error, just a step silently
+missing from that run's log. It emails Jared an HTML status summary via
+Gmail SMTP (credential at `%LOCALAPPDATA%\FantasyInSeasonPull\gmail_cred.xml`)
+built from `data/last_run_status.json` / `data/last_trade_values_status.json`
+/ `data/last_draftsharks_ros_status.json`, one section per scoring format,
+each split into a **Weekly** subsection (sources from `pull_week.py`) and a
+**ROS** subsection (Draft Sharks ROS Rankings + Boone ROS together). Sources
+are discovered dynamically from each status JSON's own keys rather than
+hardcoded, so a new source shows up with no changes to the email script.
+Each row distinguishes three states — ok, not yet published (Boone/Smyth
+pre-Thursday), and a real failure — rather than collapsing "not published
+yet" into a false failure alarm. The "weeks captured" note per source is
+capped to current + next week (not every week Draft Sharks has ever pulled)
+since Draft Sharks intentionally pulls the whole rest of the season on every
+run.
 
 ## Name matching
 

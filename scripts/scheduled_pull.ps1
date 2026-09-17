@@ -106,13 +106,6 @@ function Get-StatusData($CurrentWeek) {
         $rankingsDate = ([DateTimeOffset]$rankingsStatus.run_at).ToString("yyyy-MM-dd")
     }
 
-    $tvStatus = $null
-    $tvDate = $null
-    if (Test-Path $tradeValuesStatusPath) {
-        $tvStatus = Get-Content $tradeValuesStatusPath -Raw | ConvertFrom-Json
-        $tvDate = ([DateTimeOffset]$tvStatus.run_at).ToString("yyyy-MM-dd")
-    }
-
     $rosRankingsStatusPath = Join-Path $InSeasonDir "data\last_draftsharks_ros_status.json"
     $rosStatus = $null
     $rosDate = $null
@@ -124,18 +117,59 @@ function Get-StatusData($CurrentWeek) {
     # Some source keys don't title-case into a clean display label on their
     # own (e.g. "draftsharks_ros" -> "Draftsharks_Ros") -- override those
     # here instead of hardcoding a branch per source in the loop below.
-    $sourceLabelOverrides = @{ "draftsharks_ros" = "Draft Sharks ROS Rankings" }
+    $sourceLabelOverrides = @{
+        "draftsharks_ros" = "Draft Sharks ROS Rankings"
+        "cbs"              = "CBS Trade Values"
+        "fantasypros"      = "FantasyPros Trade Values"
+        "rsj"              = "RSJ Trade Values"
+        "usatoday"         = "USA Today Trade Values"
+    }
 
-    # Boone ROS (trade values) isn't split by scoring format -- it's the same
-    # pull surfaced under both sections below, per Jared's requested layout.
+    # Trade-value sources are discovered from data\last_*_trade_values_status.json
+    # (position -> ok|failed|not_yet_published, not split by scoring format)
+    # rather than a hardcoded per-source block, so a new pull_<source>_trade_values.py
+    # script shows up here automatically. The legacy filename
+    # last_trade_values_status.json (written before any other trade-value
+    # source existed) maps to "boone".
+    $tradeValueStatusFiles = @(
+        @{ Path = $tradeValuesStatusPath; Source = "boone" }
+    )
+    Get-ChildItem -Path (Join-Path $InSeasonDir "data") -Filter "last_*_trade_values_status.json" -ErrorAction SilentlyContinue |
+        ForEach-Object {
+            if ($_.Name -match "^last_(.+)_trade_values_status\.json$") {
+                $tradeValueStatusFiles += @{ Path = $_.FullName; Source = $Matches[1] }
+            }
+        }
+
     # A real failure on any position outranks "not yet published" on others,
-    # since that's the one worth his attention.
-    $boneRosState = "missing"
-    if ($tvStatus) {
-        $posStates = $tvStatus.positions.PSObject.Properties | ForEach-Object { Get-ComboState $_.Value }
-        if ($posStates -contains "failed") { $boneRosState = "failed" }
-        elseif ($posStates -contains "pending") { $boneRosState = "pending" }
-        elseif ($posStates.Count -gt 0 -and ($posStates | Where-Object { $_ -ne "ok" }).Count -eq 0) { $boneRosState = "ok" }
+    # since that's the one worth his attention. Each trade-value source isn't
+    # split by scoring format -- it's the same pull surfaced under both
+    # sections below, per Jared's requested layout.
+    $tradeValueItems = @()
+    foreach ($tv in $tradeValueStatusFiles) {
+        if (-not (Test-Path $tv.Path)) { continue }
+        $tvSourceStatus = Get-Content $tv.Path -Raw | ConvertFrom-Json
+        $tvSourceDate = ([DateTimeOffset]$tvSourceStatus.run_at).ToString("yyyy-MM-dd")
+        $posStates = $tvSourceStatus.positions.PSObject.Properties | ForEach-Object { Get-ComboState $_.Value }
+        $tvSourceState = "missing"
+        if ($posStates -contains "failed") { $tvSourceState = "failed" }
+        elseif ($posStates -contains "pending") { $tvSourceState = "pending" }
+        elseif ($posStates.Count -gt 0 -and ($posStates | Where-Object { $_ -ne "ok" }).Count -eq 0) { $tvSourceState = "ok" }
+
+        $label = if ($sourceLabelOverrides.ContainsKey($tv.Source)) {
+            $sourceLabelOverrides[$tv.Source]
+        } elseif ($tv.Source -eq "boone") {
+            "Boone ROS"
+        } else {
+            "$((Get-Culture).TextInfo.ToTitleCase($tv.Source)) Trade Values"
+        }
+
+        $tradeValueItems += @{
+            Label = $label
+            State = $tvSourceState
+            Date = if ($tvSourceState -eq "ok") { $tvSourceDate } else { $null }
+            Weeks = @()
+        }
     }
 
     # Only current + next week are ever actually fresh/relevant to Jared
@@ -225,15 +259,10 @@ function Get-StatusData($CurrentWeek) {
             }
         }
 
-        # Boone ROS (trade values) isn't split by week -- it's the current
-        # rest-of-season snapshot, so it belongs in the ROS subsection
+        # Trade-value sources aren't split by week -- each is the current
+        # rest-of-season snapshot, so they belong in the ROS subsection
         # alongside Draft Sharks ROS Rankings rather than the Weekly one.
-        $rosItems += @{
-            Label = "Boone ROS"
-            State = $boneRosState
-            Date = if ($boneRosState -eq "ok") { $tvDate } else { $null }
-            Weeks = @()
-        }
+        $rosItems += $tradeValueItems
 
         $sections += @{
             Label = $fmt.Label
@@ -333,13 +362,27 @@ function Send-SuccessEmailIfWarranted($CurrentWeek, $CsvPath) {
             }
         }
     }
-    if (Test-Path $tradeValuesStatusPath) {
-        $tvStatus = Get-Content $tradeValuesStatusPath -Raw | ConvertFrom-Json
+    # Discovers every trade-value source's status file the same way
+    # Get-StatusData does (legacy last_trade_values_status.json = "boone",
+    # plus any last_<source>_trade_values_status.json) so a new source's
+    # first publish triggers a success email with no changes needed here.
+    $tradeValueStatusFilesForNotify = @(
+        @{ Path = $tradeValuesStatusPath; Source = "boone" }
+    )
+    Get-ChildItem -Path (Join-Path $InSeasonDir "data") -Filter "last_*_trade_values_status.json" -ErrorAction SilentlyContinue |
+        ForEach-Object {
+            if ($_.Name -match "^last_(.+)_trade_values_status\.json$") {
+                $tradeValueStatusFilesForNotify += @{ Path = $_.FullName; Source = $Matches[1] }
+            }
+        }
+    foreach ($tv in $tradeValueStatusFilesForNotify) {
+        if (-not (Test-Path $tv.Path)) { continue }
+        $tvStatus = Get-Content $tv.Path -Raw | ConvertFrom-Json
         foreach ($pos in $tvStatus.positions.PSObject.Properties) {
             if ($pos.Value -eq "ok") {
-                $key = "tradevalue:week${CurrentWeek}:$($pos.Name)"
+                $key = "tradevalue:$($tv.Source):week${CurrentWeek}:$($pos.Name)"
                 if (-not $state.ContainsKey($key)) {
-                    $newlyPublished += "trade-values/$($pos.Name)"
+                    $newlyPublished += "$($tv.Source)-trade-values/$($pos.Name)"
                     $state[$key] = "sent"
                 }
             }
@@ -420,6 +463,31 @@ try {
     $tradeValuesExit = $LASTEXITCODE
     Log "pull_trade_values.py exit code: $tradeValuesExit"
 
+    # Not yet integrated into the site -- these capture data each week for
+    # later accuracy analysis (per Jared, 2026-09-17).
+    Log "Running pull_cbs_trade_values.py..."
+    & $PythonExe "scripts\pull_cbs_trade_values.py" 2>&1 | ForEach-Object { Log $_ }
+    $cbsTradeValuesExit = $LASTEXITCODE
+    Log "pull_cbs_trade_values.py exit code: $cbsTradeValuesExit"
+
+    Log "Running pull_fantasypros_trade_values.py..."
+    & $PythonExe "scripts\pull_fantasypros_trade_values.py" 2>&1 | ForEach-Object { Log $_ }
+    $fantasyProsTradeValuesExit = $LASTEXITCODE
+    Log "pull_fantasypros_trade_values.py exit code: $fantasyProsTradeValuesExit"
+
+    Log "Running pull_rsj_trade_values.py..."
+    & $PythonExe "scripts\pull_rsj_trade_values.py" 2>&1 | ForEach-Object { Log $_ }
+    $rsjTradeValuesExit = $LASTEXITCODE
+    Log "pull_rsj_trade_values.py exit code: $rsjTradeValuesExit"
+
+    # Pulls USA Today's current-week trade-value chart. The source module
+    # discovers the article from USA Today's fantasy-football hub, parses all
+    # four position tables, and writes the usual status file picked up below.
+    Log "Running pull_usatoday_trade_values.py..."
+    & $PythonExe "scripts\pull_usatoday_trade_values.py" 2>&1 | ForEach-Object { Log $_ }
+    $usatodayTradeValuesExit = $LASTEXITCODE
+    Log "pull_usatoday_trade_values.py exit code: $usatodayTradeValuesExit"
+
     Log "Running pull_draftsharks_ros.py..."
     & $PythonExe "scripts\pull_draftsharks_ros.py" 2>&1 | ForEach-Object { Log $_ }
     $rosRankingsExit = $LASTEXITCODE
@@ -474,12 +542,18 @@ try {
         Log "WARNING: $statusPath not found after pull_week.py ran -- something is badly wrong (check exit code above)."
     }
 
-    $anyFailure = ($pullExit -ne 0) -or ($tradeValuesExit -ne 0) -or ($rosRankingsExit -ne 0)
+    $anyFailure = ($pullExit -ne 0) -or ($tradeValuesExit -ne 0) -or ($rosRankingsExit -ne 0) `
+        -or ($cbsTradeValuesExit -ne 0) -or ($fantasyProsTradeValuesExit -ne 0) -or ($rsjTradeValuesExit -ne 0) `
+        -or ($usatodayTradeValuesExit -ne 0)
     if ($anyFailure) {
         Log "=== FINISHED WITH FAILURES -- see above / status JSON files ==="
         $failedParts = @()
         if ($pullExit -ne 0) { $failedParts += "pull_week.py exited $pullExit" }
         if ($tradeValuesExit -ne 0) { $failedParts += "pull_trade_values.py exited $tradeValuesExit" }
+        if ($cbsTradeValuesExit -ne 0) { $failedParts += "pull_cbs_trade_values.py exited $cbsTradeValuesExit" }
+        if ($fantasyProsTradeValuesExit -ne 0) { $failedParts += "pull_fantasypros_trade_values.py exited $fantasyProsTradeValuesExit" }
+        if ($rsjTradeValuesExit -ne 0) { $failedParts += "pull_rsj_trade_values.py exited $rsjTradeValuesExit" }
+        if ($usatodayTradeValuesExit -ne 0) { $failedParts += "pull_usatoday_trade_values.py exited $usatodayTradeValuesExit" }
         if ($rosRankingsExit -ne 0) { $failedParts += "pull_draftsharks_ros.py exited $rosRankingsExit" }
         $summaryHtml = Build-StatusSummaryHtml -CurrentWeek $currentWeek
         $logTail = (Get-Content $LogFile -Tail 40 | Out-String) -replace '&', '&amp;' -replace '<', '&lt;' -replace '>', '&gt;'
@@ -505,4 +579,8 @@ try {
 # using Task Scheduler's own status as a check.
 if ($pullExit -ne 0) { exit $pullExit }
 if ($tradeValuesExit -ne 0) { exit $tradeValuesExit }
+if ($cbsTradeValuesExit -ne 0) { exit $cbsTradeValuesExit }
+if ($fantasyProsTradeValuesExit -ne 0) { exit $fantasyProsTradeValuesExit }
+if ($rsjTradeValuesExit -ne 0) { exit $rsjTradeValuesExit }
+if ($usatodayTradeValuesExit -ne 0) { exit $usatodayTradeValuesExit }
 exit $rosRankingsExit

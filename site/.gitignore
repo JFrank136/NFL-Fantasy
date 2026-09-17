@@ -10,3 +10,4 @@ tsconfig.tsbuildinfo
 Thumbs.db
 .vscode/
 .idea/
+.superpowers/

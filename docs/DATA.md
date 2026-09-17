@@ -112,6 +112,125 @@ consensus endpoint), `filters=317`, `widget=ST`.
 uses across its site). `rank_ecr` here is Boone's own rank for this single-expert
 pull (this endpoint is single-expert when `id` is given), not a consensus rank.
 
+## Justin Boone trade values / ROS (`src/sources/boone_trade_values.py`)
+
+No JSON API — scraped from Boone's Yahoo article pages
+(`sports.yahoo.com/author/justin-boone/` lists his recent articles; a regex
+over that page's `<a href>`s finds each position's trade-value-chart URL for
+the target week, since article URLs aren't predictable/guessable).
+
+**The URL slug changed for the 2026 season** — confirmed live 2026-09-17,
+broke silently until then (every position looked "not yet published" because
+the discovery regex just never matched anything):
+- **Old** (2025 and earlier): `.../fantasy/article/fantasy-football-week-N-
+  justin-boones-{qb,rb,wr,te}-trade-value-charts-{id}.html`
+- **Current** (2026): `.../fantasy/article/2026-trade-value-charts--justin-
+  boones-fantasy-football-{quarterback,running-back,wide-receiver,tight-end}-
+  breakdown-for-week-N-{id}.html` — position is spelled out, not abbreviated,
+  and the week number is its own token (`for-week-N-`) rather than a leading
+  `week-N-` prefix.
+
+If this "not yet published" state persists implausibly long for a position
+Boone would obviously have posted, check the live author page's actual link
+shape before assuming it's really unpublished — Yahoo has changed this slug
+format at least once already with no warning.
+
+## CBS / FantasyPros / RSJ trade values (added 2026-09-17)
+
+Three more trade-value sources, captured for later accuracy analysis only —
+**not wired into the site.** All three share `in_season_trade_values` /
+`TradeValueRow` with Boone, distinguished by `source="cbs"|"fantasypros"|"rsj"`.
+Each is confirmed server-rendered plain HTML (a real-user-agent
+`requests.get` returns the full data table already in the response, no JS
+needed) as of 2026-09-17.
+
+**CBS Sports** (`src/sources/cbs_trade_values.py`) — one combined article per
+week covering all 4 positions (`table.TableBuilder`, in QB/RB/WR/TE document
+order). Slug isn't guessable (`.../dave-richards-week-N-trade-chart-and-...`,
+wording varies), so the current week's URL is discovered from CBS's fantasy
+news hub, `cbssports.com/fantasy/football/news/`, via a regex over its raw
+HTML matching `week-N-trade-chart`. Each position table has 3 value columns;
+only 2 are kept (label → stored as):
+- RB/WR/TE header `[Player, tm, non, 0.5, PPR]` → keep `0.5` as `HALF` and
+  `PPR` as `PPR`, drop `non`.
+- QB header `[Player, tm, 1QB-4, 1QB-6, 2QB]` → keep `1QB-6` as `1QB` and
+  `2QB` as `2QB`, drop `1QB-4` (QB values aren't PPR-sensitive; CBS instead
+  varies them by passing-TD point value and 1QB/2QB league size).
+No `Rk` column in the source — rank is derived from row order (rows are
+pre-sorted by value descending).
+
+**FantasyPros** (`src/sources/fantasypros_trade_values.py`) — one combined
+article per week, 4 plain `<table>` tags (no class) in QB/RB/WR/TE order.
+URL is `fantasypros.com/YYYY/MM/fantasy-football-trade-value-chart-week-N-YYYY/`
+— predictable slug, unpredictable publish-date path — so the current week's
+full URL is discovered from FantasyPros' own trade-value-chart hub page,
+`fantasypros.com/content/nfl-trade-value-chart/`, via a regex over its raw
+HTML. Header is `[Name, Team, Value, Change, ...]`; the single "Value"
+column has **no stated scoring format** (no half/full-PPR split on the
+page) — stored as-is under label `VALUE`, not guessed at. QB rows add a
+"2QB Value" column (stored as `2QB`); TE rows add a "TEP Value" column
+(tight-end-premium, stored as `TEP`); RB/WR have no second column
+(`value_col2` is `None`, label `N/A`). Rank is derived from row order.
+
+**Roto Street Journal (RSJ)** (`src/sources/rsj_trade_values.py`) — the one
+source with genuinely separate URLs per position (unlike CBS/FantasyPros'
+one-article-per-week). Built from "The Wolf of Roto Street"'s ROS rankings,
+explicitly **full-PPR/1QB only** per the article text — no half-PPR variant
+exists. URLs are unpredictable date-stamped paths
+(`/YYYY/MM/DD/YYYY-fantasy-football-week-N-trade-value-chart[-position]/`),
+discovered from RSJ's tag archive, `rotostreetjournal.com/tag/trade-value-chart/`.
+**Slug quirk confirmed live**: the QB page has **no position suffix at
+all**; RB/WR use singular `-chart-running-backs` / `-chart-wide-receivers`;
+TE uses **plural** `-charts-tight-ends` (RSJ's own inconsistency, not a bug
+here — the discovery regex matches both `chart` and `charts`). Each
+position's table is a TablePress plugin table (`class="tablepress
+tablepress-id-NNN"`, id varies per page — matched by the `tablepress`
+prefix, not the full class) with an explicit `[Rank, Player Name, Team,
+Value]` header — rank comes straight from the source, no derivation needed.
+Single value column, stored under label `PPR`; `value_col2` is always
+`None`, label `N/A`.
+
+**USA Today** (`src/sources/usatoday_trade_values.py`) — one combined article
+per week covering QB/RB/WR/TE. The current week's URL is discovered from
+USA Today's fantasy-football hub:
+
+`https://www.usatoday.com/sports/fantasy/football/`
+
+The hub links the current article under the `fantasy.usatoday.com` hostname.
+A normal `requests.get` using the browser-style User-Agent used by this source
+returns the server-rendered HTML tables directly; no JavaScript execution or
+cookies are required.
+
+The article contains four position sections identified by their `<h2>`
+headings (`Quarterback trade value chart`, `Running back trade value chart`,
+etc.), with the following confirmed column shapes:
+
+- QB: `[RK, Player, 1QB, 6/TD, SFLEX]`
+  - `1QB` is used for both stored value columns (`HALF` and `FULL`) because
+    the QB value is not PPR-sensitive.
+- RB: `[RK, Player, STD, Half, PPR]`
+  - `Half` -> `HALF`
+  - `PPR` -> `FULL`
+- WR: `[RK, Player, STD, Half, Full]`
+  - `Half` -> `HALF`
+  - `Full` -> `FULL`
+- TE: `[RK, Player, STD, Half, Full]`
+  - `Half` -> `HALF`
+  - `Full` -> `FULL`
+
+The parser validates each requested table's exact expected headers and raises
+a fetch/parse error if a requested table is missing, its headers change, or a
+numeric value cannot be parsed. This is deliberate so a source-side layout
+change fails loudly instead of silently writing incomplete data.
+
+`pull_usatoday_trade_values.py` follows the same combined-article flow as CBS
+and FantasyPros: discover article URL -> fetch/parse -> normalize -> validate
+-> raw snapshot -> append to `trade_values_long.csv` -> write
+`data/last_usatoday_trade_values_status.json`.
+
+Confirmed live 2026-09-17 for Week 2:
+QB 36 rows, RB 75 rows, WR 90 rows, TE 37 rows.
+
 ## Joel Smyth (`src/sources/smythe_weekly.py`) — UNCONFIRMED for weekly
 
 Assumed to use the identical FantasyPros endpoint above with `id=7604` (the ID
