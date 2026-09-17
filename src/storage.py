@@ -9,7 +9,10 @@ import json
 from dataclasses import asdict
 from pathlib import Path
 
-from src.schema import LONG_FORMAT_COLUMNS, RankingRow, TRADE_VALUE_COLUMNS, TradeValueRow
+from src.schema import (
+    LONG_FORMAT_COLUMNS, RankingRow, ROS_RANKING_COLUMNS, RosRankingRow,
+    TRADE_VALUE_COLUMNS, TradeValueRow,
+)
 
 
 def raw_snapshot_path(
@@ -49,6 +52,24 @@ def append_trade_values_processed(processed_path: Path, rows: list[TradeValueRow
     write_header = not processed_path.exists()
     with processed_path.open("a", newline="", encoding="utf-8") as f:
         writer = csv.DictWriter(f, fieldnames=TRADE_VALUE_COLUMNS)
+        if write_header:
+            writer.writeheader()
+        for row in rows:
+            writer.writerow(row.as_dict())
+
+
+def ros_raw_snapshot_path(
+    raw_dir: Path, source: str, season: int, as_of_week: int, scoring: str, pulled_at: str
+) -> Path:
+    safe_ts = pulled_at.replace(":", "").replace("-", "")
+    return raw_dir / source / str(season) / f"asofweek{as_of_week:02d}_{scoring}_{safe_ts}.json"
+
+
+def append_ros_rankings_processed(processed_path: Path, rows: list[RosRankingRow]) -> None:
+    processed_path.parent.mkdir(parents=True, exist_ok=True)
+    write_header = not processed_path.exists()
+    with processed_path.open("a", newline="", encoding="utf-8") as f:
+        writer = csv.DictWriter(f, fieldnames=ROS_RANKING_COLUMNS)
         if write_header:
             writer.writeheader()
         for row in rows:
