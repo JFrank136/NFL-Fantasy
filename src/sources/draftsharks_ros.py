@@ -57,7 +57,13 @@ def _to_int(value: str | None) -> int | None:
     try:
         return int(value)
     except ValueError:
-        return None
+        # Confirmed live 2026-09-17: games_played's data-value renders as a
+        # float string ("16.0"), not a plain int ("16") like the other
+        # int-typed fields -- fall back to a float parse before giving up.
+        try:
+            return int(float(value))
+        except ValueError:
+            return None
 
 
 def _to_float(value: str | None) -> float | None:
