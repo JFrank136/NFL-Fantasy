@@ -138,30 +138,29 @@ function Get-StatusData($CurrentWeek) {
         elseif ($posStates.Count -gt 0 -and ($posStates | Where-Object { $_ -ne "ok" }).Count -eq 0) { $boneRosState = "ok" }
     }
 
+    # Only current + next week are ever actually fresh/relevant to Jared
+    # (mirrors the current/next slots pushed to Vampire below) -- Draft
+    # Sharks pulls every remaining week of the season on every run (see
+    # pull_week.py's docstring), so without this cap its "weeks captured"
+    # note would list the same 15+ weeks every single day regardless of
+    # what actually changed, which buries the two weeks that matter.
+    $relevantWeeks = @($CurrentWeek, ($CurrentWeek + 1))
+
     $sections = @()
     foreach ($fmt in @(
         @{ Key = "half-ppr"; Label = "Half PPR" },
         @{ Key = "ppr"; Label = "Full PPR" }
     )) {
         $key = $fmt.Key
-        $items = @()
 
         # Discover sources dynamically from each status file's own combo
         # keys (rather than a hardcoded list) so a new source added to
         # pull_week.py's ALL_SOURCES -- or a new status file like this one --
-        # shows up here automatically. Each status file is looked up back in
-        # ITSELF (not cross-matched) since source names are disjoint across
-        # files (draftsharks/boone/smythe live in one file, draftsharks_ros
-        # in another).
-        foreach ($fileEntry in @(
-            @{ Status = $rankingsStatus; Date = $rankingsDate }
-            @{ Status = $rosStatus; Date = $rosDate }
-        )) {
-            $status = $fileEntry.Status
-            if (-not $status) { continue }
-
+        # shows up here automatically.
+        $weeklyItems = @()
+        if ($rankingsStatus) {
             $sourceNames = @()
-            foreach ($combo in $status.combos.PSObject.Properties) {
+            foreach ($combo in $rankingsStatus.combos.PSObject.Properties) {
                 if ($combo.Name -match "^week\d+/([a-zA-Z0-9_-]+)/$([regex]::Escape($key))$") {
                     $sourceNames += $Matches[1]
                 }
@@ -170,16 +169,16 @@ function Get-StatusData($CurrentWeek) {
 
             foreach ($src in $sourceNames) {
                 $srcCombo = "week$CurrentWeek/$src/$key"
-                $srcValue = $status.combos.$srcCombo
+                $srcValue = $rankingsStatus.combos.$srcCombo
                 $srcState = Get-ComboState $srcValue
 
                 $capturedWeeks = @()
-                foreach ($combo in $status.combos.PSObject.Properties) {
+                foreach ($combo in $rankingsStatus.combos.PSObject.Properties) {
                     if ($combo.Name -match "^week(\d+)/$([regex]::Escape($src))/$([regex]::Escape($key))$" -and $combo.Value -eq "ok") {
                         $capturedWeeks += [int]$Matches[1]
                     }
                 }
-                $capturedWeeks = $capturedWeeks | Sort-Object
+                $capturedWeeks = $capturedWeeks | Where-Object { $relevantWeeks -contains $_ } | Sort-Object
 
                 $label = if ($sourceLabelOverrides.ContainsKey($src)) {
                     $sourceLabelOverrides[$src]
@@ -187,23 +186,62 @@ function Get-StatusData($CurrentWeek) {
                     "$((Get-Culture).TextInfo.ToTitleCase($src)) Weekly Rankings"
                 }
 
-                $items += @{
+                $weeklyItems += @{
                     Label = $label
                     State = $srcState
-                    Date = if ($srcState -eq "ok") { $fileEntry.Date } else { $null }
+                    Date = if ($srcState -eq "ok") { $rankingsDate } else { $null }
                     Weeks = $capturedWeeks
                 }
             }
         }
 
-        $items += @{
+        $rosItems = @()
+        if ($rosStatus) {
+            $sourceNames = @()
+            foreach ($combo in $rosStatus.combos.PSObject.Properties) {
+                if ($combo.Name -match "^week\d+/([a-zA-Z0-9_-]+)/$([regex]::Escape($key))$") {
+                    $sourceNames += $Matches[1]
+                }
+            }
+            $sourceNames = $sourceNames | Sort-Object -Unique
+
+            foreach ($src in $sourceNames) {
+                $srcCombo = "week$CurrentWeek/$src/$key"
+                $srcValue = $rosStatus.combos.$srcCombo
+                $srcState = Get-ComboState $srcValue
+
+                $label = if ($sourceLabelOverrides.ContainsKey($src)) {
+                    $sourceLabelOverrides[$src]
+                } else {
+                    "$((Get-Culture).TextInfo.ToTitleCase($src)) ROS Rankings"
+                }
+
+                $rosItems += @{
+                    Label = $label
+                    State = $srcState
+                    Date = if ($srcState -eq "ok") { $rosDate } else { $null }
+                    Weeks = @()
+                }
+            }
+        }
+
+        # Boone ROS (trade values) isn't split by week -- it's the current
+        # rest-of-season snapshot, so it belongs in the ROS subsection
+        # alongside Draft Sharks ROS Rankings rather than the Weekly one.
+        $rosItems += @{
             Label = "Boone ROS"
             State = $boneRosState
             Date = if ($boneRosState -eq "ok") { $tvDate } else { $null }
             Weeks = @()
         }
 
-        $sections += @{ Label = $fmt.Label; Items = $items }
+        $sections += @{
+            Label = $fmt.Label
+            Subsections = @(
+                @{ Label = "Weekly"; Items = $weeklyItems }
+                @{ Label = "ROS"; Items = $rosItems }
+            )
+        }
     }
     return $sections
 }
@@ -212,16 +250,19 @@ function Build-StatusSummary($CurrentWeek) {
     $lines = @()
     foreach ($section in Get-StatusData $CurrentWeek) {
         $lines += "$($section.Label):"
-        foreach ($item in $section.Items) {
-            $weeksNote = if ($item.Weeks.Count -gt 0) { " -- weeks captured: $($item.Weeks -join ', ')" } else { "" }
-            $dateStr = if ($item.Date) { " ($($item.Date))" } else { "" }
-            $line = switch ($item.State) {
-                "ok"      { "  [x] $($item.Label)$dateStr$weeksNote" }
-                "pending" { "  [ ] $($item.Label) -- not yet published$weeksNote" }
-                "failed"  { "  [ ] $($item.Label) -- FAILED (see log)$weeksNote" }
-                default   { "  [ ] $($item.Label) -- no data$weeksNote" }
+        foreach ($subsection in $section.Subsections) {
+            $lines += "  $($subsection.Label):"
+            foreach ($item in $subsection.Items) {
+                $weeksNote = if ($item.Weeks.Count -gt 0) { " -- weeks captured: $($item.Weeks -join ', ')" } else { "" }
+                $dateStr = if ($item.Date) { " ($($item.Date))" } else { "" }
+                $line = switch ($item.State) {
+                    "ok"      { "    [x] $($item.Label)$dateStr$weeksNote" }
+                    "pending" { "    [ ] $($item.Label) -- not yet published$weeksNote" }
+                    "failed"  { "    [ ] $($item.Label) -- FAILED (see log)$weeksNote" }
+                    default   { "    [ ] $($item.Label) -- no data$weeksNote" }
+                }
+                $lines += $line
             }
-            $lines += $line
         }
         $lines += ""
     }
@@ -239,18 +280,21 @@ function Build-StatusSummaryHtml($CurrentWeek) {
     $html = ""
     foreach ($section in Get-StatusData $CurrentWeek) {
         $html += "<h3 style=`"margin:20px 0 6px;font-size:14px;color:#212529;border-bottom:2px solid #1c7ed6;padding-bottom:4px;`">$($section.Label)</h3>"
-        $html += "<table style=`"width:100%;border-collapse:collapse;font-size:13px;`">"
-        foreach ($item in $section.Items) {
-            $style = $stateStyle[$item.State]
-            $detail = if ($item.State -eq "ok" -and $item.Date) { $item.Date } else { $style.Text }
-            if ($item.Weeks.Count -gt 0) { $detail += " &middot; weeks $($item.Weeks -join ', ')" }
-            $html += "<tr style=`"border-bottom:1px solid #f1f3f5;`">"
-            $html += "<td style=`"padding:6px 8px 6px 0;width:20px;`">$($style.Icon)</td>"
-            $html += "<td style=`"padding:6px 0;color:#212529;`">$($item.Label)</td>"
-            $html += "<td style=`"padding:6px 0 6px 12px;color:$($style.Color);text-align:right;white-space:nowrap;`">$detail</td>"
-            $html += "</tr>"
+        foreach ($subsection in $section.Subsections) {
+            $html += "<p style=`"margin:10px 0 2px;font-size:11px;font-weight:600;color:#868e96;text-transform:uppercase;letter-spacing:0.03em;`">$($subsection.Label)</p>"
+            $html += "<table style=`"width:100%;border-collapse:collapse;font-size:13px;`">"
+            foreach ($item in $subsection.Items) {
+                $style = $stateStyle[$item.State]
+                $detail = if ($item.State -eq "ok" -and $item.Date) { $item.Date } else { $style.Text }
+                if ($item.Weeks.Count -gt 0) { $detail += " &middot; weeks $($item.Weeks -join ', ')" }
+                $html += "<tr style=`"border-bottom:1px solid #f1f3f5;`">"
+                $html += "<td style=`"padding:6px 8px 6px 0;width:20px;`">$($style.Icon)</td>"
+                $html += "<td style=`"padding:6px 0;color:#212529;`">$($item.Label)</td>"
+                $html += "<td style=`"padding:6px 0 6px 12px;color:$($style.Color);text-align:right;white-space:nowrap;`">$detail</td>"
+                $html += "</tr>"
+            }
+            $html += "</table>"
         }
-        $html += "</table>"
     }
     return $html
 }

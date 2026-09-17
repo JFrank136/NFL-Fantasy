@@ -27,10 +27,10 @@ QB_TABLE_HTML = """
 """
 
 AUTHOR_PAGE_HTML = """
-<a href="/fantasy/article/fantasy-football-week-1-justin-boones-te-trade-value-charts-194108969.html" class="_ys_1aqsz4n">TE</a>
-<a href="/fantasy/article/fantasy-football-week-1-justin-boones-wr-trade-value-charts-193843688.html" class="_ys_1aqsz4n">WR</a>
-<a href="/fantasy/article/fantasy-football-week-1-justin-boones-rb-trade-value-charts-193804763.html" class="_ys_1aqsz4n">RB</a>
-<a href="/fantasy/article/fantasy-football-week-1-justin-boones-qb-trade-value-charts-193721885.html" class="_ys_1aqsz4n">QB</a>
+<a href="/fantasy/article/2026-trade-value-charts--justin-boones-fantasy-football-tight-end-breakdown-for-week-1-194108969.html" class="_ys_1aqsz4n">TE</a>
+<a href="/fantasy/article/2026-trade-value-charts--justin-boones-fantasy-football-wide-receiver-breakdown-for-week-1-193843688.html" class="_ys_1aqsz4n">WR</a>
+<a href="/fantasy/article/2026-trade-value-charts--justin-boones-fantasy-football-running-back-breakdown-for-week-1-193804763.html" class="_ys_1aqsz4n">RB</a>
+<a href="/fantasy/article/2026-trade-value-charts--justin-boones-fantasy-football-quarterback-breakdown-for-week-1-193721885.html" class="_ys_1aqsz4n">QB</a>
 <a href="/fantasy/article/fantasy-football-week-2-justin-boones-qb-rankings-000000000.html" class="_ys_1aqsz4n">old week link, no trade-value-charts match</a>
 """
 
@@ -64,10 +64,10 @@ def test_discover_position_urls_matches_current_week_and_ignores_others():
     })
     urls = discover_position_urls(week=1, session=session)
     assert urls == {
-        "TE": "https://sports.yahoo.com/fantasy/article/fantasy-football-week-1-justin-boones-te-trade-value-charts-194108969.html",
-        "WR": "https://sports.yahoo.com/fantasy/article/fantasy-football-week-1-justin-boones-wr-trade-value-charts-193843688.html",
-        "RB": "https://sports.yahoo.com/fantasy/article/fantasy-football-week-1-justin-boones-rb-trade-value-charts-193804763.html",
-        "QB": "https://sports.yahoo.com/fantasy/article/fantasy-football-week-1-justin-boones-qb-trade-value-charts-193721885.html",
+        "TE": "https://sports.yahoo.com/fantasy/article/2026-trade-value-charts--justin-boones-fantasy-football-tight-end-breakdown-for-week-1-194108969.html",
+        "WR": "https://sports.yahoo.com/fantasy/article/2026-trade-value-charts--justin-boones-fantasy-football-wide-receiver-breakdown-for-week-1-193843688.html",
+        "RB": "https://sports.yahoo.com/fantasy/article/2026-trade-value-charts--justin-boones-fantasy-football-running-back-breakdown-for-week-1-193804763.html",
+        "QB": "https://sports.yahoo.com/fantasy/article/2026-trade-value-charts--justin-boones-fantasy-football-quarterback-breakdown-for-week-1-193721885.html",
     }
 
 
@@ -156,13 +156,13 @@ def test_fetch_raises_when_table_has_no_data_rows():
 
 
 RB_ONLY_AUTHOR_PAGE_HTML = """
-<a href="/fantasy/article/fantasy-football-week-1-justin-boones-rb-trade-value-charts-193804763.html" class="_ys_1aqsz4n">RB</a>
+<a href="/fantasy/article/2026-trade-value-charts--justin-boones-fantasy-football-running-back-breakdown-for-week-1-193804763.html" class="_ys_1aqsz4n">RB</a>
 """
 
 
 def test_fetch_all_positions_fetches_each_discovered_position_and_skips_missing():
     author_url = "https://sports.yahoo.com/author/justin-boone/"
-    rb_url = "https://sports.yahoo.com/fantasy/article/fantasy-football-week-1-justin-boones-rb-trade-value-charts-193804763.html"
+    rb_url = "https://sports.yahoo.com/fantasy/article/2026-trade-value-charts--justin-boones-fantasy-football-running-back-breakdown-for-week-1-193804763.html"
     session = FakeSession({
         author_url: RB_ONLY_AUTHOR_PAGE_HTML,
         rb_url: RB_TABLE_HTML,

@@ -23,9 +23,21 @@ AUTHOR_URL = "https://sports.yahoo.com/author/justin-boone/"
 USER_AGENT = "Mozilla/5.0 (compatible; in-season-tools/1.0)"
 POSITIONS = ["QB", "RB", "WR", "TE"]
 
+# URL slug format changed for the 2026 season -- confirmed live 2026-09-17:
+# .../2026-trade-value-charts--justin-boones-fantasy-football-wide-receiver-
+# breakdown-for-week-2-172248093.html (position spelled out, week number
+# embedded as its own group) instead of the old .../justin-boones-wr-trade-
+# value-charts... shape.
 _LINK_RE = re.compile(
-    r'href="(/fantasy/article/[^"]*justin-boones-(qb|rb|wr|te)-trade-value-charts[^"]*)"'
+    r'href="(/fantasy/article/[^"]*trade-value-charts--justin-boones-fantasy-football-'
+    r'(quarterback|running-back|wide-receiver|tight-end)-breakdown-for-week-(\d+)[^"]*)"'
 )
+_POSITION_SLUG_TO_CODE = {
+    "quarterback": "QB",
+    "running-back": "RB",
+    "wide-receiver": "WR",
+    "tight-end": "TE",
+}
 
 
 class BooneTradeValueFetchError(RuntimeError):
@@ -58,13 +70,13 @@ def discover_position_urls(
     except requests.RequestException as exc:
         raise BooneTradeValueFetchError(f"Failed to fetch {AUTHOR_URL}: {exc}") from exc
 
-    week_marker = f"week-{week}-"
     urls: dict[str, str] = {}
     for match in _LINK_RE.finditer(html):
-        relative_url, position_slug = match.group(1), match.group(2).upper()
-        if week_marker not in relative_url:
+        relative_url, position_slug, url_week = match.group(1), match.group(2), match.group(3)
+        if int(url_week) != week:
             continue
-        urls[position_slug] = "https://sports.yahoo.com" + relative_url
+        position = _POSITION_SLUG_TO_CODE[position_slug]
+        urls[position] = "https://sports.yahoo.com" + relative_url
     return urls
 
 
