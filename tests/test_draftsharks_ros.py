@@ -2,12 +2,11 @@
 draftsharks.com/ros-rankings/load-rows -- same tbody[data-player-row]
 structure weekly-rankings/load-rows uses, with ROS-specific data-attribute
 names (rosWeeklyPts/rosWeeklyFloorPts/rosWeeklyCeilingPts/dsValue/
-games_played/player.sipPlayerProfile.injury_prob) substituted in. Not a
-live-captured fragment (no live sample was available while writing this) --
-verify parsing against a real captured page the first time this runs
-against the live endpoint, and update this fixture if field names differ."""
+games_played/player.sipPlayerProfile.injury_prob) substituted in. Field
+names were confirmed live 2026-09-17 against the real endpoint (this
+fixture itself is still hand-constructed, not a raw captured payload)."""
 
-from src.sources.draftsharks_ros import _parse_page, fetch_draftsharks_ros
+from src.sources.draftsharks_ros import _parse_page, _to_int, fetch_draftsharks_ros
 
 REAL_FRAGMENT = """
 <tbody
@@ -134,6 +133,17 @@ def test_first_row_fields():
 
 def test_empty_fragment_returns_no_rows():
     assert _parse_page("<div>no rows here</div>") == []
+
+
+def test_games_played_handles_the_live_float_string_quirk():
+    """Confirmed live 2026-09-17: games_played's data-value renders as a
+    float string (e.g. "16.0"), not a plain int -- _to_int must not
+    silently return None for it."""
+    assert _to_int("16.0") == 16
+
+
+def test_to_int_still_returns_none_for_genuinely_invalid_input():
+    assert _to_int("not-a-number") is None
 
 
 class _FakeResponse:
