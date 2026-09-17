@@ -113,6 +113,19 @@ function Get-StatusData($CurrentWeek) {
         $tvDate = ([DateTimeOffset]$tvStatus.run_at).ToString("yyyy-MM-dd")
     }
 
+    $rosRankingsStatusPath = Join-Path $InSeasonDir "data\last_draftsharks_ros_status.json"
+    $rosStatus = $null
+    $rosDate = $null
+    if (Test-Path $rosRankingsStatusPath) {
+        $rosStatus = Get-Content $rosRankingsStatusPath -Raw | ConvertFrom-Json
+        $rosDate = ([DateTimeOffset]$rosStatus.run_at).ToString("yyyy-MM-dd")
+    }
+
+    # Some source keys don't title-case into a clean display label on their
+    # own (e.g. "draftsharks_ros" -> "Draftsharks_Ros") -- override those
+    # here instead of hardcoding a branch per source in the loop below.
+    $sourceLabelOverrides = @{ "draftsharks_ros" = "Draft Sharks ROS Rankings" }
+
     # Boone ROS (trade values) isn't split by scoring format -- it's the same
     # pull surfaced under both sections below, per Jared's requested layout.
     # A real failure on any position outranks "not yet published" on others,
@@ -133,38 +146,53 @@ function Get-StatusData($CurrentWeek) {
         $key = $fmt.Key
         $items = @()
 
-        # Discover weekly-rankings sources dynamically from the combos data
-        # (rather than a hardcoded list) so a new source added to
-        # pull_week.py's ALL_SOURCES shows up here automatically.
-        $sourceNames = @()
-        if ($rankingsStatus) {
-            foreach ($combo in $rankingsStatus.combos.PSObject.Properties) {
+        # Discover sources dynamically from each status file's own combo
+        # keys (rather than a hardcoded list) so a new source added to
+        # pull_week.py's ALL_SOURCES -- or a new status file like this one --
+        # shows up here automatically. Each status file is looked up back in
+        # ITSELF (not cross-matched) since source names are disjoint across
+        # files (draftsharks/boone/smythe live in one file, draftsharks_ros
+        # in another).
+        foreach ($fileEntry in @(
+            @{ Status = $rankingsStatus; Date = $rankingsDate }
+            @{ Status = $rosStatus; Date = $rosDate }
+        )) {
+            $status = $fileEntry.Status
+            if (-not $status) { continue }
+
+            $sourceNames = @()
+            foreach ($combo in $status.combos.PSObject.Properties) {
                 if ($combo.Name -match "^week\d+/([a-zA-Z0-9_-]+)/$([regex]::Escape($key))$") {
                     $sourceNames += $Matches[1]
                 }
             }
-        }
-        $sourceNames = $sourceNames | Sort-Object -Unique
+            $sourceNames = $sourceNames | Sort-Object -Unique
 
-        foreach ($src in $sourceNames) {
-            $srcCombo = "week$CurrentWeek/$src/$key"
-            $srcValue = if ($rankingsStatus) { $rankingsStatus.combos.$srcCombo } else { $null }
-            $srcState = Get-ComboState $srcValue
+            foreach ($src in $sourceNames) {
+                $srcCombo = "week$CurrentWeek/$src/$key"
+                $srcValue = $status.combos.$srcCombo
+                $srcState = Get-ComboState $srcValue
 
-            $capturedWeeks = @()
-            foreach ($combo in $rankingsStatus.combos.PSObject.Properties) {
-                if ($combo.Name -match "^week(\d+)/$([regex]::Escape($src))/$([regex]::Escape($key))$" -and $combo.Value -eq "ok") {
-                    $capturedWeeks += [int]$Matches[1]
+                $capturedWeeks = @()
+                foreach ($combo in $status.combos.PSObject.Properties) {
+                    if ($combo.Name -match "^week(\d+)/$([regex]::Escape($src))/$([regex]::Escape($key))$" -and $combo.Value -eq "ok") {
+                        $capturedWeeks += [int]$Matches[1]
+                    }
                 }
-            }
-            $capturedWeeks = $capturedWeeks | Sort-Object
+                $capturedWeeks = $capturedWeeks | Sort-Object
 
-            $label = (Get-Culture).TextInfo.ToTitleCase($src)
-            $items += @{
-                Label = "$label Weekly Rankings"
-                State = $srcState
-                Date = if ($srcState -eq "ok") { $rankingsDate } else { $null }
-                Weeks = $capturedWeeks
+                $label = if ($sourceLabelOverrides.ContainsKey($src)) {
+                    $sourceLabelOverrides[$src]
+                } else {
+                    "$((Get-Culture).TextInfo.ToTitleCase($src)) Weekly Rankings"
+                }
+
+                $items += @{
+                    Label = $label
+                    State = $srcState
+                    Date = if ($srcState -eq "ok") { $fileEntry.Date } else { $null }
+                    Weeks = $capturedWeeks
+                }
             }
         }
 
@@ -274,6 +302,20 @@ function Send-SuccessEmailIfWarranted($CurrentWeek, $CsvPath) {
         }
     }
 
+    $rosRankingsStatusPath = Join-Path $InSeasonDir "data\last_draftsharks_ros_status.json"
+    if (Test-Path $rosRankingsStatusPath) {
+        $rosStatus = Get-Content $rosRankingsStatusPath -Raw | ConvertFrom-Json
+        foreach ($combo in $rosStatus.combos.PSObject.Properties) {
+            if ($combo.Value -eq "ok") {
+                $key = "rosrankings:$($combo.Name)"
+                if (-not $state.ContainsKey($key)) {
+                    $newlyPublished += "ros-rankings/$($combo.Name)"
+                    $state[$key] = "sent"
+                }
+            }
+        }
+    }
+
     Save-NotifyState $state
 
     if (-not $isGameday -and $newlyPublished.Count -eq 0) {
@@ -334,6 +376,11 @@ try {
     $tradeValuesExit = $LASTEXITCODE
     Log "pull_trade_values.py exit code: $tradeValuesExit"
 
+    Log "Running pull_draftsharks_ros.py..."
+    & $PythonExe "scripts\pull_draftsharks_ros.py" 2>&1 | ForEach-Object { Log $_ }
+    $rosRankingsExit = $LASTEXITCODE
+    Log "pull_draftsharks_ros.py exit code: $rosRankingsExit"
+
     Log "Running push_to_supabase.py..."
     & $PythonExe "scripts\push_to_supabase.py" 2>&1 | ForEach-Object { Log $_ }
     Log "push_to_supabase.py exit code: $LASTEXITCODE"
@@ -383,12 +430,13 @@ try {
         Log "WARNING: $statusPath not found after pull_week.py ran -- something is badly wrong (check exit code above)."
     }
 
-    $anyFailure = ($pullExit -ne 0) -or ($tradeValuesExit -ne 0)
+    $anyFailure = ($pullExit -ne 0) -or ($tradeValuesExit -ne 0) -or ($rosRankingsExit -ne 0)
     if ($anyFailure) {
         Log "=== FINISHED WITH FAILURES -- see above / status JSON files ==="
         $failedParts = @()
         if ($pullExit -ne 0) { $failedParts += "pull_week.py exited $pullExit" }
         if ($tradeValuesExit -ne 0) { $failedParts += "pull_trade_values.py exited $tradeValuesExit" }
+        if ($rosRankingsExit -ne 0) { $failedParts += "pull_draftsharks_ros.py exited $rosRankingsExit" }
         $summaryHtml = Build-StatusSummaryHtml -CurrentWeek $currentWeek
         $logTail = (Get-Content $LogFile -Tail 40 | Out-String) -replace '&', '&amp;' -replace '<', '&lt;' -replace '>', '&gt;'
         $bodyHtml = @"
@@ -412,4 +460,5 @@ try {
 # ran fine) regardless of whether the pull actually succeeded, which defeats
 # using Task Scheduler's own status as a check.
 if ($pullExit -ne 0) { exit $pullExit }
-exit $tradeValuesExit
+if ($tradeValuesExit -ne 0) { exit $tradeValuesExit }
+exit $rosRankingsExit
