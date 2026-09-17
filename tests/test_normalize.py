@@ -45,3 +45,25 @@ def test_boone_trade_values_to_rows_resolves_canonical_name():
         pulled_at="2026-09-12T00:00:00+00:00",
     )
     assert rows[0].canonical_name == "Kenneth Gainwell"
+
+
+from src.normalize import draftsharks_ros_to_rows
+from src.sources.draftsharks_ros import DraftSharksRosRow
+
+
+def test_draftsharks_ros_to_rows_resolves_canonical_name():
+    raw = [DraftSharksRosRow(
+        source_player_id="123", player_name="Cam Skattebo", team="NYG",
+        position="RB", rank=5, tier_overall=1, tier_positional=1,
+        strength_of_schedule="-1.0%", bye=9, games_played=14,
+        floor_proj=150.0, projection=180.0, ceiling_proj=210.0,
+        ds_value=88.0, injury_risk="5",
+    )]
+    rows = draftsharks_ros_to_rows(
+        raw, season=2026, as_of_week=3, scoring="half-ppr",
+        pulled_at="2026-09-16T00:00:00+00:00",
+    )
+    assert rows[0].canonical_name == "Cameron Skattebo"
+    assert rows[0].source == "draftsharks"
+    assert rows[0].as_of_week == 3
+    assert rows[0].ds_value == 88.0

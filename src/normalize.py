@@ -1,8 +1,9 @@
 """Maps each source's raw row shape into the one shared RankingRow schema."""
 
 from src.player_identity import canonical_name_for
-from src.schema import RankingRow, TradeValueRow
+from src.schema import RankingRow, RosRankingRow, TradeValueRow
 from src.sources.boone_trade_values import TradeValueTableRow
+from src.sources.draftsharks_ros import DraftSharksRosRow
 from src.sources.draftsharks_weekly import DraftSharksRow
 from src.sources.yahoo_weekly_consensus import ExpertWeeklyRow
 
@@ -57,4 +58,23 @@ def boone_trade_values_to_rows(
             value_col2_label=r.value_col2_label, value_col2=r.value_col2,
         )
         for r in table_rows
+    ]
+
+
+def draftsharks_ros_to_rows(
+    rows: list[DraftSharksRosRow], season: int, as_of_week: int, scoring: str, pulled_at: str,
+) -> list[RosRankingRow]:
+    return [
+        RosRankingRow(
+            season=season, source="draftsharks", scoring=scoring,
+            pulled_at=pulled_at, as_of_week=as_of_week,
+            source_player_id=r.source_player_id, player_name=r.player_name,
+            canonical_name=canonical_name_for(r.player_name),
+            team=r.team, position=r.position,
+            rank=r.rank, tier_overall=r.tier_overall, tier_positional=r.tier_positional,
+            projection=r.projection, floor_proj=r.floor_proj, ceiling_proj=r.ceiling_proj,
+            ds_value=r.ds_value, strength_of_schedule=r.strength_of_schedule,
+            games_played=r.games_played, injury_risk=r.injury_risk, bye=r.bye,
+        )
+        for r in rows
     ]
