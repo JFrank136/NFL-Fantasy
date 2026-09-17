@@ -39,6 +39,17 @@ and Jared wants the history preserved, not just the latest snapshot.
   its own schema (`TradeValueRow`) — since the data shape (rank + two
   source-labeled value columns, e.g. HALF/PPR for RB/WR/TE but 1QB/2QB for
   QB) doesn't fit `RankingRow`.
+- **Draft Sharks rest-of-season (ROS) rankings** — a separate report from
+  weekly rankings (`ros-rankings/load-rows`, still public/unauthenticated),
+  carrying Draft Sharks' own blended ROS trade value (`ds_value`) plus
+  ROS floor/ceiling projections, strength of schedule, games-played, and
+  injury risk. Pulled all-positions-in-one-call per scoring format (unlike
+  weekly, which is one call per position) — see
+  `src/sources/draftsharks_ros.py`. Stored separately from both weekly
+  rankings and Boone's trade values, in its own `in_season_ros_rankings`
+  table, since neither existing shape fits: it needs floor/ceiling/SOS
+  columns weekly's trade-value table doesn't have, and it isn't a
+  per-week-published report the way weekly rankings are.
 
 ## Storage
 
@@ -49,8 +60,8 @@ Two layers, both populated on every pull:
   standardized long format). This remains the source of truth and audit trail.
 - **Supabase** ("Fantasy Football" project, `tdtchffawcmkvgrccjza` — same
   project Vampire and BigBallerLeague use) — `in_season_rankings`,
-  `in_season_trade_values`, `in_season_pull_status` tables, pushed
-  incrementally by `scripts/push_to_supabase.py` (wired into
+  `in_season_trade_values`, `in_season_ros_rankings`, `in_season_pull_status`
+  tables, pushed incrementally by `scripts/push_to_supabase.py` (wired into
   `scripts/scheduled_pull.ps1`, runs after every pull). A push failure doesn't
   fail the scheduled run or lose data — the local CSV already has it, and the
   next run retries from a persisted watermark
@@ -59,9 +70,9 @@ Two layers, both populated on every pull:
 ## Scheduled runs & notifications
 
 `scripts/scheduled_pull.ps1` is the Windows Task Scheduler entry point — runs
-`pull_week.py`, `pull_trade_values.py`, the Supabase push, and the Vampire
-weekly-projection refresh, with a network-readiness wait for wake-from-sleep
-races. It emails Jared an HTML status summary via Gmail SMTP (credential at
+`pull_week.py`, `pull_trade_values.py`, `pull_draftsharks_ros.py`, the
+Supabase push, and the Vampire weekly-projection refresh, with a
+network-readiness wait for wake-from-sleep races. It emails Jared an HTML status summary via Gmail SMTP (credential at
 `%LOCALAPPDATA%\FantasyInSeasonPull\gmail_cred.xml`) built from
 `data/last_run_status.json` / `data/last_trade_values_status.json`, one
 section per scoring format, one row per source. Sources are discovered

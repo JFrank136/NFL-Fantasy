@@ -47,6 +47,34 @@ positions combined, since the page sorts by `-weekly3dPts`) is in the first
 don't treat a blank matchup as a parse failure, it's a real "not playing this
 week" signal worth keeping.
 
+## Draft Sharks ROS rankings (`src/sources/draftsharks_ros.py`)
+
+`GET https://www.draftsharks.com/ros-rankings/load-rows` — public,
+unauthenticated, same `tbody[data-player-row]` HTML-fragment shape as
+weekly rankings, but a **different report**: rest-of-season rankings, not
+one week's. Field names were verified live 2026-09-17 against the real
+endpoint and match what's implemented, with one confirmed quirk: the
+`games_played` cell's `data-value` renders as a float string (e.g.
+`"16.0"`), not a plain int — `_to_int` in this module falls back to a
+float parse to handle it.
+
+**Query params**: same shape as weekly (`offset`, `limit`,
+`pprSuperflexSlug`, `researchDepth=rankings`), but no `week` param (this
+report isn't week-scoped), `fantasyPosition=""` returns **every** position
+in one paginated pull (confirmed live: 429 QB/RB/WR/TE rows total — WR 171,
+RB 111, TE 102, QB 45 — plus LB/DL/DB/K/DEF, which `fetch_draftsharks_ros`
+filters out), `sort=-dsValue` (this report's default sort, unlike weekly's
+`-weekly3dPts`).
+
+**New `data-attribute` cells this report has that weekly doesn't**:
+`rosWeeklyPts` (ROS points projection), `rosWeeklyFloorPts`,
+`rosWeeklyCeilingPts`, `dsValue` (Draft Sharks' blended ROS trade value —
+their "3D value" analog for this report), `games_played` (projected games
+played rest of season — see the float-string quirk above),
+`player.sipPlayerProfile.injury_prob` (injury risk — stored as raw text in
+`RosRankingRow.injury_risk` rather than parsed, since its value format
+wasn't fully characterized during implementation).
+
 ## Justin Boone (`src/sources/boone_weekly.py`)
 
 Not scraped from Yahoo's article HTML directly — Yahoo's rankings tables are
@@ -115,11 +143,11 @@ the pipeline trusting bad data by default.
 Live in the "Fantasy Football" Supabase project (`tdtchffawcmkvgrccjza` — same
 project Vampire and BigBallerLeague use). Pushed incrementally after every
 pull by `scripts/push_to_supabase.py`; local files remain the source of
-truth, Supabase is a secondary copy. Three tables — the two ranking/value
+truth, Supabase is a secondary copy. Four tables — the three ranking/value
 tables are append-only for the same reason the local CSVs are: a new
 `pulled_at` for the same logical row is a new row, never an overwrite, so
 re-pulling a not-yet-played week to catch DraftSharks' mid-week updates
-preserves the full history Jared asked for. The third (`in_season_pull_status`)
+preserves the full history Jared asked for. The fourth (`in_season_pull_status`)
 is a small mutable status table, one row per dataset:
 
 - **`in_season_rankings`** — `season, week, source, scoring, pulled_at,
@@ -132,17 +160,28 @@ is a small mutable status table, one row per dataset:
   canonical_name, team, value_col1_label, value_col1, value_col2_label,
   value_col2`, plus `id` and `created_at`. Indexed on
   `(season, week, source, position, canonical_name)`.
+- **`in_season_ros_rankings`** — mirrors `RosRankingRow`: `season, source,
+  scoring, pulled_at, as_of_week, source_player_id, player_name,
+  canonical_name, team, position, rank, tier_overall, tier_positional,
+  projection, floor_proj, ceiling_proj, ds_value, strength_of_schedule,
+  games_played, injury_risk, bye`, plus `id` and `created_at`. Indexed on
+  `(season, source, scoring, canonical_name)`. `as_of_week` is a snapshot
+  marker only, not part of the latest-view's key (see below) — ROS
+  rankings describe the rest of the season, not one specific week.
 - **`in_season_pull_status`** — one row per `dataset` (primary key, not
   append-only): `last_success_at, last_attempt_at, status, message,
   row_count`. Lets a consumer (or a human) check whether a pull is stale
   without scanning the append-only tables.
 
-Two views, both `select distinct on (...) ... order by ..., pulled_at desc`
+Three views, each `select distinct on (...) ... order by ..., pulled_at desc`
 over their base table — i.e. "latest pull per logical key" without the
 caller having to write that query themselves: `in_season_rankings_latest`
-(keyed on `season, week, source, scoring, canonical_name`) and
+(keyed on `season, week, source, scoring, canonical_name`),
 `in_season_trade_values_latest` (keyed on `season, week, source, position,
-canonical_name`).
+canonical_name`), and `in_season_ros_rankings_latest` (keyed on `season,
+source, scoring, canonical_name` — deliberately **without** `as_of_week`,
+unlike the other two views' `week`, since "latest" for a ROS row means the
+most recent snapshot regardless of which week it was captured in).
 
 **`canonical_name` on every row**: resolved via `src/player_identity.py`
 from `Draft/data/aliases.csv` (the same alias file `Draft/src/matching.py`
