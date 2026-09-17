@@ -8,7 +8,7 @@ exits non-zero) and "warning" (worth a human glance, not a hard stop).
 
 from dataclasses import dataclass
 
-from src.schema import RankingRow, TradeValueRow
+from src.schema import RankingRow, RosRankingRow, TradeValueRow
 
 # Rough floors, not exact expected counts -- a full weekly pull (all
 # positions) should clear these by a wide margin; anything below suggests a
@@ -223,4 +223,28 @@ def validate_trade_values(
             f"Only {len(rows)} {position} trade-value rows (expected at "
             f"least {effective_floor}) -- may be a partial pull.",
         ))
+    return issues
+
+
+def validate_ros_rankings(
+    rows: list[RosRankingRow],
+    position_floors: dict[str, int] | None = None,
+) -> list[ValidationIssue]:
+    """Validates one scoring slug's Draft Sharks ROS pull. Mirrors
+    validate_pull (all positions pulled in one call, same shape as weekly
+    rankings) rather than validate_trade_values (per-position pulls)."""
+    if not rows:
+        return [ValidationIssue("error", "ROS rankings pull returned zero rows.")]
+    issues: list[ValidationIssue] = []
+    missing_name = sum(1 for r in rows if not r.player_name)
+    missing_position = sum(1 for r in rows if not r.position)
+    if missing_name:
+        issues.append(ValidationIssue(
+            "error", f"{missing_name}/{len(rows)} rows have a blank player_name."
+        ))
+    if missing_position:
+        issues.append(ValidationIssue(
+            "error", f"{missing_position}/{len(rows)} rows have a blank position."
+        ))
+    issues += check_position_counts(rows, position_floors or MINIMUM_POSITION_COUNTS)
     return issues
