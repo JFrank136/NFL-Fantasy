@@ -3,39 +3,99 @@
 @tailwind utilities;
 
 :root {
-  --ring: #4ade80;
+  --ring: #e8b23d;
+  --bg-page: #1f4a3a;
+  --bg-sidebar: #193c2f;
+  --bg-card: #254f3e;
+  --bg-card-border: #366b54;
+  --text-primary: #fbf8ef;
+  --text-secondary: #a9c9b8;
+  --accent-gold: #e8b23d;
+  --accent-gold-text: #241a03;
+  --signal-up: #8fe0a8;
+  --signal-down: #ec9186;
+}
+
+body {
+  background: var(--bg-page);
+  color: var(--text-primary);
 }
 
 .card {
-  @apply rounded-2xl bg-neutral-900 border border-neutral-800 shadow;
+  @apply rounded-xl border shadow;
+  background: var(--bg-card);
+  border-color: var(--bg-card-border);
 }
 .btn {
-  @apply inline-flex items-center gap-2 px-3 py-2 rounded-lg bg-neutral-800 hover:bg-neutral-700 border border-neutral-700;
+  @apply inline-flex items-center gap-2 px-3 py-2 rounded-lg border;
+  background: var(--bg-card);
+  border-color: var(--bg-card-border);
+  color: var(--text-primary);
+}
+.btn:hover {
+  filter: brightness(1.1);
 }
 .btn-primary {
-  @apply bg-turf-light hover:bg-turf border-turf-line;
+  background: var(--accent-gold);
+  color: var(--accent-gold-text);
+  border-color: var(--accent-gold);
 }
 .input {
-  @apply bg-neutral-900 border border-neutral-800 rounded-lg px-3 py-2 outline-none focus:ring-2 focus:ring-green-400;
+  @apply rounded-lg px-3 py-2 outline-none border;
+  background: var(--bg-card);
+  border-color: var(--bg-card-border);
+  color: var(--text-primary);
+}
+.input:focus {
+  box-shadow: 0 0 0 2px var(--ring);
 }
 .label {
-  @apply text-sm font-medium text-neutral-300;
+  @apply text-sm font-medium uppercase tracking-wide;
+  color: var(--text-secondary);
 }
 .table {
   @apply w-full text-sm;
 }
-.table th, .table td {
-  @apply py-2 px-3 border-b border-neutral-800;
+.table th {
+  @apply py-2 px-3 text-left text-xs uppercase tracking-wide;
+  color: var(--text-secondary);
+  border-bottom: 1px solid var(--bg-card-border);
+}
+.table td {
+  @apply py-2 px-3;
+  border-bottom: 1px solid var(--bg-card-border);
 }
 .badge {
-  @apply inline-flex items-center px-2 py-0.5 rounded-md text-xs bg-neutral-800 border border-neutral-700;
+  @apply inline-flex items-center px-2 py-0.5 rounded-md text-xs border;
+  background: var(--bg-card);
+  border-color: var(--bg-card-border);
 }
-.chip {
-  @apply inline-flex items-center gap-1 px-2 py-1 text-xs rounded-full bg-neutral-800 border border-neutral-700;
+.subtle {
+  color: var(--text-secondary);
+  @apply text-sm;
 }
-.tabs { @apply flex gap-2; }
-.tab { @apply px-3 py-2 rounded-lg bg-neutral-800 hover:bg-neutral-700; }
-.tab-active { @apply bg-neutral-700 border border-neutral-500; }
-.header { @apply flex items-center justify-between gap-4; }
-.subtle { @apply text-neutral-400 text-sm; }
-.link { @apply text-green-400 hover:underline; }
+.link {
+  color: var(--accent-gold);
+}
+.link:hover {
+  text-decoration: underline;
+}
+.signal-up {
+  color: var(--signal-up);
+}
+.signal-down {
+  color: var(--signal-down);
+}
+
+/* Navigation */
+.nav-item {
+  @apply block w-full text-left px-3 py-2 rounded-lg text-sm font-semibold;
+  color: var(--text-secondary);
+}
+.nav-item:hover {
+  background: var(--bg-card);
+}
+.nav-item-active {
+  background: var(--accent-gold);
+  color: var(--accent-gold-text);
+}
