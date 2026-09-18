@@ -6,6 +6,7 @@ import { fetchPreviousRosSnapshot } from '../lib/rosHistory'
 const POSITIONS = ['ALL', 'QB', 'RB', 'WR', 'TE']
 const SCORINGS = ['ppr', 'half-ppr'] as const
 type Scoring = typeof SCORINGS[number]
+const SCORING_LABELS: Record<Scoring, string> = { ppr: 'PPR', 'half-ppr': 'Half-PPR' }
 
 type RosTabRow = BlendedRosRow & { rosChange: number | null }
 
@@ -86,12 +87,12 @@ const WEEKLY_COLUMNS: ColumnDef<AggregatedWeeklyRow>[] = [
   { key: 'playerName', label: 'Player', type: 'string' },
   { key: 'position', label: 'Pos', type: 'string' },
   { key: 'team', label: 'Team', type: 'string' },
+  { key: 'opponent', label: 'Opp', type: 'string' },
   { key: 'draftsharksRank', label: 'DS Rank', type: 'number' },
   { key: 'booneRank', label: 'Boone Rank', type: 'number' },
-  { key: 'dsProjection', label: 'DS Proj', type: 'number' },
   { key: 'dsFloor', label: 'Floor', type: 'number' },
+  { key: 'dsProjection', label: 'DS Proj', type: 'number' },
   { key: 'dsCeiling', label: 'Ceiling', type: 'number' },
-  { key: 'opponent', label: 'Opp', type: 'string' },
 ]
 
 function useCurrentWeek() {
@@ -293,16 +294,22 @@ export default function Rankings() {
       <div className="card p-4 space-y-3">
         <div className="flex items-center gap-2 flex-wrap">
           <input className="input" placeholder="Search players..." value={query} onChange={e => setQuery(e.target.value)} />
-          <select className="input" value={pos} onChange={e => setPos(e.target.value)}>
-            {POSITIONS.map(p => <option key={p} value={p}>{p}</option>)}
-          </select>
+          <div className="flex gap-1">
+            {POSITIONS.map(p => (
+              <button
+                key={p}
+                className={`btn ${pos === p ? 'btn-primary' : ''}`}
+                onClick={() => setPos(p)}
+              >
+                {p}
+              </button>
+            ))}
+          </div>
           <select className="input" value={scoring} onChange={e => setScoring(e.target.value as Scoring)}>
-            {SCORINGS.map(s => <option key={s} value={s}>{s}</option>)}
+            {SCORINGS.map(s => <option key={s} value={s}>{SCORING_LABELS[s]}</option>)}
           </select>
           {tab === 'weekly' && (
-            <select className="input" value={week ?? ''} onChange={() => {}} disabled>
-              <option value={week ?? ''}>Week {week ?? '…'}</option>
-            </select>
+            <span className="btn btn-primary" style={{ cursor: 'default' }}>Week {week ?? '…'}</span>
           )}
           {active.freshest && <span className="subtle ml-auto">Data as of {new Date(active.freshest).toLocaleString()}</span>}
         </div>
@@ -369,12 +376,12 @@ export default function Rankings() {
                   <td>{r.playerName}</td>
                   <td>{r.position}</td>
                   <td>{r.team ?? ''}</td>
+                  <td>{r.opponent ?? ''}</td>
                   <td className="text-right">{r.draftsharksRank ?? ''}</td>
                   <td className="text-right">{r.booneRank ?? ''}</td>
-                  <td className="text-right">{r.dsProjection ?? ''}</td>
                   <td className="text-right">{r.dsFloor ?? ''}</td>
+                  <td className="text-right">{r.dsProjection ?? ''}</td>
                   <td className="text-right">{r.dsCeiling ?? ''}</td>
-                  <td>{r.opponent ?? ''}</td>
                 </tr>
               ))}
             </tbody>

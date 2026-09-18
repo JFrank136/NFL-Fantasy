@@ -8,7 +8,18 @@ Returns BOTH Boone's and Smyth's individual ranks from a single response per
 position -- no separate per-expert request needed, and no guessing at expert
 IDs: they're resolved by name from the response's own `expertNames` map, same
 safety property as the draft-day module.
-"""
+
+IMPORTANT: `position=ALL` (which the draft-day module uses) only works for
+week=0 -- confirmed live it 500s for any in-season week. There is also no
+single-request "overall" view during the season. What Yahoo DOES support
+in-season is `position=FLX`, a real one-request RB/WR/TE-combined ranking
+(confirmed live: Boone and Smyth both populate it, ~150-240 players, QBs
+excluded) -- this is Yahoo's own FLEX view, not something synthesized here.
+So QUERY_POSITIONS below queries QB/FLX/K/DST rather than QB/RB/WR/TE/K/DST:
+every RB/WR/TE row's `rank` comes from the single shared FLX ranking instead
+of a position-scoped one, which is what fixes Boone/Smyth showing multiple
+rank-1 players (previously: an RB-1 AND a WR-1 AND a TE-1 every week, since
+each position was ranked independently)."""
 
 import time
 from dataclasses import dataclass
@@ -18,7 +29,7 @@ import requests
 BASE_URL = "https://sports.yahoo.com/api/fanPro/"
 USER_AGENT = "Mozilla/5.0 (compatible; in-season-tools/1.0)"
 
-POSITIONS = ["QB", "RB", "WR", "TE", "K", "DST"]
+QUERY_POSITIONS = ["QB", "FLX", "K", "DST"]
 SCORING_MAP = {"half-ppr": "HALF", "ppr": "PPR"}
 
 # All 5 of Yahoo's current fantasy analysts -- required in `filters` for the
@@ -105,7 +116,7 @@ def fetch_expert_weekly(
     ids, only `expert_name` needs to keep matching, not a code change."""
     sess = session or requests.Session()
     rows: list[ExpertWeeklyRow] = []
-    for position in (positions or POSITIONS):
+    for position in (positions or QUERY_POSITIONS):
         data = _fetch_position(position, week, year, scoring_slug, sess)
         expert_id = _expert_id_by_name(data["expertNames"], expert_name)
         if expert_id is None:

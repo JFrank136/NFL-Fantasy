@@ -28,7 +28,14 @@ _aliases_cache: dict[str, str] | None = None
 
 def normalize_name(raw_name: str) -> str:
     name = raw_name.lower().strip()
-    name = name.replace(".", "").replace("'", "").replace("-", " ")
+    # Strip straight (') AND curly ('  U+2018, '  U+2019) apostrophes --
+    # sources spell names like "Ja'Marr Chase" / "Ja'Marr Chase"
+    # inconsistently, and treating them as different characters silently
+    # split one player into two canonical_name rows (confirmed live
+    # 2026-09-18: Trade Values pivot showed Ja'Marr Chase and D'Andre Swift
+    # each twice, one copy missing data the other had).
+    name = name.replace(".", "").replace("'", "").replace("‘", "").replace("’", "")
+    name = name.replace("-", " ")
     tokens = [t for t in name.split() if t not in SUFFIXES]
     return " ".join(tokens)
 
