@@ -11,17 +11,10 @@
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.116.0",
-    "@tanstack/react-table": "^8.11.8",
-    "immer": "^10.1.1",
-    "lucide-react": "^0.460.0",
-    "papaparse": "^5.4.1",
     "react": "^18.2.0",
-    "react-dom": "^18.2.0",
-    "recharts": "^2.10.3",
-    "zustand": "^4.5.2"
+    "react-dom": "^18.2.0"
   },
   "devDependencies": {
-    "@types/papaparse": "^5.5.2",
     "@types/react": "^18.2.66",
     "@types/react-dom": "^18.2.22",
     "@typescript-eslint/eslint-plugin": "^7.18.0",
