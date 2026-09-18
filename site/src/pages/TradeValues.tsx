@@ -2,7 +2,7 @@ import React, { useEffect, useMemo, useState } from 'react'
 import { supabase, type TradeValueLatestRow } from '../lib/supabase'
 
 const POSITIONS = ['ALL', 'QB', 'RB', 'WR', 'TE']
-const SOURCES = ['ALL', 'draftsharks', 'boone']
+const SOURCES = ['ALL', 'boone', 'cbs', 'fantasypros', 'rsj', 'usatoday']
 
 export default function TradeValues() {
   const [rows, setRows] = useState<TradeValueLatestRow[]>([])
