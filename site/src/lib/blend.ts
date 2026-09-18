@@ -92,6 +92,7 @@ export function blendRosValues(
   })
 
   rows.sort((r1, r2) => {
+    if (r1.blendedValue == null && r2.blendedValue == null) return 0
     if (r1.blendedValue == null) return 1
     if (r2.blendedValue == null) return -1
     return r2.blendedValue - r1.blendedValue
@@ -170,6 +171,7 @@ export function aggregateWeeklyRanks(players: WeeklyPlayerInput[]): AggregatedWe
 
   byPosition.forEach(list => {
     list.sort((r1, r2) => {
+      if (r1.aggregateScore == null && r2.aggregateScore == null) return 0
       if (r1.aggregateScore == null) return 1
       if (r2.aggregateScore == null) return -1
       return r1.aggregateScore - r2.aggregateScore

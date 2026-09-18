@@ -29,6 +29,14 @@ describe('weightedAverageRank', () => {
     const result = weightedAverageRank('RB', { draftsharks: null, boone: null, smythe: null })
     expect(result).toBeNull()
   })
+
+  it('falls back to CONSENSUS_WEIGHTS.default for a position not in the map', () => {
+    // 'FLEX' has no entry in CONSENSUS_WEIGHTS, so weightsForPosition should
+    // fall back to default weights: draftsharks 0.50, boone 0.30, smythe 0.20
+    // ranks: DS=1, Boone=5, Smythe=3 -> 1*.5 + 5*.3 + 3*.2 = 0.5 + 1.5 + 0.6 = 2.6
+    const result = weightedAverageRank('FLEX', { draftsharks: 1, boone: 5, smythe: 3 })
+    expect(result).toBeCloseTo(2.6, 5)
+  })
 })
 
 describe('aggregateWeeklyRanks', () => {
@@ -112,5 +120,10 @@ describe('blendRosValues', () => {
     const result = blendRosValues(ds, boone)
     const byName = Object.fromEntries(result.map(r => [r.canonicalName, r.overallRank]))
     expect(byName).toEqual({ rb1: 1, qb1: 2 })
+  })
+
+  it('returns an empty array when both sources are empty', () => {
+    const result = blendRosValues([], [])
+    expect(result).toEqual([])
   })
 })
