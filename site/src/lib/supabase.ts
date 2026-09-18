@@ -63,6 +63,32 @@ export interface TradeValueLatestRow {
   value_col2: number | null
 }
 
+// Row shape for in_season_ros_rankings_latest.
+export interface RosRankingRow {
+  id: number
+  season: number
+  source: string
+  scoring: string
+  pulled_at: string
+  as_of_week: number
+  source_player_id: string
+  player_name: string
+  canonical_name: string
+  team: string | null
+  position: string
+  rank: number | null
+  tier_overall: number | null
+  tier_positional: number | null
+  projection: number | null
+  floor_proj: number | null
+  ceiling_proj: number | null
+  ds_value: number | null
+  strength_of_schedule: string | null
+  games_played: number | null
+  injury_risk: string | null
+  bye: number | null
+}
+
 export interface PullStatusRow {
   dataset: string
   last_success_at: string | null
