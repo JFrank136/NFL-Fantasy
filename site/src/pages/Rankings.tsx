@@ -12,6 +12,7 @@ type RosTabRow = BlendedRosRow & { rosChange: number | null }
 function useCurrentWeek() {
   const [week, setWeek] = useState<number | null>(null)
   const [weeks] = useState<number[]>(Array.from({ length: 18 }, (_, i) => i + 1))
+  const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
     let cancelled = false
@@ -21,13 +22,19 @@ function useCurrentWeek() {
       .in('source', ['boone', 'smythe'])
       .order('week', { ascending: false })
       .limit(1)
-      .then(({ data }) => {
-        if (!cancelled) setWeek(data?.[0]?.week ?? null)
+      .then(({ data, error }) => {
+        if (cancelled) return
+        if (error) {
+          console.error('Failed to fetch current week:', error)
+          setError(error.message)
+          return
+        }
+        setWeek(data?.[0]?.week ?? null)
       })
     return () => { cancelled = true }
   }, [])
 
-  return { week, weeks }
+  return { week, weeks, error }
 }
 
 function useRosTab(scoring: Scoring) {
@@ -95,14 +102,20 @@ function useRosTab(scoring: Scoring) {
   return { rows, loading, error, freshest }
 }
 
-function useWeeklyTab(scoring: Scoring, week: number | null) {
+function useWeeklyTab(scoring: Scoring, week: number | null, weekError: string | null) {
   const [rows, setRows] = useState<AggregatedWeeklyRow[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [freshest, setFreshest] = useState<string | null>(null)
 
   useEffect(() => {
-    if (week == null) return
+    if (week == null) {
+      if (weekError) {
+        setError(weekError)
+        setLoading(false)
+      }
+      return
+    }
     let cancelled = false
     setLoading(true)
     setError(null)
@@ -150,7 +163,7 @@ function useWeeklyTab(scoring: Scoring, week: number | null) {
       })
 
     return () => { cancelled = true }
-  }, [scoring, week])
+  }, [scoring, week, weekError])
 
   return { rows, loading, error, freshest }
 }
@@ -161,9 +174,9 @@ export default function Rankings() {
   const [scoring, setScoring] = useState<Scoring>('ppr')
   const [query, setQuery] = useState('')
 
-  const { week, weeks } = useCurrentWeek()
+  const { week, weeks, error: weekError } = useCurrentWeek()
   const ros = useRosTab(scoring)
-  const weekly = useWeeklyTab(scoring, week)
+  const weekly = useWeeklyTab(scoring, week, weekError)
 
   const active = tab === 'ros' ? ros : weekly
 
