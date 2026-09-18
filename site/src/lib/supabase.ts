@@ -63,7 +63,7 @@ export interface TradeValueLatestRow {
   value_col2: number | null
 }
 
-// Row shape for in_season_ros_rankings_latest.
+// Row shape for in_season_ros_rankings.
 export interface RosRankingRow {
   id: number
   season: number
