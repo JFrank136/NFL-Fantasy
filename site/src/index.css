@@ -97,6 +97,21 @@ body {
   color: var(--signal-down);
 }
 
+.toggle-switch {
+  @apply inline-flex items-center rounded-full border cursor-pointer select-none;
+  background: var(--bg-card);
+  border-color: var(--bg-card-border);
+  padding: 2px;
+}
+.toggle-switch-option {
+  @apply px-3 py-1.5 rounded-full text-sm;
+  color: var(--text-secondary);
+}
+.toggle-switch-option-active {
+  background: var(--accent-gold);
+  color: var(--accent-gold-text);
+}
+
 /* Navigation */
 .nav-item {
   @apply block w-full text-left px-3 py-2 rounded-lg text-sm font-semibold;

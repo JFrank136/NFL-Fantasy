@@ -6,6 +6,24 @@ const POSITIONS = ['ALL', 'QB', 'RB', 'WR', 'TE']
 const SCORINGS = ['ppr', 'half-ppr'] as const
 const SCORING_LABELS: Record<Scoring, string> = { ppr: 'PPR', 'half-ppr': 'Half-PPR' }
 
+function ScoringToggle({ value, onChange }: { value: Scoring; onChange: (s: Scoring) => void }) {
+  return (
+    <div className="toggle-switch" role="tablist" aria-label="Scoring format">
+      {SCORINGS.map(s => (
+        <span
+          key={s}
+          role="tab"
+          aria-selected={value === s}
+          className={`toggle-switch-option ${value === s ? 'toggle-switch-option-active' : ''}`}
+          onClick={() => onChange(s)}
+        >
+          {SCORING_LABELS[s]}
+        </span>
+      ))}
+    </div>
+  )
+}
+
 // Display-only niceties for sources discovered from the data -- never a
 // gate on which sources appear, just how their column header reads.
 const SOURCE_LABELS: Record<string, string> = {
@@ -102,9 +120,7 @@ export default function TradeValues() {
             <button key={p} className={`btn ${pos === p ? 'btn-primary' : ''}`} onClick={() => setPos(p)}>{p}</button>
           ))}
         </div>
-        <select className="input" value={scoring} onChange={e => setScoring(e.target.value as Scoring)}>
-          {SCORINGS.map(s => <option key={s} value={s}>{SCORING_LABELS[s]}</option>)}
-        </select>
+        <ScoringToggle value={scoring} onChange={setScoring} />
         {freshest && <span className="subtle ml-auto">Data as of {new Date(freshest).toLocaleString()}</span>}
       </div>
 

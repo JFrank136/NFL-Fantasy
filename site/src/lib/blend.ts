@@ -8,6 +8,22 @@
 import { robustLinearFit, applyScale } from './regression'
 import { weightsForPosition } from './consensusWeights'
 
+/**
+ * Sources don't agree on defense's position code (Draft Sharks: "DEF",
+ * Boone/Smyth: "DST") -- callers that join/group across sources by
+ * (canonicalName, position) must normalize first, or the same team's
+ * defense silently fails to merge across sources. Also used to guard
+ * against the opposite failure: two DIFFERENT real people sharing a name
+ * (e.g. WR Justin Jefferson vs. LB Justin Jefferson) getting merged into
+ * one row just because canonical_name ignores position -- confirmed live
+ * 2026-09-18. Joining on (canonicalName, normalizedPosition) instead of
+ * canonicalName alone fixes both at once: same-position name collisions
+ * stay separate, cross-labeled same-team defenses still merge.
+ */
+export function normalizePosition(position: string): string {
+  return position === 'DEF' ? 'DST' : position
+}
+
 // ---- ROS tab: blended value ----
 
 export interface RosSourceRow {
@@ -46,27 +62,38 @@ export interface BlendedRosRow {
  * blendedValue, descending (confirmed with Jared: "Overall rank" is a
  * single ranking across all positions, not per-position).
  */
+/** (canonicalName, normalizedPosition) -- see normalizePosition for why
+ * canonicalName alone isn't a safe join/group/React-key identity: two
+ * different real people can share a canonical_name (e.g. WR Justin
+ * Jefferson vs. LB Justin Jefferson). Exported so callers building their
+ * own lookups against BlendedRosRow output (React keys, snapshot-to-
+ * snapshot comparisons) use the same safe identity instead of bare
+ * canonicalName. */
+export function identityKey(canonicalName: string, position: string): string {
+  return `${canonicalName}::${normalizePosition(position)}`
+}
+
 export function blendRosValues(
   dsRows: RosSourceRow[],
   booneRows: BooneRosRow[],
 ): BlendedRosRow[] {
-  const dsMap = new Map(dsRows.map(r => [r.canonicalName, r]))
-  const booneMap = new Map(booneRows.map(r => [r.canonicalName, r]))
+  const dsMap = new Map(dsRows.map(r => [identityKey(r.canonicalName, r.position), r]))
+  const booneMap = new Map(booneRows.map(r => [identityKey(r.canonicalName, r.position), r]))
 
   const overlapping: { x: number; y: number }[] = []
-  dsMap.forEach((ds, name) => {
-    const boone = booneMap.get(name)
+  dsMap.forEach((ds, key) => {
+    const boone = booneMap.get(key)
     if (ds.dsValue != null && boone?.value != null) {
       overlapping.push({ x: boone.value, y: ds.dsValue })
     }
   })
   const { a, b } = robustLinearFit(overlapping.map(p => p.x), overlapping.map(p => p.y))
 
-  const allNames = new Set<string>([...dsMap.keys(), ...booneMap.keys()])
+  const allKeys = new Set<string>([...dsMap.keys(), ...booneMap.keys()])
   const rows: BlendedRosRow[] = []
-  allNames.forEach(name => {
-    const ds = dsMap.get(name)
-    const boone = booneMap.get(name)
+  allKeys.forEach(key => {
+    const ds = dsMap.get(key)
+    const boone = booneMap.get(key)
     const scaledBoone = boone?.value != null ? applyScale(a, b, boone.value) : null
 
     let blendedValue: number | null
@@ -78,10 +105,11 @@ export function blendRosValues(
       blendedValue = scaledBoone
     }
 
+    const canonicalName = ds?.canonicalName ?? boone?.canonicalName ?? key
     rows.push({
-      canonicalName: name,
-      playerName: ds?.playerName ?? name,
-      position: ds?.position ?? boone?.position ?? '',
+      canonicalName,
+      playerName: ds?.playerName ?? canonicalName,
+      position: normalizePosition(ds?.position ?? boone?.position ?? ''),
       team: ds?.team ?? null,
       dsValue: ds?.dsValue ?? null,
       booneValue: boone?.value ?? null,

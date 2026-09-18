@@ -1,12 +1,36 @@
 import { useEffect, useMemo, useState } from 'react'
 import { supabase, type RankingLatestRow, type RosRankingRow, type TradeValueLatestRow } from '../lib/supabase'
-import { blendRosValues, aggregateWeeklyRanks, type BlendedRosRow, type AggregatedWeeklyRow } from '../lib/blend'
+import { blendRosValues, aggregateWeeklyRanks, identityKey, normalizePosition, type BlendedRosRow, type AggregatedWeeklyRow } from '../lib/blend'
 import { fetchPreviousRosSnapshot } from '../lib/rosHistory'
 
-const POSITIONS = ['ALL', 'QB', 'RB', 'WR', 'TE']
+// Weekly has no 'ALL' -- aggregateWeeklyRanks ranks within each position, so
+// an "ALL" view would just interleave separate position-scoped #1's (the
+// exact "multiple 1's" confusion this page exists to avoid), and it's the
+// only way K/DST sneak into a view nobody asked to see them in. ROS keeps
+// 'ALL' since blendRosValues computes one genuine cross-position rank.
+const WEEKLY_POSITIONS = ['QB', 'RB', 'WR', 'TE']
+const ROS_POSITIONS = ['ALL', ...WEEKLY_POSITIONS]
 const SCORINGS = ['ppr', 'half-ppr'] as const
 type Scoring = typeof SCORINGS[number]
 const SCORING_LABELS: Record<Scoring, string> = { ppr: 'PPR', 'half-ppr': 'Half-PPR' }
+
+function ScoringToggle({ value, onChange }: { value: Scoring; onChange: (s: Scoring) => void }) {
+  return (
+    <div className="toggle-switch" role="tablist" aria-label="Scoring format">
+      {SCORINGS.map(s => (
+        <span
+          key={s}
+          role="tab"
+          aria-selected={value === s}
+          className={`toggle-switch-option ${value === s ? 'toggle-switch-option-active' : ''}`}
+          onClick={() => onChange(s)}
+        >
+          {SCORING_LABELS[s]}
+        </span>
+      ))}
+    </div>
+  )
+}
 
 type RosTabRow = BlendedRosRow & { rosChange: number | null }
 
@@ -167,13 +191,13 @@ function useRosTab(scoring: Scoring) {
             })),
             previous.booneRows.map(r => ({ canonicalName: r.canonical_name, position: r.position, value: booneValueFor(r) })),
           )
-          previousBlendedByName = new Map(previousBlended.map(r => [r.canonicalName, r.blendedValue]))
+          previousBlendedByName = new Map(previousBlended.map(r => [identityKey(r.canonicalName, r.position), r.blendedValue]))
         }
       }
 
       if (cancelled) return
       setRows(blended.map(r => {
-        const prev = previousBlendedByName.get(r.canonicalName)
+        const prev = previousBlendedByName.get(identityKey(r.canonicalName, r.position))
         const rosChange = r.blendedValue != null && prev != null ? r.blendedValue - prev : null
         return { ...r, rosChange }
       }))
@@ -217,20 +241,21 @@ function useWeeklyTab(scoring: Scoring, week: number | null, weekError: string |
         const rankingRows = (data ?? []) as RankingLatestRow[]
         const byPlayer = new Map<string, RankingLatestRow[]>()
         rankingRows.forEach(r => {
-          const list = byPlayer.get(r.canonical_name) ?? []
+          const key = identityKey(r.canonical_name, r.position)
+          const list = byPlayer.get(key) ?? []
           list.push(r)
-          byPlayer.set(r.canonical_name, list)
+          byPlayer.set(key, list)
         })
 
-        const players = Array.from(byPlayer.entries()).map(([canonicalName, sourceRows]) => {
+        const players = Array.from(byPlayer.values()).map(sourceRows => {
           const ds = sourceRows.find(r => r.source === 'draftsharks')
           const boone = sourceRows.find(r => r.source === 'boone')
           const smythe = sourceRows.find(r => r.source === 'smythe')
           const any = ds ?? boone ?? smythe ?? sourceRows[0]
           return {
-            canonicalName,
+            canonicalName: any.canonical_name,
             playerName: any.player_name,
-            position: any.position,
+            position: normalizePosition(any.position),
             team: any.team,
             draftsharksRank: ds?.rank ?? null,
             booneRank: boone?.rank ?? null,
@@ -254,18 +279,25 @@ function useWeeklyTab(scoring: Scoring, week: number | null, weekError: string |
 }
 
 export default function Rankings() {
-  const [tab, setTab] = useState<'ros' | 'weekly'>('ros')
-  const [pos, setPos] = useState('ALL')
+  const [tab, setTab] = useState<'ros' | 'weekly'>('weekly')
+  const [pos, setPos] = useState('QB')
   const [scoring, setScoring] = useState<Scoring>('ppr')
   const [query, setQuery] = useState('')
 
   const { week, error: weekError } = useCurrentWeek()
   const [rosSort, setRosSort] = useState<SortState>({ key: null, dir: 'asc' })
-  const [weeklySort, setWeeklySort] = useState<SortState>({ key: null, dir: 'asc' })
+  const [weeklySort, setWeeklySort] = useState<SortState>({ key: 'aggregateRank', dir: 'asc' })
   const ros = useRosTab(scoring)
   const weekly = useWeeklyTab(scoring, week, weekError)
 
   const active = tab === 'ros' ? ros : weekly
+  const positions = tab === 'ros' ? ROS_POSITIONS : WEEKLY_POSITIONS
+
+  const goToWeekly = () => {
+    setTab('weekly')
+    setWeeklySort({ key: 'aggregateRank', dir: 'asc' })
+    if (pos === 'ALL') setPos('QB')
+  }
 
   const filteredRos = useMemo(() => {
     let list = ros.rows
@@ -287,15 +319,15 @@ export default function Rankings() {
   return (
     <div className="space-y-3">
       <div className="flex gap-2">
+        <button className={`btn ${tab === 'weekly' ? 'btn-primary' : ''}`} onClick={goToWeekly}>Weekly</button>
         <button className={`btn ${tab === 'ros' ? 'btn-primary' : ''}`} onClick={() => setTab('ros')}>ROS</button>
-        <button className={`btn ${tab === 'weekly' ? 'btn-primary' : ''}`} onClick={() => setTab('weekly')}>Weekly</button>
       </div>
 
       <div className="card p-4 space-y-3">
         <div className="flex items-center gap-2 flex-wrap">
           <input className="input" placeholder="Search players..." value={query} onChange={e => setQuery(e.target.value)} />
           <div className="flex gap-1">
-            {POSITIONS.map(p => (
+            {positions.map(p => (
               <button
                 key={p}
                 className={`btn ${pos === p ? 'btn-primary' : ''}`}
@@ -305,9 +337,7 @@ export default function Rankings() {
               </button>
             ))}
           </div>
-          <select className="input" value={scoring} onChange={e => setScoring(e.target.value as Scoring)}>
-            {SCORINGS.map(s => <option key={s} value={s}>{SCORING_LABELS[s]}</option>)}
-          </select>
+          <ScoringToggle value={scoring} onChange={setScoring} />
           {tab === 'weekly' && (
             <span className="btn btn-primary" style={{ cursor: 'default' }}>Week {week ?? '…'}</span>
           )}
@@ -334,7 +364,7 @@ export default function Rankings() {
             </thead>
             <tbody>
               {sortedRos.map(r => (
-                <tr key={r.canonicalName}>
+                <tr key={identityKey(r.canonicalName, r.position)}>
                   <td>{r.overallRank ?? ''}</td>
                   <td>{r.playerName}</td>
                   <td>{r.position}</td>
@@ -371,7 +401,7 @@ export default function Rankings() {
             </thead>
             <tbody>
               {sortedWeekly.map(r => (
-                <tr key={r.canonicalName}>
+                <tr key={identityKey(r.canonicalName, r.position)}>
                   <td>{r.aggregateRank ?? ''}</td>
                   <td>{r.playerName}</td>
                   <td>{r.position}</td>

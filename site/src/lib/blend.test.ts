@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest'
 import { blendRosValues, type RosSourceRow, type BooneRosRow } from './blend'
 import { weightedAverageRank, aggregateWeeklyRanks, type WeeklyPlayerInput } from './blend'
+import { normalizePosition, identityKey } from './blend'
 
 describe('weightedAverageRank', () => {
   it('averages three sources using default (non-QB) weights', () => {
@@ -125,5 +126,54 @@ describe('blendRosValues', () => {
   it('returns an empty array when both sources are empty', () => {
     const result = blendRosValues([], [])
     expect(result).toEqual([])
+  })
+
+  it('does not merge two different real people who share a canonical_name at different positions', () => {
+    // Confirmed live 2026-09-18: WR Justin Jefferson (MIN) and a real LB
+    // named Justin Jefferson share a canonical_name -- joining on name alone
+    // silently merged their data into one row.
+    const ds: RosSourceRow[] = [
+      { canonicalName: 'justin jefferson', playerName: 'Justin Jefferson', position: 'WR', team: 'MIN', dsValue: 90, ceiling: 30 },
+    ]
+    const boone: BooneRosRow[] = [
+      { canonicalName: 'justin jefferson', position: 'LB', value: 5 },
+    ]
+    const result = blendRosValues(ds, boone)
+    expect(result).toHaveLength(2)
+    const wr = result.find(r => r.position === 'WR')!
+    const lb = result.find(r => r.position === 'LB')!
+    expect(wr.dsValue).toBe(90)
+    expect(wr.booneValue).toBeNull()
+    expect(lb.booneValue).toBe(5)
+    expect(lb.dsValue).toBeNull()
+  })
+
+  it('still merges the same team defense across sources spelling it DEF vs DST', () => {
+    const ds: RosSourceRow[] = [
+      { canonicalName: 'eagles', playerName: 'Philadelphia Eagles', position: 'DEF', team: 'PHI', dsValue: 40, ceiling: 10 },
+    ]
+    const boone: BooneRosRow[] = [
+      { canonicalName: 'eagles', position: 'DST', value: 50 },
+    ]
+    const result = blendRosValues(ds, boone)
+    expect(result).toHaveLength(1)
+    expect(result[0].position).toBe('DST')
+    expect(result[0].dsValue).toBe(40)
+    expect(result[0].booneValue).toBe(50)
+  })
+})
+
+describe('normalizePosition', () => {
+  it('maps DEF to DST and leaves everything else alone', () => {
+    expect(normalizePosition('DEF')).toBe('DST')
+    expect(normalizePosition('DST')).toBe('DST')
+    expect(normalizePosition('WR')).toBe('WR')
+  })
+})
+
+describe('identityKey', () => {
+  it('treats DEF and DST as the same identity but keeps different positions distinct', () => {
+    expect(identityKey('eagles', 'DEF')).toBe(identityKey('eagles', 'DST'))
+    expect(identityKey('justin jefferson', 'WR')).not.toBe(identityKey('justin jefferson', 'LB'))
   })
 })
