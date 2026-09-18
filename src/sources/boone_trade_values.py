@@ -102,22 +102,37 @@ def fetch_position_trade_values(
     if len(trs) < 2:
         raise BooneTradeValueFetchError(f"Trade value table on {url} has no data rows.")
 
+    # Boone's table normally leads with a "Rk" rank column (4 cells:
+    # Rk/Player/col1/col2), but confirmed live 2026-09-18: the RB breakdown
+    # dropped it for week 2 while QB/WR/TE kept it, so accept both shapes
+    # rather than failing a position just because it lacks a rank column.
     header_cells = [td.get_text(strip=True) for td in trs[0].find_all("td")]
-    if len(header_cells) != 4 or header_cells[0] != "Rk" or header_cells[1] != "Player":
+    if len(header_cells) == 4 and header_cells[0] == "Rk" and header_cells[1] == "Player":
+        has_rank = True
+        col1_label, col2_label = header_cells[2], header_cells[3]
+    elif len(header_cells) == 3 and header_cells[0] == "Player":
+        has_rank = False
+        col1_label, col2_label = header_cells[1], header_cells[2]
+    else:
         raise BooneTradeValueFetchError(
             f"Unexpected table header on {url}: {header_cells!r} -- expected "
-            "['Rk', 'Player', <col1>, <col2>]."
+            "['Rk', 'Player', <col1>, <col2>] or ['Player', <col1>, <col2>]."
         )
-    col1_label, col2_label = header_cells[2], header_cells[3]
 
+    expected_cells = 4 if has_rank else 3
     rows: list[TradeValueTableRow] = []
     for tr in trs[1:]:
         cells = [td.get_text(strip=True) for td in tr.find_all("td")]
-        if len(cells) != 4:
+        if len(cells) != expected_cells:
             continue
-        rank_text, player_name, val1_text, val2_text = cells
+        if has_rank:
+            rank_text, player_name, val1_text, val2_text = cells
+            rank = int(rank_text) if rank_text.isdigit() else None
+        else:
+            player_name, val1_text, val2_text = cells
+            rank = None
         rows.append(TradeValueTableRow(
-            rank=int(rank_text) if rank_text.isdigit() else None,
+            rank=rank,
             player_name=player_name,
             value_col1_label=col1_label,
             value_col1=_parse_float(val1_text),

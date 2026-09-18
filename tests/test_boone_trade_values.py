@@ -26,6 +26,10 @@ QB_TABLE_HTML = """
 <h2 class="heading" id="jump-link-rest-of-season-qb-trade-values"><strong>Rest-of-season QB trade values</strong></h2><div class="content-table-wrapper"><table class="content-table"><tbody><tr><td colSpan="1" rowSpan="1"><p>Rk</p></td><td colSpan="1" rowSpan="1"><p>Player</p></td><td colSpan="1" rowSpan="1"><p>1QB</p></td><td colSpan="1" rowSpan="1"><p>2QB</p></td></tr><tr><td colSpan="1" rowSpan="1"><p>1</p></td><td colSpan="1" rowSpan="1"><p>Josh Allen</p></td><td colSpan="1" rowSpan="1"><p>32</p></td><td colSpan="1" rowSpan="1"><p>81</p></td></tr><tr><td colSpan="1" rowSpan="1"><p>28</p></td><td colSpan="1" rowSpan="1"><p>Fernando Mendoza</p></td><td colSpan="1" rowSpan="1"><p>0</p></td><td colSpan="1" rowSpan="1"><p>21</p></td></tr></tbody></table>
 """
 
+RB_TABLE_NO_RANK_HTML = """
+<h2 class="heading" id="jump-link-rest-of-season-rb-trade-values"><strong>Rest-of-season RB trade values</strong></h2><div class="content-table-wrapper"><table class="content-table"><tbody><tr><td colSpan="1" rowSpan="1"><p>Player</p></td><td colSpan="1" rowSpan="1"><p>HALF</p></td><td colSpan="1" rowSpan="1"><p>PPR</p></td></tr><tr><td colSpan="1" rowSpan="1"><p>Jahmyr Gibbs</p></td><td colSpan="1" rowSpan="1"><p>92</p></td><td colSpan="1" rowSpan="1"><p>95</p></td></tr><tr><td colSpan="1" rowSpan="1"><p>Bijan Robinson</p></td><td colSpan="1" rowSpan="1"><p>82</p></td><td colSpan="1" rowSpan="1"><p>85</p></td></tr></tbody></table>
+"""
+
 AUTHOR_PAGE_HTML = """
 <a href="/fantasy/article/2026-trade-value-charts--justin-boones-fantasy-football-tight-end-breakdown-for-week-1-194108969.html" class="_ys_1aqsz4n">TE</a>
 <a href="/fantasy/article/2026-trade-value-charts--justin-boones-fantasy-football-wide-receiver-breakdown-for-week-1-193843688.html" class="_ys_1aqsz4n">WR</a>
@@ -112,6 +116,23 @@ def test_fetch_qb_trade_values_uses_1qb_2qb_columns():
     assert rows[0].value_col2_label == "2QB"
     # a genuine 0 value (Fernando Mendoza's 1QB value) is NOT None:
     assert rows[1].value_col1 == 0.0
+
+
+def test_fetch_rb_trade_values_without_rank_column():
+    # Confirmed live 2026-09-18: Boone's RB breakdown for week 2 dropped the
+    # "Rk" column entirely (header is just Player/HALF/PPR) while QB/WR/TE
+    # kept it -- rank should come back None rather than the fetch failing.
+    url = "https://sports.yahoo.com/fantasy/article/rb-page-no-rank.html"
+    session = FakeSession({url: RB_TABLE_NO_RANK_HTML})
+    rows = fetch_position_trade_values("RB", url, session=session)
+    assert len(rows) == 2
+    gibbs = rows[0]
+    assert gibbs.rank is None
+    assert gibbs.player_name == "Jahmyr Gibbs"
+    assert gibbs.value_col1_label == "HALF"
+    assert gibbs.value_col1 == 92.0
+    assert gibbs.value_col2_label == "PPR"
+    assert gibbs.value_col2 == 95.0
 
 
 def test_fetch_raises_when_table_missing():
