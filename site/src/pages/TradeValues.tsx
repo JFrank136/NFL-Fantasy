@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { supabase, type TradeValueLatestRow } from '../lib/supabase'
 
 const POSITIONS = ['ALL', 'QB', 'RB', 'WR', 'TE']
@@ -61,7 +61,7 @@ export default function TradeValues() {
       </div>
 
       {loading && <div className="subtle">Loading trade values…</div>}
-      {error && <div className="text-red-400">Failed to load: {error}</div>}
+      {error && <div style={{ color: 'var(--signal-down)' }}>Failed to load: {error}</div>}
 
       {!loading && !error && (
         <table className="table">
