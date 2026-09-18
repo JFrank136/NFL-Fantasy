@@ -135,8 +135,9 @@ from `src/lib/regression.ts` (already written for the old weekly
 BlendEngine, same technique applies here):
 
 1. For the selected scoring format, build two maps keyed by
-   `canonicalKey(tidyName(name), pos, team)` (from `src/lib/names.ts`):
-   Draft Sharks' `ds_value` and Boone's matched value column.
+   `canonical_name` (already resolved server-side by the pipeline's
+   `player_identity.py` for both tables — no client-side name matching
+   needed): Draft Sharks' `ds_value` and Boone's matched value column.
 2. Fit a linear scale (`robustLinearFit`) from Boone's value onto Draft
    Sharks' value using players present in both maps.
 3. Apply that scale to every Boone value (`applyScale`), then blend
