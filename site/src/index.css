@@ -65,6 +65,16 @@ body {
   @apply py-2 px-3;
   border-bottom: 1px solid var(--bg-card-border);
 }
+.table th.sortable {
+  cursor: pointer;
+  user-select: none;
+}
+.table th.sortable:hover {
+  color: var(--text-primary);
+}
+.sort-indicator {
+  color: var(--text-primary);
+}
 .badge {
   @apply inline-flex items-center px-2 py-0.5 rounded-md text-xs border;
   background: var(--bg-card);
