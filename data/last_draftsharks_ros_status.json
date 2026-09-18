@@ -1,0 +1,8 @@
+{
+  "run_at": "2026-09-18T00:53:06+00:00",
+  "ok": true,
+  "combos": {
+    "week2/draftsharks_ros/half-ppr": "ok",
+    "week2/draftsharks_ros/ppr": "ok"
+  }
+}

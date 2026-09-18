@@ -1,10 +1,10 @@
 {
-  "run_at": "2026-09-12T15:55:29+00:00",
+  "run_at": "2026-09-17T13:28:31+00:00",
   "ok": true,
   "positions": {
-    "QB": "ok",
-    "RB": "ok",
-    "WR": "ok",
-    "TE": "ok"
+    "QB": "not_yet_published",
+    "RB": "not_yet_published",
+    "WR": "not_yet_published",
+    "TE": "not_yet_published"
   }
 }
