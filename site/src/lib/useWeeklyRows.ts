@@ -6,7 +6,7 @@
 
 import { useEffect, useState } from 'react'
 import { supabase, fetchAllRows, type RankingLatestRow } from './supabase'
-import { aggregateWeeklyRanks, identityKey, normalizePosition, type AggregatedWeeklyRow } from './blend'
+import { aggregateWeeklyRanks, identityKey, normalizePosition, rescaleDraftSharksRanks, type AggregatedWeeklyRow } from './blend'
 import type { Scoring } from './useBlendedRos'
 
 export function useCurrentWeek() {
@@ -116,7 +116,9 @@ export function useWeeklyRows(scoring: Scoring): WeeklyRowsResult {
           }
         })
 
-        setRows(aggregateWeeklyRanks(players))
+        // Draft Sharks' rank is an overall rank; put it on Boone/Smyth's
+        // FLEX/QB scale before the three are averaged together.
+        setRows(aggregateWeeklyRanks(rescaleDraftSharksRanks(players)))
         setFreshest(rankingRows.reduce((max, r) => (r.pulled_at > max ? r.pulled_at : max), rankingRows[0]?.pulled_at ?? '') || null)
         setLoading(false)
       })

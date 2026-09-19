@@ -28,7 +28,14 @@ export interface WeeklyPlayer {
   aggregateScore: number | null
   positionRank: number | null
   flexRank: number | null
+  /**
+   * Draft Sharks' rank rescaled into the FLEX/QB group, so it is directly
+   * comparable with booneRank/smytheRank (Start/Sit's source-agreement and
+   * source-split reasons compare the three against each other).
+   */
   dsRank: number | null
+  /** Draft Sharks' published overall rank, unscaled. Display/debug only. */
+  dsOverallRank: number | null
   booneRank: number | null
   smytheRank: number | null
   dsProjection: number | null
@@ -79,7 +86,8 @@ export function buildWeeklyPool(rows: AggregatedWeeklyRow[], week: number | null
         aggregateScore: r.aggregateScore,
         positionRank: r.aggregateRank,
         flexRank: flex.get(key) ?? null,
-        dsRank: r.draftsharksRank,
+        dsRank: r.draftsharksScaledRank ?? r.draftsharksRank,
+        dsOverallRank: r.draftsharksRank,
         booneRank: r.booneRank,
         smytheRank: r.smytheRank,
         dsProjection: r.dsProjection,

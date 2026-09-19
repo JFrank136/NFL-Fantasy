@@ -6,7 +6,7 @@ function wp(name: string, overrides: Partial<WeeklyPlayer> = {}): WeeklyPlayer {
   return {
     key: `${name}::RB`, canonicalName: name, playerName: name, position: 'RB', team: 'XXX',
     opponent: '@BUF', isBye: false, aggregateScore: 10, positionRank: 5, flexRank: 10,
-    dsRank: 10, booneRank: 10, smytheRank: 10,
+    dsRank: 10, dsOverallRank: 120, booneRank: 10, smytheRank: 10,
     dsProjection: 12, dsFloor: 6, dsCeiling: 20, ...overrides,
   }
 }

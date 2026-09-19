@@ -79,6 +79,16 @@ describe('buildWeeklyPool', () => {
     expect(pool.find(p => p.canonicalName === 'playing')).toMatchObject({ isBye: false, flexRank: 1 })
   })
 
+  it('carries the rescaled Draft Sharks rank as dsRank, keeping the raw one separate', () => {
+    const pool = buildWeeklyPool([
+      row('a', 'RB', 4, '@BUF', { draftsharksRank: 300, draftsharksScaledRank: 25 }),
+      row('b', 'WR', 5, '@BUF', { draftsharksRank: 7 }),
+    ], null)
+    expect(pool.find(p => p.canonicalName === 'a')).toMatchObject({ dsRank: 25, dsOverallRank: 300 })
+    // No rescale available (older/unscaled input): fall back to the raw rank.
+    expect(pool.find(p => p.canonicalName === 'b')).toMatchObject({ dsRank: 7, dsOverallRank: 7 })
+  })
+
   it('does not treat a non-matching stored bye week as a bye', () => {
     const pool = buildWeeklyPool([row('a', 'RB', 1, '@BUF', { byeWeek: 12 })], 7)
     expect(pool[0].isBye).toBe(false)

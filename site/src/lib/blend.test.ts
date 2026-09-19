@@ -1,7 +1,15 @@
 import { describe, it, expect } from 'vitest'
 import { blendRosValues, type RosSourceRow, type BooneRosRow } from './blend'
 import { weightedAverageRank, aggregateWeeklyRanks, type WeeklyPlayerInput } from './blend'
-import { normalizePosition, identityKey } from './blend'
+import { normalizePosition, identityKey, rescaleDraftSharksRanks } from './blend'
+
+function wp(name: string, position: string, extra: Partial<WeeklyPlayerInput> = {}): WeeklyPlayerInput {
+  return {
+    canonicalName: name, playerName: name.toUpperCase(), position, team: 'XXX',
+    draftsharksRank: null, booneRank: null, smytheRank: null,
+    dsProjection: null, dsFloor: null, dsCeiling: null, opponent: '@BUF', ...extra,
+  }
+}
 
 describe('weightedAverageRank', () => {
   it('averages three sources using default (non-QB) weights', () => {
@@ -70,6 +78,121 @@ describe('aggregateWeeklyRanks', () => {
     const result = aggregateWeeklyRanks(players)
     const byName = Object.fromEntries(result.map(r => [r.playerName, r.aggregateRank]))
     expect(byName).toEqual({ A: 1, B: null })
+  })
+
+  it('blends the rescaled Draft Sharks rank when one is present', () => {
+    // Raw DS 500 would swamp Boone/Smyth 20/22 at weight .5; the scaled rank
+    // is what belongs in the average.
+    const [row] = aggregateWeeklyRanks([
+      wp('a', 'RB', { draftsharksRank: 500, draftsharksScaledRank: 24, booneRank: 20, smytheRank: 22 }),
+    ])
+    // .5*24 + .3*20 + .2*22 = 22.4
+    expect(row.aggregateScore).toBeCloseTo(22.4, 5)
+    expect(row.draftsharksRank).toBe(500)
+  })
+
+  it('still uses the raw DS rank when nothing has been rescaled', () => {
+    const [row] = aggregateWeeklyRanks([
+      wp('a', 'RB', { draftsharksRank: 10, booneRank: 20, smytheRank: 30 }),
+    ])
+    expect(row.aggregateScore).toBeCloseTo(0.5 * 10 + 0.3 * 20 + 0.2 * 30, 5)
+  })
+})
+
+describe('rescaleDraftSharksRanks', () => {
+  it('re-ranks RB/WR/TE together as one FLEX group, 1-based and gap-free', () => {
+    const out = rescaleDraftSharksRanks([
+      wp('rb', 'RB', { draftsharksRank: 836 }),
+      wp('wr', 'WR', { draftsharksRank: 10 }),
+      wp('te', 'TE', { draftsharksRank: 300 }),
+    ])
+    const byName = Object.fromEntries(out.map(r => [r.canonicalName, r.draftsharksScaledRank]))
+    expect(byName).toEqual({ wr: 1, te: 2, rb: 3 })
+  })
+
+  it('ranks QBs against QBs, not against the FLEX group', () => {
+    const out = rescaleDraftSharksRanks([
+      wp('qb1', 'QB', { draftsharksRank: 1 }),
+      wp('qb2', 'QB', { draftsharksRank: 820 }),
+      wp('rb1', 'RB', { draftsharksRank: 3 }),
+      wp('rb2', 'RB', { draftsharksRank: 400 }),
+    ])
+    const byName = Object.fromEntries(out.map(r => [r.canonicalName, r.draftsharksScaledRank]))
+    expect(byName).toEqual({ qb1: 1, qb2: 2, rb1: 1, rb2: 2 })
+  })
+
+  it('gives tied raw ranks the same scaled rank (competition ranking)', () => {
+    const out = rescaleDraftSharksRanks([
+      wp('a', 'RB', { draftsharksRank: 5 }),
+      wp('b', 'WR', { draftsharksRank: 5 }),
+      wp('c', 'TE', { draftsharksRank: 9 }),
+    ])
+    const byName = Object.fromEntries(out.map(r => [r.canonicalName, r.draftsharksScaledRank]))
+    expect(byName).toEqual({ a: 1, b: 1, c: 3 })
+  })
+
+  it('leaves players without a Draft Sharks rank null and does not consume a slot', () => {
+    const out = rescaleDraftSharksRanks([
+      wp('none', 'RB', { draftsharksRank: null }),
+      wp('a', 'RB', { draftsharksRank: 40 }),
+      wp('b', 'WR', { draftsharksRank: 90 }),
+    ])
+    const byName = Object.fromEntries(out.map(r => [r.canonicalName, r.draftsharksScaledRank]))
+    expect(byName).toEqual({ none: null, a: 1, b: 2 })
+  })
+
+  it('does not mutate its input', () => {
+    const input = [wp('a', 'RB', { draftsharksRank: 40 })]
+    const out = rescaleDraftSharksRanks(input)
+    expect(input[0].draftsharksScaledRank).toBeUndefined()
+    expect(out[0]).not.toBe(input[0])
+    expect(out[0].draftsharksScaledRank).toBe(1)
+  })
+
+  it('keeps every other field intact', () => {
+    const [out] = rescaleDraftSharksRanks([wp('a', 'RB', { draftsharksRank: 40, booneRank: 2, dsCeiling: 19 })])
+    expect(out).toMatchObject({ canonicalName: 'a', position: 'RB', booneRank: 2, dsCeiling: 19, draftsharksRank: 40 })
+  })
+})
+
+describe('Draft Sharks rescaling end to end', () => {
+  // Draft Sharks' weekly rank is an OVERALL rank across everything it
+  // publishes (IDP/K/DST included), so week-2 RB raw ranks span 3-836 while
+  // Boone/Smyth's Yahoo FLX ranks span 1-~155. Blending them raw let DS
+  // dominate, and redistributing its weight when a DS row was missing threw
+  // players many FLEX spots. These two cases are the regressions.
+  const flex = (name: string, extra: Partial<WeeklyPlayerInput>) => wp(name, 'RB', extra)
+
+  it('stops a large raw DS rank from swamping close Boone/Smyth ranks', () => {
+    // Filler so the two real players land near the top of the FLEX group.
+    const players = [
+      flex('a', { draftsharksRank: 500, booneRank: 20, smytheRank: 22 }),
+      flex('b', { draftsharksRank: 520, booneRank: 21, smytheRank: 23 }),
+    ]
+    const rawScore = aggregateWeeklyRanks(players)[0].aggregateScore as number
+    const scaledScore = aggregateWeeklyRanks(rescaleDraftSharksRanks(players))[0].aggregateScore as number
+    expect(rawScore).toBeGreaterThan(200) // .5 * 500 dominates
+    expect(scaledScore).toBeLessThan(25) // now in Boone/Smyth territory
+  })
+
+  it('no longer throws a DS-less player far from an otherwise identical peer', () => {
+    // Both are RB20-ish to Boone and Smyth. Before rescaling, `withDs` carried
+    // .5 * 300 = 150 while `noDs` had DS's weight redistributed onto its own
+    // ranks (~20), a >100-point phantom gap that read as "High" confidence.
+    const players = [
+      flex('withDs', { draftsharksRank: 300, booneRank: 20, smytheRank: 20 }),
+      flex('noDs', { draftsharksRank: null, booneRank: 20, smytheRank: 20 }),
+      // Context so 300 scales to something sane rather than to rank 1.
+      ...Array.from({ length: 24 }, (_, i) => flex(`filler${i}`, { draftsharksRank: i + 1, booneRank: i + 1, smytheRank: i + 1 })),
+    ]
+    const score = (rows: ReturnType<typeof aggregateWeeklyRanks>, name: string) =>
+      rows.find(r => r.canonicalName === name)!.aggregateScore as number
+
+    const raw = aggregateWeeklyRanks(players)
+    expect(Math.abs(score(raw, 'withDs') - score(raw, 'noDs'))).toBeGreaterThan(100)
+
+    const scaled = aggregateWeeklyRanks(rescaleDraftSharksRanks(players))
+    expect(Math.abs(score(scaled, 'withDs') - score(scaled, 'noDs'))).toBeLessThan(5)
   })
 })
 

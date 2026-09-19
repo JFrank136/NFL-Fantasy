@@ -58,7 +58,7 @@ const ROW_SPECS: RowSpec[] = [
   { id: 'score', label: 'Rank score (lower = better)', format: 'value', better: 'lower', gate: 'scale', pick: p => p.aggregateScore },
   { id: 'positionRank', label: 'Position rank', format: 'rank', better: 'lower', gate: 'position', pick: p => p.positionRank },
   { id: 'flexRank', label: 'FLEX rank (RB/WR/TE)', format: 'rank', better: 'lower', gate: 'always', pick: p => p.flexRank },
-  { id: 'dsRank', label: 'Draft Sharks rank', format: 'rank', better: 'lower', gate: 'scale', pick: p => p.dsRank },
+  { id: 'dsRank', label: 'Draft Sharks rank (FLEX/QB scale)', format: 'rank', better: 'lower', gate: 'scale', pick: p => p.dsRank },
   { id: 'booneRank', label: 'Boone rank', format: 'rank', better: 'lower', gate: 'scale', pick: p => p.booneRank },
   { id: 'smytheRank', label: 'Smyth rank', format: 'rank', better: 'lower', gate: 'scale', pick: p => p.smytheRank },
   { id: 'dsProjection', label: 'DS projection', format: 'value', better: 'higher', gate: 'scale', pick: p => p.dsProjection },

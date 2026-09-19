@@ -14,7 +14,7 @@ function cp(name: string, overrides: Partial<ComparisonPlayer> = {}): Comparison
 function wp(key: string, overrides: Partial<WeeklyPlayer> = {}): WeeklyPlayer {
   return {
     key, canonicalName: key, playerName: key, position: 'WR', team: 'XXX', opponent: '@BUF', isBye: false,
-    aggregateScore: 10, positionRank: 5, flexRank: 12, dsRank: 10, booneRank: 10, smytheRank: 10,
+    aggregateScore: 10, positionRank: 5, flexRank: 12, dsRank: 10, dsOverallRank: 120, booneRank: 10, smytheRank: 10,
     dsProjection: 10, dsFloor: 5, dsCeiling: 18, ...overrides,
   }
 }
