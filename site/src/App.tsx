@@ -2,7 +2,7 @@
 import { useState } from 'react'
 import Sidebar from './components/Sidebar'
 import MobileNav from './components/MobileNav'
-import { Rankings, TradeValues } from './pages'
+import { Rankings, TradeValues, TradeAnalyzer } from './pages'
 import type { PageId } from './nav'
 
 export default function App() {
@@ -16,6 +16,7 @@ export default function App() {
         <main className="flex-1 max-w-6xl w-full mx-auto p-4 space-y-4">
           {page === 'rankings' && <Rankings />}
           {page === 'tradevalues' && <TradeValues />}
+          {page === 'trade' && <TradeAnalyzer />}
         </main>
       </div>
     </div>
