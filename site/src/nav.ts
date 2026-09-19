@@ -4,7 +4,7 @@
 // (desktop) and MobileNav (mobile drawer). Adding a future roadmap page
 // (Data Health, Start/Sit, etc.) is a one-line addition here.
 
-export type PageId = 'rankings' | 'tradevalues' | 'trade' | 'movers' | 'disagreement'
+export type PageId = 'rankings' | 'tradevalues' | 'trade' | 'movers' | 'disagreement' | 'compare'
 
 export interface NavItem {
   id: PageId
@@ -17,4 +17,5 @@ export const NAV_ITEMS: NavItem[] = [
   { id: 'trade', label: 'Trade Analyzer' },
   { id: 'movers', label: 'Movers & Fallers' },
   { id: 'disagreement', label: 'Expert Disagreement' },
+  { id: 'compare', label: 'Player Comparison' },
 ]

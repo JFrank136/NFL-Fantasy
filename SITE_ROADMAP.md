@@ -49,9 +49,9 @@ These should be built before most page-specific work to avoid duplicating logic.
 
 ## Reusable UI Components
 
-- [ ] Shared player search/select component
-- [ ] Shared side-by-side comparison table
-- [ ] Support best/worst highlighting by row
+- [x] Shared player search/select component
+- [x] Shared side-by-side comparison table
+- [x] Support best/worst highlighting by row
 - [ ] Shared player value display
 - [ ] Shared source transparency display
 - [ ] Shared confidence indicator
@@ -158,19 +158,19 @@ Neutral ROS comparison when the user wants to compare players without entering a
 
 ## Must Have
 
-- [ ] Compare 2–5 players
-- [ ] Side-by-side table
-- [ ] Blended ROS value
-- [ ] Draft Sharks ROS value
-- [ ] Boone ROS value
-- [ ] Draft Sharks upside / ceiling value
-- [ ] ROS rank
-- [ ] Position rank
-- [ ] ROS trend / recent movement
-- [ ] SOS
-- [ ] Expert/value disagreement
-- [ ] Highlight best/worst values by row
-- [ ] Optional short summary of biggest differences
+- [x] Compare 2–5 players
+- [x] Side-by-side table
+- [x] Blended ROS value
+- [x] Draft Sharks ROS value
+- [x] Boone ROS value
+- [x] Draft Sharks upside / ceiling value
+- [x] ROS rank
+- [x] Position rank
+- [x] ROS trend / recent movement
+- [x] SOS
+- [x] Expert/value disagreement
+- [x] Highlight best/worst values by row
+- [x] Optional short summary of biggest differences
 
 ## Notes
 
@@ -523,7 +523,7 @@ Existing failure emails remain useful; this page is for knowing what data the si
 
 - [ ] Home
 - [ ] Start / Sit
-- [ ] Player Comparison
+- [x] Player Comparison
 - [ ] Add / Drop
 - [x] Trade Analyzer
 - [x] Movers & Fallers
