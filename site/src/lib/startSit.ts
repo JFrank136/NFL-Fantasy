@@ -56,7 +56,8 @@ const ROW_SPECS: RowSpec[] = [
 
 /** Row-based comparison (one row per stat, one column per player). */
 export function startSitRows(players: WeeklyPlayer[], rosByKey: Map<string, number | null>): ComparisonRow[] {
-  const samePosition = new Set(players.map(p => p.position)).size <= 1
+  // Bye-week players don't count: they're excluded from highlights anyway.
+  const samePosition = new Set(players.filter(p => !p.isBye).map(p => p.position)).size <= 1
   return ROW_SPECS.map(spec => {
     const values = players.map(p => spec.pick(p, rosByKey))
     const canHighlight = spec.better != null && spec.format !== 'text' && (spec.id !== 'positionRank' || samePosition)
@@ -88,6 +89,8 @@ function buildReasons(top: WeeklyPlayer, next: WeeklyPlayer): string[] {
     const favored = (s: number) => (s > 0 ? top : next)
     if (dsSign > 0 && booneSign > 0) {
       reasons.push(`Ranked ahead of ${next.playerName} by both Draft Sharks and Boone.`)
+    } else if (dsSign < 0 && booneSign < 0) {
+      reasons.push(`Draft Sharks and Boone both rank ${next.playerName} ahead; the weighted score favors ${top.playerName} (Smyth/weights).`)
     } else if (dsSign * booneSign < 0) {
       reasons.push(`Sources split: Draft Sharks favors ${favored(dsSign).playerName}, Boone favors ${favored(booneSign).playerName}.`)
     }
@@ -136,7 +139,8 @@ export function recommendStartSit(players: WeeklyPlayer[]): StartSitRecommendati
   const sorted = [...valid].sort((a, b) => (a.aggregateScore as number) - (b.aggregateScore as number))
   const top = sorted[0]
   const next = sorted[1]
-  const gap = (next.aggregateScore as number) - (top.aggregateScore as number)
+  // Round away floating-point noise (e.g. 3.3 - 1.3 = 1.9999999999999998) before thresholding.
+  const gap = Math.round(((next.aggregateScore as number) - (top.aggregateScore as number)) * 1000) / 1000
 
   return {
     status: 'ok',

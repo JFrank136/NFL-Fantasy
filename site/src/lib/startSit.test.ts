@@ -30,6 +30,17 @@ describe('recommendStartSit', () => {
     expect(at(0)).toBe('Toss-up')
   })
 
+  it('pins the confidence thresholds so retuning is a deliberate change', () => {
+    expect(CONFIDENCE_THRESHOLDS).toEqual({ high: 5, medium: 2 })
+  })
+
+  it('is not thrown off by floating-point noise in the score gap', () => {
+    const conf = (a: number, b: number) =>
+      recommendStartSit([wp('a', { aggregateScore: a }), wp('b', { aggregateScore: b })]).confidence
+    expect(conf(1.3, 3.3)).toBe('Medium') // raw gap is 1.9999999999999998
+    expect(conf(1.1, 6.1)).toBe('High')
+  })
+
   it('excludes bye-week players and says so', () => {
     const rec = recommendStartSit([
       wp('bye', { aggregateScore: 1, opponent: null, isBye: true }),
@@ -80,6 +91,16 @@ describe('recommendStartSit', () => {
     expect(rec.reasons[0]).toContain('Sources split')
     expect(rec.reasons[0]).toContain('Draft Sharks favors a')
     expect(rec.reasons[0]).toContain('Boone favors b')
+  })
+
+  it('reasons: flags when both sources rank the runner-up ahead but the weighted score picks the starter', () => {
+    const rec = recommendStartSit([
+      wp('a', { aggregateScore: 5, dsRank: 9, booneRank: 9, smytheRank: 1 }),
+      wp('b', { aggregateScore: 8, dsRank: 3, booneRank: 4, smytheRank: 20 }),
+    ])
+    expect(rec.starterKey).toBe('a::RB')
+    expect(rec.reasons[0]).toContain('both rank b ahead')
+    expect(rec.reasons[0]).toContain('weighted score favors a')
   })
 
   it('reasons: cites a big FLEX-rank gap even when position ranks look close', () => {
@@ -137,6 +158,15 @@ describe('startSitRows', () => {
       wp('bye', { aggregateScore: 1, isBye: true, opponent: null }),
     ], new Map())
     expect(rows.find(r => r.id === 'score')!.highlights).toEqual(['best', 'worst', null])
+  })
+
+  it('ignores a bye-week player of another position when deciding to highlight position rank', () => {
+    const rows = startSitRows([
+      wp('rb1', { positionRank: 3 }),
+      wp('rb2', { positionRank: 8 }),
+      wp('bye', { position: 'WR', key: 'bye::WR', positionRank: 1, isBye: true, opponent: null }),
+    ], new Map())
+    expect(rows.find(r => r.id === 'positionRank')!.highlights).toEqual(['best', 'worst', null])
   })
 
   it('highlights position rank only when everyone shares a position; ROS is context only', () => {
