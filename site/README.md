@@ -8,7 +8,7 @@ The in-season fantasy football site: live weekly rankings, rest-of-season (ROS) 
   - **ROS** — blended Draft Sharks + Boone rest-of-season value (see `docs/DATA.md` for the blend algorithm), individual source values, Draft Sharks ceiling/upside, and week-over-week change ("ROS Δ").
   - **Weekly** — aggregate weekly rank across Draft Sharks/Boone/Smythe (weighted per `docs/DATA.md`), individual source ranks, Draft Sharks projection/floor/ceiling, opponent.
   - Both tabs: search, position filter, scoring toggle (PPR/Half-PPR), sortable columns.
-- **Trade Values** page: browses `in_season_trade_values` across all 5 live sources (Boone, CBS, FantasyPros, RSJ, USA Today).
+- **Trade Values** page: browses `in_season_trade_values` across all 5 live trade-value sources (Boone, CBS, FantasyPros, RSJ, USA Today), plus Draft Sharks' ROS "3D value" (`ds_value`) as a sixth column. Queries that can exceed Supabase's silent 1000-row cap go through `fetchAllRows` (`src/lib/supabase.ts`).
 - Visual system: "Turf Bright" palette (see `src/index.css` CSS custom properties), sidebar nav on desktop, hamburger/drawer on mobile.
 - Not yet built (see `Fantasy Football/SITE_ROADMAP.md` at the repo root for the full plan): Home, Start/Sit, Player Comparison, Add/Drop, Trade Analyzer, Movers & Fallers, Expert Disagreement, Team Analyzer, Data Health.
 
@@ -34,7 +34,8 @@ Deployed on Vercel, auto-deploys on push to `main`: https://nfl-fantasy-sigma.ve
 ## Architecture notes
 
 - `src/lib/blend.ts` — pure, unit-tested calculation functions (ROS value blending, weekly rank aggregation). No Supabase/React dependency; pages fetch rows and hand them to these functions.
-- `src/lib/rosHistory.ts` — async Supabase helper for the previous week's ROS snapshot (used for "ROS Δ").
+- `src/lib/useRosHistory.ts` / `src/lib/movers.ts` — full append-only ROS history fetch, plus pure per-position current/baseline snapshot splitting and change math. Used by Rankings' "ROS Δ" and Movers & Fallers so they always agree.
+- `src/lib/useBlendedRos.ts` — current blended ROS value fetch (used by Trade Analyzer).
 - `src/lib/consensusWeights.ts` — the source-weighting used for weekly rank aggregation, hand-copied from `Draft/config/settings.yaml`'s `consensus.weights` (not read live — if that file is retuned, update this one to match).
 - `src/nav.ts` — single source of truth for site navigation (`NAV_ITEMS`), consumed by both `Sidebar` and `MobileNav`.
 

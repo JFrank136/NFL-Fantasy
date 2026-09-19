@@ -1,7 +1,9 @@
 import { useEffect, useMemo, useState } from 'react'
 import { supabase, fetchAllRows, type RankingLatestRow, type RosRankingRow, type TradeValueLatestRow } from '../lib/supabase'
 import { blendRosValues, aggregateWeeklyRanks, identityKey, normalizePosition, type BlendedRosRow, type AggregatedWeeklyRow } from '../lib/blend'
-import { fetchPreviousRosSnapshot } from '../lib/rosHistory'
+import { useRosHistory } from '../lib/useRosHistory'
+import { toBooneRosInput, toDsRosInput } from '../lib/useBlendedRos'
+import { buildMovers, splitSnapshots, TIMEFRAME_MIN_GAP_MS } from '../lib/movers'
 
 // Weekly has no 'ALL' -- aggregateWeeklyRanks ranks within each position, so
 // an "ALL" view would just interleave separate position-scoped #1's (the
@@ -147,66 +149,29 @@ function useCurrentWeek() {
 }
 
 function useRosTab(scoring: Scoring) {
-  const [rows, setRows] = useState<RosTabRow[]>([])
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
-  const [freshest, setFreshest] = useState<string | null>(null)
+  const { dsRows, booneRows, loading, error } = useRosHistory(scoring)
 
-  useEffect(() => {
-    let cancelled = false
-    setLoading(true)
-    setError(null)
+  const { rows, freshest } = useMemo(() => {
+    const gap = TIMEFRAME_MIN_GAP_MS.latest
+    const ds = splitSnapshots(dsRows, gap)
+    const boone = splitSnapshots(booneRows, gap)
+    const current = { ds: ds.current.map(toDsRosInput), boone: boone.current.map(r => toBooneRosInput(r, scoring)) }
 
-    Promise.all([
-      supabase.from('in_season_ros_rankings_latest').select('*').eq('scoring', scoring),
-      supabase.from('in_season_trade_values_latest').select('*').eq('source', 'boone'),
-    ]).then(async ([dsRes, booneRes]) => {
-      if (cancelled) return
-      if (dsRes.error) { setError(dsRes.error.message); setLoading(false); return }
-      if (booneRes.error) { setError(booneRes.error.message); setLoading(false); return }
-
-      const dsRows = (dsRes.data ?? []) as RosRankingRow[]
-      const booneRows = (booneRes.data ?? []) as TradeValueLatestRow[]
-      const currentPulledAt = dsRows.reduce((max, r) => (r.pulled_at > max ? r.pulled_at : max), dsRows[0]?.pulled_at ?? '')
-
-      const booneValueFor = (r: TradeValueLatestRow) =>
-        r.position === 'QB' ? r.value_col1 : (scoring === 'ppr' ? r.value_col2 : r.value_col1)
-
-      const blended = blendRosValues(
-        dsRows.map(r => ({
-          canonicalName: r.canonical_name, playerName: r.player_name, position: r.position,
-          team: r.team, dsValue: r.ds_value, ceiling: r.ceiling_proj,
-        })),
-        booneRows.map(r => ({ canonicalName: r.canonical_name, position: r.position, value: booneValueFor(r) })),
-      )
-
-      let previousBlendedByName = new Map<string, number | null>()
-      if (currentPulledAt) {
-        const previous = await fetchPreviousRosSnapshot(scoring, currentPulledAt)
-        if (previous) {
-          const previousBlended = blendRosValues(
-            previous.dsRows.map(r => ({
-              canonicalName: r.canonical_name, playerName: r.player_name, position: r.position,
-              team: r.team, dsValue: r.ds_value, ceiling: r.ceiling_proj,
-            })),
-            previous.booneRows.map(r => ({ canonicalName: r.canonical_name, position: r.position, value: booneValueFor(r) })),
-          )
-          previousBlendedByName = new Map(previousBlended.map(r => [identityKey(r.canonicalName, r.position), r.blendedValue]))
-        }
-      }
-
-      if (cancelled) return
-      setRows(blended.map(r => {
-        const prev = previousBlendedByName.get(identityKey(r.canonicalName, r.position))
-        const rosChange = r.blendedValue != null && prev != null ? r.blendedValue - prev : null
-        return { ...r, rosChange }
-      }))
-      setFreshest(currentPulledAt || null)
-      setLoading(false)
+    // Same per-position baseline as Movers & Fallers, so ROS Δ here and the
+    // "Latest change" there always agree.
+    const { rows: movers } = buildMovers('blended', current, {
+      ds: ds.baseline.length ? ds.baseline.map(toDsRosInput) : null,
+      boone: boone.baseline.length ? boone.baseline.map(r => toBooneRosInput(r, scoring)) : null,
     })
+    const changeByKey = new Map(movers.map(m => [identityKey(m.canonicalName, m.position), m.change]))
 
-    return () => { cancelled = true }
-  }, [scoring])
+    const tabRows: RosTabRow[] = blendRosValues(current.ds, current.boone).map(r => ({
+      ...r,
+      rosChange: changeByKey.get(identityKey(r.canonicalName, r.position)) ?? null,
+    }))
+    const newest = ds.current.reduce((max, r) => (r.pulled_at > max ? r.pulled_at : max), '')
+    return { rows: tabRows, freshest: newest || null }
+  }, [dsRows, booneRows, scoring])
 
   return { rows, loading, error, freshest }
 }

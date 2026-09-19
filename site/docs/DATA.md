@@ -8,9 +8,9 @@ This app is read-only against the shared "Fantasy Football" Supabase project (`t
 |---|---|---|
 | `in_season_rankings_latest` | Rankings — Weekly tab, and current-week detection | `DISTINCT ON` view, still contains one row per (week, source, scoring, player) — filter by `week` explicitly, don't assume "latest" means one row per player. Draft Sharks publishes all 18 weeks at once; Boone/Smythe only publish the current week — current week is detected as the max week Boone/Smythe have data for. |
 | `in_season_ros_rankings_latest` | Rankings — ROS tab | One row per (source, scoring, player) at the latest pull. `ds_value` is Draft Sharks' blended ROS trade value; `ceiling_proj` is their ROS ceiling/upside. |
-| `in_season_ros_rankings` (raw, not `_latest`) | `rosHistory.ts`'s previous-snapshot lookup | Queried directly (not the `_latest` view) to find the second-most-recent `pulled_at` per scoring, for the "ROS Δ" column. |
+| `in_season_ros_rankings` (raw, not `_latest`) | `useRosHistory.ts` (Rankings ROS Δ, Movers & Fallers) | Queried directly (not the `_latest` view), full history, paginated. `movers.ts` picks current/baseline snapshots from it. |
 | `in_season_trade_values_latest` | Trade Values page, and Rankings ROS tab (Boone only) | 5 live sources as of 2026-09-17: `boone`, `cbs`, `fantasypros`, `rsj`, `usatoday`. **Draft Sharks trade values are not in this table** — Draft Sharks' ROS numbers live in `in_season_ros_rankings` instead, under a different shape. |
-| `in_season_trade_values` (raw) | `rosHistory.ts`'s previous-snapshot lookup | Same raw-vs-latest distinction as ROS rankings, filtered to `source = 'boone'`. |
+| `in_season_trade_values` (raw) | `useRosHistory.ts` | Same raw-vs-latest distinction as ROS rankings, filtered to `source = 'boone'`. Sources scrape per position and sometimes rerun one position, so pulls do NOT always share one `pulled_at` across positions — snapshots must be chosen per position (`splitSnapshots`), never as one global timestamp. |
 
 ## Boone trade-value column semantics
 
