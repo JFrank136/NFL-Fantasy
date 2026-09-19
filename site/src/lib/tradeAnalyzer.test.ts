@@ -10,6 +10,7 @@ function row(canonicalName: string, blendedValue: number | null, overrides: Part
     team: overrides.team ?? null,
     dsValue: overrides.dsValue ?? blendedValue,
     booneValue: overrides.booneValue ?? blendedValue,
+    booneScaled: overrides.booneScaled ?? blendedValue,
     ceiling: overrides.ceiling ?? null,
     blendedValue,
     overallRank: overrides.overallRank ?? null,

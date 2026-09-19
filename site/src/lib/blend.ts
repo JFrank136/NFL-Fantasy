@@ -48,6 +48,8 @@ export interface BlendedRosRow {
   team: string | null
   dsValue: number | null
   booneValue: number | null
+  /** Boone's value mapped onto the Draft Sharks scale (the same fit the blend uses). */
+  booneScaled: number | null
   ceiling: number | null
   blendedValue: number | null
   overallRank: number | null
@@ -113,6 +115,7 @@ export function blendRosValues(
       team: ds?.team ?? null,
       dsValue: ds?.dsValue ?? null,
       booneValue: boone?.value ?? null,
+      booneScaled: scaledBoone,
       ceiling: ds?.ceiling ?? null,
       blendedValue,
       overallRank: null,

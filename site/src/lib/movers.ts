@@ -7,7 +7,7 @@
 
 import { blendRosValues, identityKey, type BlendedRosRow, type RosSourceRow, type BooneRosRow } from './blend'
 
-export type Metric = 'blended' | 'boone' | 'ds' | 'ceiling'
+export type Metric = 'blended' | 'boone' | 'booneScaled' | 'ds' | 'ceiling'
 export type Timeframe = 'latest' | 'week'
 
 const HOUR_MS = 60 * 60 * 1000
@@ -70,6 +70,15 @@ export function splitSnapshots<T extends Snapshotted>(rows: T[], minGapMs: numbe
   return { current, baseline, baselineTimes }
 }
 
+/** "Draft Sharks: vs. 9/13/2026-9/18/2026" -- which snapshots a change is measured against. */
+export function describeBaseline(label: string, times: string[]): string {
+  if (times.length === 0) return `${label}: no baseline yet`
+  const sorted = [...times].sort((a, b) => Date.parse(a) - Date.parse(b))
+  const first = new Date(sorted[0]).toLocaleDateString()
+  const last = new Date(sorted[sorted.length - 1]).toLocaleDateString()
+  return `${label}: vs. ${first === last ? first : `${first}–${last}`}`
+}
+
 export interface SourceInputs {
   ds: RosSourceRow[]
   boone: BooneRosRow[]
@@ -103,6 +112,7 @@ function valueOf(row: BlendedRosRow, metric: Metric): number | null {
   switch (metric) {
     case 'blended': return row.blendedValue
     case 'boone': return row.booneValue
+    case 'booneScaled': return row.booneScaled
     case 'ds': return row.dsValue
     case 'ceiling': return row.ceiling
   }
@@ -110,7 +120,9 @@ function valueOf(row: BlendedRosRow, metric: Metric): number | null {
 
 function baselineAvailableFor(metric: Metric, base: BaselineInputs): boolean {
   switch (metric) {
-    case 'blended': return base.ds != null && base.boone != null
+    // Scaling Boone onto the DS scale needs both baselines, same as the blend.
+    case 'blended':
+    case 'booneScaled': return base.ds != null && base.boone != null
     case 'boone': return base.boone != null
     case 'ds':
     case 'ceiling': return base.ds != null

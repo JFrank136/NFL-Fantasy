@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react'
 import { useRosHistory } from '../lib/useRosHistory'
 import { toBooneRosInput, toDsRosInput, type Scoring } from '../lib/useBlendedRos'
-import { buildMovers, splitSnapshots, topMovers, TIMEFRAME_MIN_GAP_MS, type Metric, type MoverRow, type Timeframe } from '../lib/movers'
+import { buildMovers, describeBaseline, splitSnapshots, topMovers, TIMEFRAME_MIN_GAP_MS, type Metric, type MoverRow, type Timeframe } from '../lib/movers'
 
 const POSITIONS = ['ALL', 'QB', 'RB', 'WR', 'TE']
 const SCORINGS = ['ppr', 'half-ppr'] as const
@@ -106,13 +106,6 @@ export default function MoversFallers() {
     return topMovers(rows, LIST_SIZE)
   }, [result, pos])
 
-  const baselineNote = (label: string, times: string[]) => {
-    if (times.length === 0) return `${label}: no baseline yet`
-    const first = new Date(times[0]).toLocaleDateString()
-    const last = new Date(times[times.length - 1]).toLocaleDateString()
-    return `${label}: vs. ${first === last ? first : `${first}–${last}`}`
-  }
-
   return (
     <div className="space-y-3">
       <div className="card p-4 space-y-3">
@@ -139,7 +132,7 @@ export default function MoversFallers() {
         {!loading && !error && (
           <div className="subtle">
             {result.currentDs && `Current: ${new Date(result.currentDs).toLocaleString()} · `}
-            {baselineNote('Draft Sharks', result.baselineDs)} · {baselineNote('Boone', result.baselineBoone)}
+            {describeBaseline('Draft Sharks', result.baselineDs)} · {describeBaseline('Boone', result.baselineBoone)}
           </div>
         )}
         {loading && <div className="subtle">Loading history…</div>}

@@ -363,22 +363,22 @@ Show where Boone and Draft Sharks disagree, either in current value or direction
 
 ### Biggest Current Disagreements
 
-- [ ] Boone ROS value/rank
-- [ ] Draft Sharks ROS value/rank
-- [ ] Difference/gap
-- [ ] Sort by largest disagreement
+- [x] Boone ROS value/rank
+- [x] Draft Sharks ROS value/rank
+- [x] Difference/gap
+- [x] Sort by largest disagreement
 
 ### Direction Disagreements
 
-- [ ] Boone recent change
-- [ ] Draft Sharks recent change
-- [ ] Flag cases where one rises while the other falls or stays flat
-- [ ] Show size of movement
+- [x] Boone recent change
+- [x] Draft Sharks recent change
+- [x] Flag cases where one rises while the other falls or stays flat
+- [x] Show size of movement
 
 ## Filters
 
-- [ ] Position
-- [ ] Timeframe
+- [x] Position
+- [x] Timeframe
 
 ## Notes
 
@@ -527,7 +527,7 @@ Existing failure emails remain useful; this page is for knowing what data the si
 - [ ] Add / Drop
 - [x] Trade Analyzer
 - [x] Movers & Fallers
-- [ ] Expert Disagreement
+- [x] Expert Disagreement
 - [ ] Team Analyzer
 - [ ] Data Health
 
