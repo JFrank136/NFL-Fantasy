@@ -10,10 +10,17 @@
 import { highlightRow, round1, type CellFormat, type ComparisonPlayer, type ComparisonRow } from './playerComparison'
 import type { WeeklyPlayer } from './weeklyPool'
 
-/** Blended-ROS-value gap (best add minus weakest drop) cutoffs. Tunable. */
-export const ADD_DROP_THRESHOLDS = { yes: 5, marginal: 1.5 }
-/** Smallest DS-ceiling edge worth calling out. */
-export const UPSIDE_NOTE_MIN = 2
+/**
+ * Blended-ROS-value gap (best add minus weakest drop) cutoffs. Tunable.
+ * Values are trade-value-style; sampling live data showed 1.5 was only ~5-7
+ * waiver-zone ranks (noise), so Marginal starts at 2.
+ */
+export const ADD_DROP_THRESHOLDS = { yes: 5, marginal: 2 }
+/**
+ * Smallest DS-ceiling edge worth calling out. Two random bench players differ
+ * by >=2 ceiling ~53% of the time and >=3 ~40%, so 3 keeps the note meaningful.
+ */
+export const UPSIDE_NOTE_MIN = 3
 
 export type Verdict = 'Yes' | 'Marginal' | 'No'
 

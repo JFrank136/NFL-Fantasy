@@ -21,7 +21,7 @@ function wp(key: string, overrides: Partial<WeeklyPlayer> = {}): WeeklyPlayer {
 
 describe('ADD_DROP_THRESHOLDS', () => {
   it('is pinned to the documented cutoffs', () => {
-    expect(ADD_DROP_THRESHOLDS).toEqual({ yes: 5, marginal: 1.5 })
+    expect(ADD_DROP_THRESHOLDS).toEqual({ yes: 5, marginal: 2 })
   })
 })
 
@@ -51,9 +51,9 @@ describe('analyzeAddDrop', () => {
     expect(verdict(-10)).toBe('No')
   })
 
-  it('is not thrown off by float error in the gap (2.8 - 1.3 is 1.4999999999999998 raw)', () => {
-    const r = analyzeAddDrop([cp('a', { blended: 2.8 })], [cp('d', { blended: 1.3 })])
-    expect(r.gap).toBe(1.5)
+  it('is not thrown off by float error in the gap (3.3 - 1.3 is 1.9999999999999998 raw)', () => {
+    const r = analyzeAddDrop([cp('a', { blended: 3.3 })], [cp('d', { blended: 1.3 })])
+    expect(r.gap).toBe(2)
     expect(r.verdict).toBe('Marginal')
   })
 
@@ -71,9 +71,14 @@ describe('analyzeAddDrop', () => {
     expect(analyzeAddDrop([cp('a', { ceiling: null })], [cp('d', { ceiling: 20 })]).upsideNote).toBeNull()
   })
 
-  it('treats a ceiling edge of exactly 2 as clear despite float error (16.4 - 14.4)', () => {
-    const r = analyzeAddDrop([cp('a', { ceiling: 16.4 })], [cp('d', { ceiling: 14.4 })])
+  it('treats a ceiling edge of exactly 3 as clear despite float error (4.1 - 1.1 is 2.9999999999999996 raw)', () => {
+    const r = analyzeAddDrop([cp('a', { ceiling: 4.1 })], [cp('d', { ceiling: 1.1 })])
     expect(r.upsideNote).toContain('a has the higher ceiling than d')
+  })
+
+  it('treats a drop-target ceiling edge of exactly 3 as a caveat despite float error', () => {
+    const r = analyzeAddDrop([cp('a', { blended: 60, ceiling: 1.1 })], [cp('d', { blended: 30, ceiling: 4.1 })])
+    expect(r.dropCaveat).toContain('d is the lowest ROS value')
   })
 
   it('caveats a drop suggestion whose ceiling beats the add', () => {
