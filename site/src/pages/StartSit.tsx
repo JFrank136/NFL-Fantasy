@@ -30,8 +30,13 @@ export default function StartSit() {
   const candidates = useMemo(
     () => pool
       .filter(p => !selectedKeys.includes(p.key))
-      .map(p => ({ key: p.key, playerName: p.playerName, position: p.position, team: p.team, blended: rosByKey.get(p.key) ?? null })),
-    [pool, selectedKeys, rosByKey],
+      .map(p => ({ key: p.key, playerName: p.playerName, position: p.position, team: p.team, blended: null,
+        detail: p.isBye ? 'BYE'
+          : p.flexRank != null ? `FLEX #${p.flexRank}`
+          : p.positionRank != null ? `${p.position} #${p.positionRank}`
+          : null,
+      })),
+    [pool, selectedKeys],
   )
 
   const rows = useMemo(() => startSitRows(selected, rosByKey), [selected, rosByKey])

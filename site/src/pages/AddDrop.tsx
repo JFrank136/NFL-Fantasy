@@ -105,7 +105,7 @@ export default function AddDrop() {
           />
           <div className="subtle">
             ROS value answers "who is better right now"; ceiling answers "who has the better best case". They are shown separately on purpose.
-            This week's rows and strength of schedule are context only. Weekly position rank is highlighted only when everyone shares a position.
+            Strength of schedule is context only and never highlighted. The 'This week' rows are secondary context to ROS value. Weekly position rank is highlighted only when everyone shares a position.
           </div>
         </div>
       )}
