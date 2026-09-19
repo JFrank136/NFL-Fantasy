@@ -135,7 +135,18 @@ export function comparisonRows(players: ComparisonPlayer[]): ComparisonRow[] {
   })
 }
 
-const round1 = (n: number) => Math.round(n * 10) / 10
+export const round1 = (n: number) => Math.round(n * 10) / 10
+
+/** Display text for one comparison cell (shared by Player Comparison, Start/Sit, Add/Drop). */
+export function formatCell(value: number | string | null, format: CellFormat): string {
+  if (value == null) return '—'
+  if (typeof value === 'string') return value
+  switch (format) {
+    case 'rank': return `#${value}`
+    case 'signed': return `${value > 0 ? '+' : ''}${round1(value)}`
+    default: return String(round1(value))
+  }
+}
 
 /** 1-2 short sentences on the biggest differences. */
 export function summarizeComparison(players: ComparisonPlayer[]): string {

@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { buildComparisonPool, comparisonRows, highlightRow, summarizeComparison, type ComparisonPlayer } from './playerComparison'
+import { buildComparisonPool, comparisonRows, formatCell, highlightRow, summarizeComparison, type ComparisonPlayer } from './playerComparison'
 import type { BlendedRosRow } from './blend'
 
 function blended(name: string, position: string, value: number | null, extra: Partial<BlendedRosRow> = {}): BlendedRosRow {
@@ -81,5 +81,16 @@ describe('summarizeComparison', () => {
 
   it('asks for more players when fewer than two have values', () => {
     expect(summarizeComparison([player('a')])).toMatch(/at least two/i)
+  })
+})
+
+describe('formatCell', () => {
+  it('formats each cell kind and shows a dash for null', () => {
+    expect(formatCell(null, 'value')).toBe('—')
+    expect(formatCell(12.34, 'value')).toBe('12.3')
+    expect(formatCell(4, 'rank')).toBe('#4')
+    expect(formatCell(3.46, 'signed')).toBe('+3.5')
+    expect(formatCell(-2, 'signed')).toBe('-2')
+    expect(formatCell('-1.6%', 'text')).toBe('-1.6%')
   })
 })
