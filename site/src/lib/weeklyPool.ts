@@ -37,12 +37,21 @@ export interface WeeklyPlayer {
 }
 
 /**
+ * True when a row is on a bye for `week`. Two signals, because sources don't
+ * agree: an empty `opponent` (Draft Sharks drops it), or the stored `bye`
+ * column matching the week being shown (Yahoo keeps an opponent string).
+ */
+export function isByeWeek(row: Pick<AggregatedWeeklyRow, 'opponent' | 'byeWeek'>, week: number | null): boolean {
+  return !row.opponent || (week != null && row.byeWeek === week)
+}
+
+/**
  * FLEX rank by identity key. Only scored, non-bye RB/WR/TE rows are ranked;
  * ties share a rank (competition ranking: 1, 1, 3).
  */
-export function computeFlexRanks(rows: AggregatedWeeklyRow[]): Map<string, number> {
+export function computeFlexRanks(rows: AggregatedWeeklyRow[], week: number | null): Map<string, number> {
   const eligible = rows.filter(
-    r => FLEX_POSITIONS.includes(r.position) && r.aggregateScore != null && !!r.opponent,
+    r => FLEX_POSITIONS.includes(r.position) && r.aggregateScore != null && !isByeWeek(r, week),
   )
   const scores = eligible.map(r => r.aggregateScore as number)
   const ranks = new Map<string, number>()
@@ -53,8 +62,8 @@ export function computeFlexRanks(rows: AggregatedWeeklyRow[]): Map<string, numbe
   return ranks
 }
 
-export function buildWeeklyPool(rows: AggregatedWeeklyRow[]): WeeklyPlayer[] {
-  const flex = computeFlexRanks(rows)
+export function buildWeeklyPool(rows: AggregatedWeeklyRow[], week: number | null): WeeklyPlayer[] {
+  const flex = computeFlexRanks(rows, week)
   return rows
     .filter(r => WEEKLY_POSITIONS.includes(r.position))
     .map(r => {
@@ -66,7 +75,7 @@ export function buildWeeklyPool(rows: AggregatedWeeklyRow[]): WeeklyPlayer[] {
         position: r.position,
         team: r.team,
         opponent: r.opponent,
-        isBye: !r.opponent,
+        isBye: isByeWeek(r, week),
         aggregateScore: r.aggregateScore,
         positionRank: r.aggregateRank,
         flexRank: flex.get(key) ?? null,
@@ -80,11 +89,15 @@ export function buildWeeklyPool(rows: AggregatedWeeklyRow[]): WeeklyPlayer[] {
     })
 }
 
-/** "@KC" stays, "at IND" -> "@IND", "NO" -> "vs NO", empty -> "BYE". */
+/**
+ * "@KC" stays, "at IND" -> "@IND", "NO" -> "vs NO", empty -> "BYE".
+ * Yahoo (Boone/Smyth) already writes home games as "vs. DET", so a leading
+ * "vs"/"vs." is stripped first -- otherwise the fallback renders "vs vs. DET".
+ */
 export function formatOpponent(opponent: string | null): string {
   if (!opponent) return 'BYE'
   if (opponent.startsWith('@')) return opponent
   const at = opponent.match(/^at\s+(.+)$/i)
   if (at) return `@${at[1]}`
-  return `vs ${opponent}`
+  return `vs ${opponent.replace(/^vs\.?\s+/i, '')}`
 }

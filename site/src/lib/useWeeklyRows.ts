@@ -12,6 +12,9 @@ import type { Scoring } from './useBlendedRos'
 export function useCurrentWeek() {
   const [week, setWeek] = useState<number | null>(null)
   const [error, setError] = useState<string | null>(null)
+  // `week == null` is ambiguous on its own: still loading, or the query came
+  // back empty? Without this flag consumers wait forever on an empty table.
+  const [resolved, setResolved] = useState(false)
 
   useEffect(() => {
     let cancelled = false
@@ -26,14 +29,16 @@ export function useCurrentWeek() {
         if (error) {
           console.error('Failed to fetch current week:', error)
           setError(error.message)
+          setResolved(true)
           return
         }
         setWeek(data?.[0]?.week ?? null)
+        setResolved(true)
       })
     return () => { cancelled = true }
   }, [])
 
-  return { week, error }
+  return { week, error, resolved }
 }
 
 export interface WeeklyRowsResult {
@@ -45,7 +50,7 @@ export interface WeeklyRowsResult {
 }
 
 export function useWeeklyRows(scoring: Scoring): WeeklyRowsResult {
-  const { week, error: weekError } = useCurrentWeek()
+  const { week, error: weekError, resolved } = useCurrentWeek()
   const [rows, setRows] = useState<AggregatedWeeklyRow[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -53,10 +58,11 @@ export function useWeeklyRows(scoring: Scoring): WeeklyRowsResult {
 
   useEffect(() => {
     if (week == null) {
-      if (weekError) {
-        setError(weekError)
-        setLoading(false)
-      }
+      // Only stop loading once the week query has actually finished --
+      // otherwise an empty rankings table leaves the page spinning forever.
+      if (weekError) setError(weekError)
+      else if (resolved) setError('No weekly rankings found yet.')
+      if (weekError || resolved) setLoading(false)
       return
     }
     let cancelled = false
@@ -105,6 +111,8 @@ export function useWeeklyRows(scoring: Scoring): WeeklyRowsResult {
             dsFloor: ds?.floor_proj ?? null,
             dsCeiling: ds?.ceiling_proj ?? null,
             opponent: any.opponent,
+            // Stored bye WEEK number, from whichever source supplied one.
+            byeWeek: ds?.bye ?? boone?.bye ?? smythe?.bye ?? null,
           }
         })
 
@@ -114,7 +122,7 @@ export function useWeeklyRows(scoring: Scoring): WeeklyRowsResult {
       })
 
     return () => { cancelled = true }
-  }, [scoring, week, weekError])
+  }, [scoring, week, weekError, resolved])
 
   return { rows, week, loading, error, freshest }
 }

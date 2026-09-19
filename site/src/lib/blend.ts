@@ -174,6 +174,14 @@ export interface WeeklyPlayerInput {
   dsFloor: number | null
   dsCeiling: number | null
   opponent: string | null
+  /**
+   * The player's bye WEEK number as stored in `in_season_rankings_latest.bye`
+   * (not a boolean). Optional because not every source row carries one.
+   * Callers compare it against the week being displayed -- an empty
+   * `opponent` is the other bye signal, and sources don't agree on which
+   * they populate.
+   */
+  byeWeek?: number | null
 }
 
 export interface AggregatedWeeklyRow extends WeeklyPlayerInput {

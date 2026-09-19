@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import PlayerPicker from '../components/PlayerPicker'
 import ComparisonTable from '../components/ComparisonTable'
 import ScoringToggle from '../components/ScoringToggle'
@@ -19,9 +19,20 @@ export default function StartSit() {
   // ROS value is context only, so it never blocks or fails the page.
   const ros = useComparisonPool(scoring)
 
-  const pool = useMemo(() => buildWeeklyPool(weekly.rows), [weekly.rows])
+  const pool = useMemo(() => buildWeeklyPool(weekly.rows, weekly.week), [weekly.rows, weekly.week])
   const rosByKey = useMemo(() => new Map(ros.pool.map(p => [p.key, p.blended])), [ros.pool])
   const byKey = useMemo(() => new Map(pool.map(p => [p.key, p])), [pool])
+
+  // Drop selections the reloaded pool no longer contains: a ghost key keeps
+  // filtering the picker and keeps "Clear" hidden with nothing on screen.
+  // Only while the pool is populated -- an empty pool means "still loading".
+  useEffect(() => {
+    if (byKey.size === 0) return
+    setSelectedKeys(prev => {
+      const next = prev.filter(k => byKey.has(k))
+      return next.length === prev.length ? prev : next
+    })
+  }, [byKey])
 
   const selected = useMemo(
     () => selectedKeys.map(k => byKey.get(k)).filter((p): p is WeeklyPlayer => !!p),

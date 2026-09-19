@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import PlayerPicker from '../components/PlayerPicker'
 import ComparisonTable from '../components/ComparisonTable'
 import ScoringToggle from '../components/ScoringToggle'
@@ -11,6 +11,16 @@ import { addDropRows, analyzeAddDrop } from '../lib/addDrop'
 
 const MAX_PER_LIST = 5
 
+/** Module level so the useMemo deps below can name everything they read. */
+const resolveKeys = (keys: string[], byKey: Map<string, ComparisonPlayer>) =>
+  keys.map(k => byKey.get(k)).filter((p): p is ComparisonPlayer => !!p)
+
+/** Drops keys the reloaded pool no longer has (ghost selections). */
+const prunedToPool = (keys: string[], byKey: Map<string, ComparisonPlayer>) => {
+  const next = keys.filter(k => byKey.has(k))
+  return next.length === keys.length ? keys : next
+}
+
 export default function AddDrop() {
   const [scoring, setScoring] = useState<Scoring>('ppr')
   const [addKeys, setAddKeys] = useState<string[]>([])
@@ -20,11 +30,20 @@ export default function AddDrop() {
   const weekly = useWeeklyRows(scoring)
 
   const byKey = useMemo(() => new Map(pool.map(p => [p.key, p])), [pool])
-  const weeklyByKey = useMemo(() => new Map(buildWeeklyPool(weekly.rows).map(p => [p.key, p])), [weekly.rows])
+  const weeklyByKey = useMemo(
+    () => new Map(buildWeeklyPool(weekly.rows, weekly.week).map(p => [p.key, p])),
+    [weekly.rows, weekly.week],
+  )
 
-  const resolve = (keys: string[]) => keys.map(k => byKey.get(k)).filter((p): p is ComparisonPlayer => !!p)
-  const adds = useMemo(() => resolve(addKeys), [addKeys, byKey])
-  const drops = useMemo(() => resolve(dropKeys), [dropKeys, byKey])
+  // An empty pool means "still loading", so never prune against one.
+  useEffect(() => {
+    if (byKey.size === 0) return
+    setAddKeys(prev => prunedToPool(prev, byKey))
+    setDropKeys(prev => prunedToPool(prev, byKey))
+  }, [byKey])
+
+  const adds = useMemo(() => resolveKeys(addKeys, byKey), [addKeys, byKey])
+  const drops = useMemo(() => resolveKeys(dropKeys, byKey), [dropKeys, byKey])
   const all = useMemo(() => [...adds, ...drops], [adds, drops])
 
   const candidates = useMemo(
@@ -119,7 +138,7 @@ export default function AddDrop() {
             </div>
             <div>
               {analysis.bestAdd.playerName} ({round1(analysis.bestAdd.blended as number)}) vs {analysis.dropTarget.playerName} ({round1(analysis.dropTarget.blended as number)}):{' '}
-              {(analysis.gap as number) > 0 ? '+' : ''}{round1(analysis.gap as number)} ROS value.
+              {formatCell(analysis.gap, 'signed')} ROS value.
             </div>
             {analysis.upsideNote && <div className="subtle">{analysis.upsideNote}</div>}
           </div>

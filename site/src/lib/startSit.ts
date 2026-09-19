@@ -29,38 +29,59 @@ export interface StartSitRecommendation {
   note: string | null
 }
 
+/** RB/WR/TE share one scale ("FLEX"); every other position is its own group. */
+const scaleGroup = (p: WeeklyPlayer) => (FLEX_POSITIONS.includes(p.position) ? 'FLEX' : p.position)
+
+/**
+ * What has to be true of the selection before a row's values can be compared:
+ * - 'scale': only within one scale group (FLEX or QB). Ranks and projections
+ *   are on their own scale per group, so a QB's #2 or 22-point projection is
+ *   not "better" than an RB's #40 or 11 points -- it is a different yardstick.
+ *   Within FLEX, RB/WR/TE projections ARE comparable, which is the whole point
+ *   of a FLEX decision, so these stay highlighted for RB vs WR.
+ * - 'position': only when every player shares a position (position rank).
+ * - 'always': safe regardless (FLEX rank is null for QBs anyway).
+ */
+type HighlightGate = 'always' | 'scale' | 'position'
+
 interface RowSpec {
   id: string
   label: string
   format: CellFormat
   /** null = show but never highlight. */
   better: 'higher' | 'lower' | null
+  gate: HighlightGate
   pick: (p: WeeklyPlayer, rosByKey: Map<string, number | null>) => number | string | null
 }
 
 const ROW_SPECS: RowSpec[] = [
-  { id: 'score', label: 'Rank score (lower = better)', format: 'value', better: 'lower', pick: p => p.aggregateScore },
-  { id: 'positionRank', label: 'Position rank', format: 'rank', better: 'lower', pick: p => p.positionRank },
-  { id: 'flexRank', label: 'FLEX rank (RB/WR/TE)', format: 'rank', better: 'lower', pick: p => p.flexRank },
-  { id: 'dsRank', label: 'Draft Sharks rank', format: 'rank', better: 'lower', pick: p => p.dsRank },
-  { id: 'booneRank', label: 'Boone rank', format: 'rank', better: 'lower', pick: p => p.booneRank },
-  { id: 'smytheRank', label: 'Smyth rank', format: 'rank', better: 'lower', pick: p => p.smytheRank },
-  { id: 'dsProjection', label: 'DS projection', format: 'value', better: 'higher', pick: p => p.dsProjection },
-  { id: 'dsFloor', label: 'DS floor', format: 'value', better: 'higher', pick: p => p.dsFloor },
-  { id: 'dsCeiling', label: 'DS ceiling', format: 'value', better: 'higher', pick: p => p.dsCeiling },
+  { id: 'score', label: 'Rank score (lower = better)', format: 'value', better: 'lower', gate: 'scale', pick: p => p.aggregateScore },
+  { id: 'positionRank', label: 'Position rank', format: 'rank', better: 'lower', gate: 'position', pick: p => p.positionRank },
+  { id: 'flexRank', label: 'FLEX rank (RB/WR/TE)', format: 'rank', better: 'lower', gate: 'always', pick: p => p.flexRank },
+  { id: 'dsRank', label: 'Draft Sharks rank', format: 'rank', better: 'lower', gate: 'scale', pick: p => p.dsRank },
+  { id: 'booneRank', label: 'Boone rank', format: 'rank', better: 'lower', gate: 'scale', pick: p => p.booneRank },
+  { id: 'smytheRank', label: 'Smyth rank', format: 'rank', better: 'lower', gate: 'scale', pick: p => p.smytheRank },
+  { id: 'dsProjection', label: 'DS projection', format: 'value', better: 'higher', gate: 'scale', pick: p => p.dsProjection },
+  { id: 'dsFloor', label: 'DS floor', format: 'value', better: 'higher', gate: 'scale', pick: p => p.dsFloor },
+  { id: 'dsCeiling', label: 'DS ceiling', format: 'value', better: 'higher', gate: 'scale', pick: p => p.dsCeiling },
   // Display only: no matchup-rating source exists yet.
-  { id: 'opponent', label: 'Opponent', format: 'text', better: null, pick: p => formatOpponent(p.opponent) },
+  { id: 'opponent', label: 'Opponent', format: 'text', better: null, gate: 'always', pick: p => formatOpponent(p.opponent) },
   // Context only, never used in the recommendation.
-  { id: 'ros', label: 'ROS value (context)', format: 'value', better: null, pick: (p, ros) => ros.get(p.key) ?? null },
+  { id: 'ros', label: 'ROS value (context)', format: 'value', better: null, gate: 'always', pick: (p, ros) => ros.get(p.key) ?? null },
 ]
 
 /** Row-based comparison (one row per stat, one column per player). */
 export function startSitRows(players: WeeklyPlayer[], rosByKey: Map<string, number | null>): ComparisonRow[] {
   // Bye-week players don't count: they're excluded from highlights anyway.
-  const samePosition = new Set(players.filter(p => !p.isBye).map(p => p.position)).size <= 1
+  const playing = players.filter(p => !p.isBye)
+  const samePosition = new Set(playing.map(p => p.position)).size <= 1
+  // Same boundary recommendStartSit refuses to cross, so the table can't
+  // quietly crown a "best" QB in a comparison the recommendation declines.
+  const sameScale = new Set(playing.map(scaleGroup)).size <= 1
   return ROW_SPECS.map(spec => {
     const values = players.map(p => spec.pick(p, rosByKey))
-    const canHighlight = spec.better != null && spec.format !== 'text' && (spec.id !== 'positionRank' || samePosition)
+    const gateOpen = spec.gate === 'always' || (spec.gate === 'scale' ? sameScale : samePosition)
+    const canHighlight = spec.better != null && spec.format !== 'text' && gateOpen
     let highlights: Highlight[] = values.map(() => null)
     if (canHighlight) {
       // A bye-week player's numbers shouldn't decide who is best/worst.
@@ -70,9 +91,6 @@ export function startSitRows(players: WeeklyPlayer[], rosByKey: Map<string, numb
     return { id: spec.id, label: spec.label, format: spec.format, values, highlights }
   })
 }
-
-/** RB/WR/TE share one scale ("FLEX"); every other position is its own group. */
-const scaleGroup = (p: WeeklyPlayer) => (FLEX_POSITIONS.includes(p.position) ? 'FLEX' : p.position)
 
 function confidenceFor(gap: number): Confidence {
   if (gap >= CONFIDENCE_THRESHOLDS.high) return 'High'

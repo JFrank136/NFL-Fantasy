@@ -169,6 +169,28 @@ describe('startSitRows', () => {
     expect(rows.find(r => r.id === 'positionRank')!.highlights).toEqual(['best', 'worst', null])
   })
 
+  it('highlights nothing scale-dependent when a QB is mixed with a non-QB', () => {
+    const rows = startSitRows([
+      wp('qb', { position: 'QB', key: 'qb::QB', aggregateScore: 3, dsRank: 2, booneRank: 2, smytheRank: 2, dsProjection: 22, dsFloor: 14, dsCeiling: 30 }),
+      wp('rb', { aggregateScore: 9, dsRank: 40, booneRank: 41, smytheRank: 42, dsProjection: 11, dsFloor: 5, dsCeiling: 18 }),
+    ], new Map())
+    for (const id of ['score', 'dsRank', 'booneRank', 'smytheRank', 'dsProjection', 'dsFloor', 'dsCeiling']) {
+      expect(rows.find(r => r.id === id)!.highlights, id).toEqual([null, null])
+    }
+  })
+
+  it('still highlights score and projections across RB/WR (one FLEX scale)', () => {
+    const rows = startSitRows([
+      wp('rb', { aggregateScore: 4, dsRank: 5, booneRank: 5, smytheRank: 5, dsProjection: 15, dsFloor: 8, dsCeiling: 24 }),
+      wp('wr', { position: 'WR', key: 'wr::WR', aggregateScore: 9, dsRank: 20, booneRank: 21, smytheRank: 22, dsProjection: 11, dsFloor: 5, dsCeiling: 18 }),
+    ], new Map())
+    expect(rows.find(r => r.id === 'score')!.highlights).toEqual(['best', 'worst'])
+    expect(rows.find(r => r.id === 'dsProjection')!.highlights).toEqual(['best', 'worst'])
+    expect(rows.find(r => r.id === 'dsFloor')!.highlights).toEqual(['best', 'worst'])
+    expect(rows.find(r => r.id === 'dsCeiling')!.highlights).toEqual(['best', 'worst'])
+    expect(rows.find(r => r.id === 'dsRank')!.highlights).toEqual(['best', 'worst'])
+  })
+
   it('highlights position rank only when everyone shares a position; ROS is context only', () => {
     const mixed = startSitRows([wp('rb'), wp('wr', { position: 'WR', key: 'wr::WR', positionRank: 1 })], new Map())
     expect(mixed.find(r => r.id === 'positionRank')!.highlights).toEqual([null, null])
