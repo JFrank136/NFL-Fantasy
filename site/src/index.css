@@ -14,8 +14,8 @@
   --accent-gold-text: #241a03;
   --signal-up: #8fe0a8;
   --signal-down: #ec9186;
-  --side-a: #6cc4f5;
-  --side-b: #f28fc0;
+  --side-a: #ebdfbd;
+  --side-b: #e08a5c;
   --side-ink: #10261d;
 }
 
@@ -141,8 +141,8 @@ body {
   color: var(--signal-down);
 }
 
-/* Trade Analyzer: three visually distinct zones -- Side A (blue), Side B
-   (pink), Verdict (gold). Each side card sets --side to its own color. */
+/* Trade Analyzer: three visually distinct zones -- Side A (cream), Side B
+   (clay), Verdict (gold). Each side card sets --side to its own color. */
 .trade-side {
   @apply rounded-xl overflow-visible relative;
   --side: var(--side-a);
@@ -189,7 +189,6 @@ body {
 .player-chip {
   @apply flex items-center justify-between gap-2 px-3 py-2 rounded-lg;
   background: var(--bg-page);
-  border-left: 4px solid var(--side);
 }
 
 /* Search results: a light popover so it reads as a different layer than the
