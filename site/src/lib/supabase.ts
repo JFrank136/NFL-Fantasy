@@ -20,6 +20,27 @@ if (!supabaseUrl || !supabaseAnonKey) {
 
 export const supabase = createClient(supabaseUrl, supabaseAnonKey)
 
+// Supabase/PostgREST silently caps every response at 1000 rows, even when
+// the query asks for more via .limit() -- a bigger limit just gets truncated
+// with no error. Any query that can exceed that (all trade-value sources
+// together, one week of weekly rankings across all sources) has to page
+// through .range() instead. `page` must order by a unique column so pages
+// don't overlap or skip rows.
+const PAGE_SIZE = 1000
+
+export async function fetchAllRows<T>(
+  page: (from: number, to: number) => PromiseLike<{ data: unknown[] | null; error: { message: string } | null }>,
+): Promise<{ data: T[]; error: { message: string } | null }> {
+  const all: T[] = []
+  for (let from = 0; ; from += PAGE_SIZE) {
+    const { data, error } = await page(from, from + PAGE_SIZE - 1)
+    if (error) return { data: [], error }
+    all.push(...((data ?? []) as T[]))
+    if (!data || data.length < PAGE_SIZE) break
+  }
+  return { data: all, error: null }
+}
+
 // Row shapes for the two "latest" views (in_season_rankings_latest /
 // in_season_trade_values_latest) -- these are what pages should query
 // against, not the raw append-only tables, unless a page specifically

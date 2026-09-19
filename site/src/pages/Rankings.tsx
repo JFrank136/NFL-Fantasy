@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
-import { supabase, type RankingLatestRow, type RosRankingRow, type TradeValueLatestRow } from '../lib/supabase'
+import { supabase, fetchAllRows, type RankingLatestRow, type RosRankingRow, type TradeValueLatestRow } from '../lib/supabase'
 import { blendRosValues, aggregateWeeklyRanks, identityKey, normalizePosition, type BlendedRosRow, type AggregatedWeeklyRow } from '../lib/blend'
 import { fetchPreviousRosSnapshot } from '../lib/rosHistory'
 
@@ -229,16 +229,23 @@ function useWeeklyTab(scoring: Scoring, week: number | null, weekError: string |
     setLoading(true)
     setError(null)
 
-    supabase
-      .from('in_season_rankings_latest')
-      .select('*')
-      .eq('scoring', scoring)
-      .eq('week', week)
+    // One week across all sources is ~1400 rows (DS alone includes DL/K/DST),
+    // over PostgREST's 1000-row cap -- paginate or later players (e.g. a QB's
+    // DS row) silently drop out.
+    fetchAllRows<RankingLatestRow>((from, to) =>
+      supabase
+        .from('in_season_rankings_latest')
+        .select('*')
+        .eq('scoring', scoring)
+        .eq('week', week)
+        .order('id')
+        .range(from, to),
+    )
       .then(({ data, error }) => {
         if (cancelled) return
         if (error) { setError(error.message); setLoading(false); return }
 
-        const rankingRows = (data ?? []) as RankingLatestRow[]
+        const rankingRows = data
         const byPlayer = new Map<string, RankingLatestRow[]>()
         rankingRows.forEach(r => {
           const key = identityKey(r.canonical_name, r.position)
