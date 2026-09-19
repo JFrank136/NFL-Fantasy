@@ -1,3 +1,4 @@
 export { default as Rankings }     from './Rankings'
 export { default as TradeValues }  from './TradeValues'
 export { default as TradeAnalyzer } from './TradeAnalyzer'
+export { default as MoversFallers } from './MoversFallers'

@@ -325,26 +325,26 @@ Show which players are gaining or losing value.
 ## Controls
 
 Metric selector:
-- [ ] Blended ROS value
-- [ ] Boone ROS value
-- [ ] Draft Sharks ROS value
-- [ ] Draft Sharks ceiling / upside
+- [x] Blended ROS value
+- [x] Boone ROS value
+- [x] Draft Sharks ROS value
+- [x] Draft Sharks ceiling / upside
 - [ ] ROS rank later if useful
 
 Timeframe selector:
-- [ ] Latest change
-- [ ] Since last week
+- [x] Latest change
+- [x] Since last week
 - [ ] Additional ranges later
 
 ## Results
 
-- [ ] Top risers
-- [ ] Top fallers
-- [ ] Current value
-- [ ] Previous value
-- [ ] Change
-- [ ] Current rank
-- [ ] Position
+- [x] Top risers
+- [x] Top fallers
+- [x] Current value
+- [x] Previous value
+- [x] Change
+- [x] Current rank
+- [x] Position
 - [ ] Link/click into player detail later
 
 ## Notes
@@ -525,8 +525,8 @@ Existing failure emails remain useful; this page is for knowing what data the si
 - [ ] Start / Sit
 - [ ] Player Comparison
 - [ ] Add / Drop
-- [ ] Trade Analyzer
-- [ ] Movers & Fallers
+- [x] Trade Analyzer
+- [x] Movers & Fallers
 - [ ] Expert Disagreement
 - [ ] Team Analyzer
 - [ ] Data Health
