@@ -19,14 +19,25 @@ This app is read-only against the shared "Fantasy Football" Supabase project (`t
 - **RB/WR/TE**: `value_col1_label = 'HALF'`, `value_col2_label = 'PPR'` — pick based on the page's scoring toggle.
 - **QB**: `value_col1_label = '1QB'`, `value_col2_label = '2QB'` — **always use `value_col1` (1QB) regardless of the scoring toggle**. Confirmed with Jared: 1QB is the correct equivalent for both Half-PPR and PPR at the QB position, so the PPR/Half-PPR toggle has no effect on QB rows by design, not by omission.
 
-This mapping lives in `Rankings.tsx`'s `booneValueFor()` helper — if Boone's data ever adds a genuine QB PPR split, that function is where the special-casing goes.
+This mapping lives in `booneRosValueFor()` in `src/lib/useBlendedRos.ts` (shared by every ROS page) — if Boone's data ever adds a genuine QB PPR split, that function is where the special-casing goes.
 
 ## ROS blended value algorithm (`src/lib/blend.ts` → `blendRosValues`)
 
 1. For the selected scoring format, build two maps keyed on `canonical_name` (already resolved server-side by the pipeline's `player_identity.py` for every source — the site never re-derives name matching).
 2. Fit Boone's value onto Draft Sharks' scale via `robustLinearFit`/`applyScale` (`src/lib/regression.ts`, reused unchanged from the old CSV-era weekly blend engine) using players present in both sources.
 3. Blend 50/50 for players present in both sources; use the single available value unblended for players present in only one.
-4. Rank the result **across all positions together**, descending — confirmed with Jared that the ROS tab's "Overall rank" is a single cross-position ranking, not per-position (the position filter narrows visible rows without renumbering them).
+4. `blendRosValues` also exposes `booneScaled` (Boone on the DS scale) on each row — Expert Disagreement and Player Comparison use it for gaps, since raw Boone vs DS values aren't comparable.
+5. Rank the result **across all positions together**, descending — confirmed with Jared that the ROS tab's "Overall rank" is a single cross-position ranking, not per-position (the position filter narrows visible rows without renumbering them).
+
+**Known caveat:** the scale fit is one global line across all positions. QBs show large systematic Boone-vs-DS gaps in Expert Disagreement (e.g. Josh Allen, Dak Prescott all "DS higher"), which is probably a QB-specific scale difference (Boone's QB column is 1QB) rather than real disagreement — unverified. A per-position fit for QBs is the likely fix.
+
+## Snapshot / baseline logic (`src/lib/movers.ts`)
+
+Movers & Fallers, Rankings' ROS Δ, Player Comparison's trend and Expert Disagreement's direction view all compare a current snapshot to a baseline via `splitSnapshots`:
+
+- Snapshots are chosen **per position**: current = a position's newest `pulled_at`; baseline = its newest pull at least `TIMEFRAME_MIN_GAP_MS` older (1 hour for "latest", 7 days for "week"). Positions can therefore have baselines of different ages — the UI prints the baseline dates (`describeBaseline`) so this is visible.
+- A metric that needs both sources (blended, `booneScaled`) has no baseline unless BOTH sources have one; the page shows "not enough history" rather than mixing a blended current with a single-source baseline.
+- Players are matched across snapshots by `identityKey(canonicalName, position)`.
 
 ## Weekly aggregate rank algorithm (`src/lib/blend.ts` → `aggregateWeeklyRanks`/`weightedAverageRank`)
 
@@ -41,5 +52,6 @@ These are the same weights already tuned in `Draft/config/settings.yaml`'s `cons
 
 ## Known gaps
 
-- `in_season_ros_rankings` only has two pulls of history as of 2026-09-18 — the previous-snapshot lookup degrades gracefully (shows "New" instead of a delta) when fewer than 2 pulls exist for a scoring format, but hasn't been exercised against a long history yet.
+- `in_season_ros_rankings` only has two pulls of history as of 2026-09-18 (both the same day, values identical), so Draft Sharks has no week-old baseline: every "Since last week" view involving DS (blended, DS, disagreement direction) shows "not enough history" until a week of pulls accumulates, and Expert Disagreement's direction view currently reads as "Boone moved, DS flat".
+- Draft Sharks' `strength_of_schedule` is a percentage string like `"-1.6%"` and it's undocumented whether positive means an easier or harder schedule, so Player Comparison shows it as context and never highlights it as best/worst.
 - No "Matchup rating" data source exists yet (only opponent name) — Weekly tab intentionally omits it rather than faking a value.
