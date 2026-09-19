@@ -14,7 +14,9 @@ The in-season fantasy football site: live weekly rankings, rest-of-season (ROS) 
 - **Movers & Fallers** — biggest ROS value changes by metric (blended/Boone/DS/DS ceiling) for "latest change" or "since last week"; shows a "not enough history" state instead of guessing when a source has no old-enough snapshot.
 - **Expert Disagreement** — current Boone-vs-Draft Sharks gaps (Boone mapped onto the DS scale, players outside the top 150 in both sources hidden) and direction-of-movement disagreements.
 - **Player Comparison** — 2–5 players side by side with best/worst highlighting; uses the shared `PlayerPicker` / `ComparisonTable` / `ScoringToggle` components in `src/components/`.
-- These four are v1s built from `Fantasy Football/SITE_ROADMAP.md` (repo root), which is the source of truth and gets items checked off as they ship. Not yet built: Home, Start/Sit, Add/Drop, Team Analyzer, Data Health.
+- **Start/Sit** — compare 2–5 players for this week's lineup; recommends a starter from the weighted rank score (DS + Boone + Smyth) with High/Medium/Toss-up confidence, and shows position rank plus FLEX rank (RB/WR/TE ranked together). A QB mixed with a non-QB gets no recommendation (different rank scales). Logic in `src/lib/startSit.ts`; shared weekly shape and FLEX rank in `src/lib/weeklyPool.ts`; fetch in `src/lib/useWeeklyRows.ts`.
+- **Add/Drop** — waiver candidates vs bench candidates; a two-step "worth adding?" (Yes/Marginal/No on the blended ROS value gap) then "who to drop?" verdict, with DS ceiling kept as a separate upside axis and this week's outlook as secondary context. Logic in `src/lib/addDrop.ts`; ROS pool in `src/lib/useComparisonPool.ts`.
+- These are v1s built from `Fantasy Football/SITE_ROADMAP.md` (repo root), which is the source of truth and gets items checked off as they ship. Not yet built: Home, Team Analyzer, Data Health.
 
 ## Quick start
 
