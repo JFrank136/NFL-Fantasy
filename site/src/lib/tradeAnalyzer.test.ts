@@ -1,5 +1,7 @@
 import { describe, it, expect } from 'vitest'
-import { evaluateTrade, CONFIDENCE_THRESHOLDS } from './tradeAnalyzer'
+import { evaluateTrade, compareBySource, buildExtraSourceValues, CONFIDENCE_THRESHOLDS } from './tradeAnalyzer'
+import { identityKey } from './blend'
+import type { TradeValueSourceRow } from './tradeValues'
 import type { BlendedRosRow } from './blend'
 
 function row(canonicalName: string, blendedValue: number | null, overrides: Partial<BlendedRosRow> = {}): BlendedRosRow {
@@ -81,5 +83,74 @@ describe('evaluateTrade', () => {
     expect(result.sideA.players).toHaveLength(2)
     expect(result.sideB.players).toHaveLength(1)
     expect(result.preferredSide).toBe('B')
+  })
+})
+
+describe('side labels', () => {
+  it('capitalizes Side A / Side B in the summary, including the best-player caveat', () => {
+    // Side A wins on total (2x60 vs 100) but Side B holds the best individual player.
+    const result = evaluateTrade([row('a1', 60), row('a2', 60)], [row('b1', 100, { playerName: 'Big Name' })])
+    expect(result.summary).toContain('Side A gets more value')
+    expect(result.summary).toContain('Side A still comes out ahead')
+    expect(result.summary).not.toMatch(/side [ab]/)
+  })
+})
+
+describe('compareBySource', () => {
+  const extra = (rows: Array<[string, string, string, number | null]>) =>
+    buildExtraSourceValues(
+      rows.map(([source, canonicalName, position, value]): TradeValueSourceRow => ({
+        source, canonicalName, playerName: canonicalName, position, team: null,
+        valueCol1Label: 'PPR', valueCol1: value, valueCol2Label: 'N/A', valueCol2: null,
+      })),
+      'ppr',
+    )
+
+  it('totals DS and Boone per side and picks a winner per source', () => {
+    const a = [row('a1', 50, { dsValue: 80, booneValue: 20 })]
+    const b = [row('b1', 50, { dsValue: 60, booneValue: 40 })]
+    const [ds, boone] = compareBySource(a, b)
+    expect(ds).toMatchObject({ source: 'ds', totalA: 80, totalB: 60, winner: 'A' })
+    expect(boone).toMatchObject({ source: 'boone', totalA: 20, totalB: 40, winner: 'B' })
+  })
+
+  it('discovers extra sources from the data and orders DS, Boone first', () => {
+    const a = [row('a1', 50, { position: 'RB' })]
+    const b = [row('b1', 50, { position: 'WR' })]
+    const extras = extra([['rsj', 'a1', 'RB', 300], ['rsj', 'b1', 'WR', 200], ['cbs', 'a1', 'RB', 10]])
+    expect(compareBySource(a, b, extras).map(s => s.source)).toEqual(['ds', 'boone', 'cbs', 'rsj'])
+  })
+
+  it('leaves the winner null when a side has no value in that source', () => {
+    const extras = extra([['rsj', 'a1', 'RB', 300]])
+    const rsj = compareBySource([row('a1', 50)], [row('b1', 50)], extras).find(s => s.source === 'rsj')!
+    expect(rsj).toMatchObject({ totalA: 300, totalB: null, winner: null, pctDiff: null })
+  })
+
+  it('reports coverage when a side is missing a source value for one player', () => {
+    const extras = extra([['rsj', 'a1', 'RB', 100], ['rsj', 'b1', 'RB', 50]])
+    const rsj = compareBySource([row('a1', 1), row('a2', 1)], [row('b1', 1)], extras).find(s => s.source === 'rsj')!
+    expect(rsj).toMatchObject({ valuedA: 1, sizeA: 2, valuedB: 1, sizeB: 1 })
+  })
+
+  it('does not let extra values shadow the DS/Boone values on the row', () => {
+    const extras = extra([['ds', 'a1', 'RB', 999]])
+    const ds = compareBySource([row('a1', 50, { dsValue: 70 })], [row('b1', 50, { dsValue: 10 })], extras)[0]
+    expect(ds.totalA).toBe(70)
+  })
+
+  it('is empty when a side has no players (evaluateTrade neutral state)', () => {
+    expect(evaluateTrade([row('a', 100)], []).sources).toEqual([])
+  })
+})
+
+describe('buildExtraSourceValues', () => {
+  it('skips excluded sources and uses the scoring-specific column', () => {
+    const rows: TradeValueSourceRow[] = [
+      { source: 'boone', canonicalName: 'x', playerName: 'X', position: 'RB', team: null, valueCol1Label: 'HALF', valueCol1: 1, valueCol2Label: 'PPR', valueCol2: 2 },
+      { source: 'cbs', canonicalName: 'x', playerName: 'X', position: 'RB', team: null, valueCol1Label: 'HALF', valueCol1: 5, valueCol2Label: 'PPR', valueCol2: 7 },
+    ]
+    const out = buildExtraSourceValues(rows, 'ppr')
+    expect(out.get(identityKey('x', 'RB'))).toEqual({ cbs: 7 })
   })
 })
