@@ -28,6 +28,7 @@ tell success from failure without parsing console text.
 import argparse
 import json
 import sys
+import time
 import traceback
 from datetime import datetime, timezone
 from pathlib import Path
@@ -58,6 +59,25 @@ YAHOO_EXPERT_NAMES = {
     "pianowski": "Scott Pianowski",
     "winks": "Hayden Winks",
 }
+
+# A transient Draft Sharks network blip (e.g. an SSL EOF) shouldn't turn a whole
+# unattended run red -- retry those a couple of times, on a fresh session each
+# time. Yahoo experts are deliberately NOT retried: their usual failure is a
+# permanent "not published yet", which a retry can't fix.
+RETRY_DELAYS = (5, 15)
+
+
+def call_with_retry(fn, retry_on, delays=RETRY_DELAYS, sleep=time.sleep, on_retry=None):
+    """Calls fn(); on an exception in `retry_on`, waits and tries again once per
+    entry in `delays`, then re-raises the last failure."""
+    for attempt, delay in enumerate(delays, 1):
+        try:
+            return fn()
+        except retry_on as e:
+            if on_retry:
+                on_retry(attempt, delay, e)
+            sleep(delay)
+    return fn()
 
 
 def fetch_and_normalize(source: str, week: int, season: int, scoring: str, pulled_at: str):
@@ -140,7 +160,13 @@ def main():
         status_key = f"week{week}/{source}/{scoring}"
         print(f"[{i}/{total}] {label}...")
         try:
-            raw, rows = fetch_and_normalize(source, week, args.season, scoring, pulled_at)
+            raw, rows = call_with_retry(
+                lambda: fetch_and_normalize(source, week, args.season, scoring, pulled_at),
+                retry_on=(DraftSharksFetchError,),
+                on_retry=lambda n, delay, e: print(
+                    f"   Retry {n}/{len(RETRY_DELAYS)} in {delay}s after: {e}"
+                ),
+            )
         except (DraftSharksFetchError, YahooConsensusFetchError, ValueError) as e:
             print(f"\n❌ Failed on: {label}")
             print(f"   Reason: {e}")
