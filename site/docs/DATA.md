@@ -21,6 +21,10 @@ This app is read-only against the shared "Fantasy Football" Supabase project (`t
 
 This mapping lives in `booneRosValueFor()` in `src/lib/useBlendedRos.ts` (shared by every ROS page) — if Boone's data ever adds a genuine QB PPR split, that function is where the special-casing goes.
 
+## Trade Analyzer per-source table (`src/lib/tradeAnalyzer.ts` → `compareBySource`)
+
+The Verdict's per-source rows are each side's **raw summed value in that source's own scale** — scales differ wildly (RSJ is in the thousands, CBS/USA Today in the tens), so only Side A vs. Side B *within* a row is meaningful, never across rows. Sources come from the data, not a hardcoded list: `ds` (`dsValue`) and `boone` (`booneValue`) come off `BlendedRosRow`; every other source is pulled from `in_season_trade_values_latest` via `buildExtraSourceValues`, which **excludes `boone` (already on the row) and `draftsharks`** (its trade value *is* the ROS `ds_value` — including it would double-count DS). Per-scoring column picking reuses `valueForScoring`, so RSJ (PPR-only) yields no value under Half-PPR and its row disappears. A player with no value in a source leaves that side's total understated; the UI shows `(valued/size)` next to it rather than treating the gap as 0.
+
 ## ROS blended value algorithm (`src/lib/blend.ts` → `blendRosValues`)
 
 1. For the selected scoring format, build two maps keyed on `canonical_name` (already resolved server-side by the pipeline's `player_identity.py` for every source — the site never re-derives name matching).
