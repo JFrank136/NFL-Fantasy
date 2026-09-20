@@ -20,7 +20,7 @@ def test_draftsharks_to_ranking_rows_resolves_canonical_name():
         raw, season=2026, week=2, scoring="half-ppr",
         pulled_at="2026-09-12T00:00:00+00:00",
     )
-    assert rows[0].canonical_name == "Cameron Skattebo"
+    assert rows[0].canonical_name == "cameron skattebo"
 
 
 def test_yahoo_expert_to_ranking_rows_falls_back_to_normalized_name_when_no_alias():
@@ -44,7 +44,7 @@ def test_boone_trade_values_to_rows_resolves_canonical_name():
         "RB", "https://example.com", raw, season=2026, week=2,
         pulled_at="2026-09-12T00:00:00+00:00",
     )
-    assert rows[0].canonical_name == "Kenneth Gainwell"
+    assert rows[0].canonical_name == "kenneth gainwell"
 
 
 from src.normalize import draftsharks_ros_to_rows
@@ -63,7 +63,7 @@ def test_draftsharks_ros_to_rows_resolves_canonical_name():
         raw, season=2026, as_of_week=3, scoring="half-ppr",
         pulled_at="2026-09-16T00:00:00+00:00",
     )
-    assert rows[0].canonical_name == "Cameron Skattebo"
+    assert rows[0].canonical_name == "cameron skattebo"
     assert rows[0].source == "draftsharks"
     assert rows[0].as_of_week == 3
     assert rows[0].ds_value == 88.0

@@ -63,4 +63,9 @@ def canonical_name_for(raw_name: str, aliases: dict[str, str] | None = None) -> 
             _aliases_cache = load_aliases()
         aliases = _aliases_cache
     norm = normalize_name(raw_name)
-    return aliases.get(norm, norm)
+    # The alias table's canonical_name column is human-cased ("Cameron
+    # Skattebo"), but a source that already spells the full name takes the
+    # no-alias path and gets the normalized form ("cameron skattebo"). Returning
+    # the alias target verbatim gave one player two canonical_names and the site
+    # listed them twice, so the alias target is normalized the same way.
+    return normalize_name(aliases.get(norm, norm))
