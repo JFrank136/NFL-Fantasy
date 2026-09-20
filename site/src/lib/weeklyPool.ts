@@ -5,10 +5,14 @@
 //
 // FLEX rank: aggregateWeeklyRanks re-ranks within each position, so "RB4 vs
 // RB6" hides how far apart they are overall. Before that re-rank, the
-// weighted score is on a shared scale for RB/WR/TE (Boone/Smyth are pulled
-// from Yahoo's FLX query; Draft Sharks ranks overall), so ranking every
-// RB/WR/TE by that score gives a cross-position rank. QBs are ranked against
-// QBs only, so they get none.
+// weighted score is on a shared scale for RB/WR/TE: Boone and Smyth are
+// pulled from Yahoo's FLX query, and Draft Sharks' weekly rank -- which is an
+// OVERALL rank across everything it publishes, IDP/K/DST included -- is
+// rescaled into the same RB/WR/TE (FLEX) and QB groups by blend.ts's
+// rescaleDraftSharksRanks before the blend. So ranking every RB/WR/TE by that
+// score gives a real cross-position rank. QBs are scaled and ranked against
+// QBs only, so they get no FLEX rank, and a QB score is never comparable with
+// an RB/WR/TE score.
 
 import { identityKey, type AggregatedWeeklyRow } from './blend'
 

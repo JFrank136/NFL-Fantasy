@@ -20,16 +20,28 @@ Build the two remaining decision-tool pages from `SITE_ROADMAP.md` sections 3
    highlighted and never used in the recommendation. A real matchup rating
    waits for a data source and stays open on the roadmap.
 2. **Recommendation anchor:** the weighted weekly rank score
-   (`aggregateScore` from `blend.ts`, DS + Boone + Smyth). Before the
-   per-position re-rank it is on a shared scale for RB/WR/TE because Boone/
-   Smyth are pulled from Yahoo's `FLX` query and DS ranks overall. QBs are
-   ranked against QBs only. Mixing a QB with a non-QB shows a "not
-   comparable" note instead of a recommended starter.
+   (`aggregateScore` from `blend.ts`, DS + Boone + Smyth). The three sources
+   are put on one scale before they are averaged. Boone and Smyth come from
+   Yahoo's `FLX` query, so they are already ranked within the RB/WR/TE and QB
+   groups. **Draft Sharks is not:** its weekly `rank` is an OVERALL rank
+   across everything it returns, IDP, kickers and defenses included — in week
+   2 2026 its RB ranks spanned 3-836 and WR 10-870, against Boone/Smyth's
+   1-~155. `rescaleDraftSharksRanks` re-ranks Draft Sharks within those same
+   RB/WR/TE (FLEX) and QB groups first, keeping its ordering but dropping the
+   magnitude mismatch that otherwise let it decide the score by itself, and
+   that threw players with no Draft Sharks row many places out of position
+   when its weight was redistributed. The raw overall rank is still what the
+   Rankings page displays. QB scores and RB/WR/TE scores remain **not**
+   comparable with each other — they are two separate scales — so mixing a QB
+   with a non-QB shows a "not comparable" note instead of a recommended
+   starter, and no scale-dependent row is highlighted.
 3. **FLEX rank:** in addition to position rank, show each RB/WR/TE's rank
    among all RB/WR/TE that week by `aggregateScore` (computed over the whole
-   weekly pool, not just the selected players). It gives context that
-   position rank hides (e.g. RB4 vs RB6 can be 4th vs 20th in FLEX). QBs and
-   bye-week players get none.
+   weekly pool, not just the selected players). This only means anything
+   because of the rescale in Decision 2: the score has to be on one RB/WR/TE
+   scale before ranking across those positions is legitimate. It gives context
+   that position rank hides (e.g. RB4 vs RB6 can be 4th vs 20th in FLEX). QBs
+   and bye-week players get none.
 
 ## Shared refactors (behavior-preserving)
 
@@ -55,7 +67,10 @@ Build the two remaining decision-tool pages from `SITE_ROADMAP.md` sections 3
   (display only), blended ROS value (context only).
 - **Recommendation:** lowest `aggregateScore` among non-bye players starts.
   Confidence by score gap to the runner-up, thresholds as named constants:
-  High >= 5, Medium >= 2, else Toss-up.
+  High >= 8, Medium >= 3, else Toss-up. After the Draft Sharks rescale one
+  score point is about one place in the ranking at every depth, so these are
+  roughly "8+ places apart" and "3-5 places apart" (measured on week-2 2026
+  data; see `CONFIDENCE_THRESHOLDS` in `startSit.ts`).
 - **Reasons:** 1-2 short lines from the largest differences (both sources
   agree, FLEX-rank gap, floor/ceiling tradeoff).
 - **Guards:** fewer than 2 valid players -> prompt; QB mixed with non-QB ->

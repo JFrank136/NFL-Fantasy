@@ -108,8 +108,11 @@ export default function StartSit() {
             }))}
           />
           <div className="subtle">
-            The rank score is a weighted average of Draft Sharks, Boone and Smyth ranks. It is comparable across RB/WR/TE, which is what FLEX rank uses;
-            position rank is only highlighted when everyone shares a position. Opponent and ROS value are context and don't affect the pick.
+            The rank score is a weighted average of Draft Sharks, Boone and Smyth ranks. Draft Sharks publishes one overall weekly rank (kickers,
+            defenses and IDP included), so it is re-ranked within RB/WR/TE and within QB first, putting all three sources on the same scale. The score
+            is therefore comparable across RB/WR/TE — which is what FLEX rank uses — but a QB score is never comparable with an RB/WR/TE one, so nothing
+            scale-dependent is highlighted in a mixed comparison. Position rank is only highlighted when everyone shares a position. Opponent and ROS
+            value are context and don't affect the pick.
           </div>
         </div>
       )}

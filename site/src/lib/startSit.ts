@@ -3,17 +3,50 @@
 // Pure calculations for the Start/Sit page: row-based comparison and the
 // recommendation. No React, no Supabase.
 //
-// Anchor: the weighted weekly rank score (lower = better). It is on a shared
-// scale for RB/WR/TE (FLEX) and separately for QBs, so a QB vs non-QB
-// comparison gets no recommendation. See
+// Anchor: the weighted weekly rank score (lower = better). All three sources
+// are put on one scale first: Boone and Smyth rank within Yahoo's FLX
+// (RB/WR/TE) and QB groups already, and Draft Sharks' overall weekly rank is
+// rescaled into those same two groups by blend.ts's rescaleDraftSharksRanks
+// before the weighted average. The score is therefore comparable within
+// RB/WR/TE and, separately, within QB -- but NOT between the two, so a QB vs
+// non-QB comparison gets no recommendation and no highlights. See
 // docs/superpowers/specs/2026-09-18-start-sit-and-add-drop-design.md.
 
 import { highlightRow, round1, type CellFormat, type ComparisonRow, type Highlight } from './playerComparison'
 import { FLEX_POSITIONS, formatOpponent, type WeeklyPlayer } from './weeklyPool'
 
-/** Score-gap cutoffs (in weighted-rank points). Retune after a season of data. */
-export const CONFIDENCE_THRESHOLDS = { high: 5, medium: 2 }
-/** Smallest FLEX-rank gap worth calling out as a reason. */
+/**
+ * Score-gap cutoffs, in weighted-rank points.
+ *
+ * Measured on live week-2 2026 PPR data (369 playable RB/WR/TE, 36 QB) after
+ * rescaleDraftSharksRanks, which is what made score points mean something:
+ * a score point is now almost exactly one place, at every depth.
+ *  - FLEX adjacent-pair gap: mean 1.17 / 0.85 / 0.96 / 0.97 / 1.00 for ranks
+ *    1-10, 10-30, 30-60, 60-100 and 100+; max 3.43 anywhere.
+ *  - FLEX median gap for a fixed rank distance: ~1 at 1 place, ~3 at 3,
+ *    ~5 at 5, ~9.5 at 10 -- flat across all five depth buckets.
+ *  - QB behaves the same (adjacent mean 0.73-0.96, ~9.4 at 10 places), so one
+ *    set of numbers covers both groups.
+ * Before the rescale the same measurement was wildly depth-dependent (FLEX
+ * rank 100+ adjacent gaps averaged 2.79 with a max of 20 vs 2.22/3.60 at
+ * ranks 1-10; QB ranks 30-60 averaged 51.2 with a max of 282.6), which is
+ * why deep comparisons used to report "High" on noise.
+ *
+ * So the cutoffs are chosen as rank distances:
+ *  - high 8: roughly 8-10 places apart. 91% of 10-apart FLEX pairs clear it,
+ *    only 2% of 5-apart pairs do.
+ *  - medium 3: roughly 3-5 places apart. 64% of 3-apart and 94% of 5-apart
+ *    FLEX pairs clear it, 1% of adjacent pairs do.
+ *  - below that: within ~2 places, which is ordinary disagreement between
+ *    three analysts, so "Toss-up".
+ */
+export const CONFIDENCE_THRESHOLDS = { high: 8, medium: 3 }
+/**
+ * Smallest FLEX-rank gap worth calling out as a reason. Re-checked against
+ * the same week-2 sample: 5 places is a median score gap of ~5 points, i.e.
+ * comfortably inside "Medium" and most of the way to "High", while adjacent
+ * and 3-apart pairs (ordinary noise) never reach it. Kept at 5.
+ */
 export const FLEX_GAP_NOTE_MIN = 5
 /** Smallest ceiling / projection edge worth calling out as a reason (points). */
 export const CEILING_NOTE_MIN = 2

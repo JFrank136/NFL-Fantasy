@@ -31,14 +31,16 @@ describe('recommendStartSit', () => {
   })
 
   it('pins the confidence thresholds so retuning is a deliberate change', () => {
-    expect(CONFIDENCE_THRESHOLDS).toEqual({ high: 5, medium: 2 })
+    // Retuned on live week-2 2026 data after the Draft Sharks rescale, where
+    // one score point is ~one FLEX place at every depth. See startSit.ts.
+    expect(CONFIDENCE_THRESHOLDS).toEqual({ high: 8, medium: 3 })
   })
 
   it('is not thrown off by floating-point noise in the score gap', () => {
     const conf = (a: number, b: number) =>
       recommendStartSit([wp('a', { aggregateScore: a }), wp('b', { aggregateScore: b })]).confidence
-    expect(conf(1.3, 3.3)).toBe('Medium') // raw gap is 1.9999999999999998
-    expect(conf(1.1, 6.1)).toBe('High')
+    expect(conf(1.1, 4.1)).toBe('Medium') // raw gap is 2.9999999999999996
+    expect(conf(1.2, 9.2)).toBe('High') // raw gap is 7.999999999999999
   })
 
   it('excludes bye-week players and says so', () => {
@@ -94,9 +96,15 @@ describe('recommendStartSit', () => {
   })
 
   it('reasons: flags when both sources rank the runner-up ahead but the weighted score picks the starter', () => {
+    // Scores are the real weighted averages of these ranks (RB weights
+    // .5 DS / .3 Boone / .2 Smyth), so the fixture can't imply a blend that
+    // blend.ts would never produce:
+    //   a = .5*10 + .3*10 + .2*1  =  5 + 3 + 0.2 =  8.2
+    //   b = .5*9  + .3*9  + .2*20 = 4.5 + 2.7 + 4 = 11.2
+    // Draft Sharks and Boone both put b ahead; Smyth's 1-vs-20 outweighs it.
     const rec = recommendStartSit([
-      wp('a', { aggregateScore: 5, dsRank: 9, booneRank: 9, smytheRank: 1 }),
-      wp('b', { aggregateScore: 8, dsRank: 3, booneRank: 4, smytheRank: 20 }),
+      wp('a', { aggregateScore: 8.2, dsRank: 10, booneRank: 10, smytheRank: 1 }),
+      wp('b', { aggregateScore: 11.2, dsRank: 9, booneRank: 9, smytheRank: 20 }),
     ])
     expect(rec.starterKey).toBe('a::RB')
     expect(rec.reasons[0]).toContain('both rank b ahead')
