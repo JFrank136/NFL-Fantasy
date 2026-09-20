@@ -40,6 +40,8 @@ Deployed on Vercel, auto-deploys on push to `main`: https://nfl-fantasy-sigma.ve
 ## Architecture notes
 
 - `src/lib/blend.ts` — pure, unit-tested calculation functions (ROS value blending, weekly rank aggregation). No Supabase/React dependency; pages fetch rows and hand them to these functions.
+- `src/lib/weeklyPool.ts` / `startSit.ts` / `addDrop.ts` — pure logic for Start/Sit and Add/Drop: the weekly player shape with cross-position FLEX rank, the starter recommendation (confidence cutoffs measured on live data), and the two-step add/drop verdict. `blend.ts`'s `rescaleDraftSharksRanks` puts Draft Sharks' overall weekly rank on the same FLEX/QB scale as Boone/Smyth before blending; without it Draft Sharks decided the score alone.
+- `src/lib/useWeeklyRows.ts` / `useComparisonPool.ts` — shared fetches for the current week's aggregated weekly rows and the selectable ROS player pool (extracted from Rankings and Player Comparison).
 - `src/lib/useRosHistory.ts` / `src/lib/movers.ts` — full append-only ROS history fetch, plus pure per-position current/baseline snapshot splitting and change math. Used by Rankings' "ROS Δ" and Movers & Fallers so they always agree.
 - `src/lib/useBlendedRos.ts` — current blended ROS value fetch (Trade Analyzer). Also home of `toDsRosInput` / `toBooneRosInput`, the row mappers every ROS page shares.
 - `src/lib/disagreement.ts`, `src/lib/playerComparison.ts`, `src/lib/tradeAnalyzer.ts` — pure logic for their pages. Tunable thresholds are exported constants (`FLAT_THRESHOLD`, `RELEVANCE_RANK_CUTOFF`, `CONFIDENCE_THRESHOLDS`, `TIMEFRAME_MIN_GAP_MS`) because the roadmap says they get retuned after a full season.

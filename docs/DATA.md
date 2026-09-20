@@ -42,6 +42,15 @@ number here too, not `weeklyPts`). The row's overall rank (position across all
 positions combined, since the page sorts by `-weekly3dPts`) is in the first
 `<td>`, a bare `<span>{N}</span>` inside `.rank-index`.
 
+**Rank scale gotcha — confirmed live 2026-09-19 (week 2).** This rank is Draft Sharks' OVERALL rank
+across everything the endpoint returns, IDP/K/DEF included, not a rank within the player's position
+group: week-2 RB ranks spanned 3-836, WR 10-870 and QB 1-820, while Boone/Smyth (Yahoo `FLX` / `QB`
+queries) ran 1-~155 (RB/WR/TE) and 1-32 (QB). Averaging the raw numbers let Draft Sharks decide the
+aggregate score by itself, and a player with no Draft Sharks row (weight redistributed onto the small
+Yahoo ranks) leapfrogged identical peers. The site re-ranks Draft Sharks within the RB/WR/TE ("FLEX")
+and QB groups (`rescaleDraftSharksRanks` in `site/src/lib/blend.ts`) before blending; Rankings still
+displays the raw value and nothing stored in `in_season_rankings.rank` is rescaled.
+
 **Known real-data quirk**: a bye-week player appears in the list with **no**
 `matchup`/opponent value (empty `data-value=""`) rather than being omitted —
 don't treat a blank matchup as a parse failure, it's a real "not playing this
@@ -314,3 +323,13 @@ here deliberately ignore `source`/`team` and match on normalized name only
 **not** solve cross-dataset gaps like a player missing entirely from one
 source's pull; see `docs/superpowers/specs/2026-09-12-supabase-foundation-design.md`
 for what's explicitly out of scope.
+
+**Alias targets are normalized too (2026-09-19).** `aliases.csv`'s `canonical_name` column is a
+human-cased display name ("Cameron Skattebo"), and `canonical_name_for` used to return it verbatim
+while a source that already spelled the full name took the no-alias path and got the normalized form
+("cameron skattebo"): one player, two keys, listed twice on the site (Cam Ward, Cam Skattebo, Kenny
+Gainwell). It now returns `normalize_name(alias_target)`, so a stored `canonical_name` is always the
+lowercase normalized form. Supabase was backfilled the same day (3,217 rows across
+`in_season_rankings` / `in_season_trade_values` / `in_season_ros_rankings`, 12 names); a capitalized
+`canonical_name` in any of them is a regression. Local `data/processed/*.csv` were **not** rewritten and
+may still hold the old capitalized names for those players.
