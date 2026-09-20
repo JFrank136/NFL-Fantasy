@@ -84,42 +84,60 @@ played rest of season — see the float-string quirk above),
 `RosRankingRow.injury_risk` rather than parsed, since its value format
 wasn't fully characterized during implementation).
 
-## Justin Boone (`src/sources/boone_weekly.py`)
+## Justin Boone & Joel Smyth weekly rankings (`src/sources/yahoo_weekly_consensus.py`)
 
-Not scraped from Yahoo's article HTML directly — Yahoo's rankings tables are
-either bot-protection-gated (a plain HTTP fetch of the article returns an
-anti-bot challenge page, confirmed via `curl`) or, for a numbered ranking table,
-rendered via an embedded FantasyPros partner widget (`<iframe src="https://partners.fantasypros.com/external/widget/fp-widget.php?...">`).
-That widget itself just loads a placeholder `<div>`; the real data comes from a
-second request the widget's own JS makes, which is what this project calls
-directly:
+**Also pulled (added 2026-09-18, archival only): Matt Harmon (`747`), Scott
+Pianowski (`9`), Hayden Winks (`7666`)** — the other three of Yahoo's five
+analysts, from the same responses, stored under `source` = `harmon` /
+`pianowski` / `winks` in `in_season_rankings` (no schema change). The site
+ignores them: `useWeeklyRows.ts` filters to `draftsharks`/`boone`/`smythe`.
+Boone/Smyth's cross-check against each other in `pull_week.py` doesn't apply
+to them.
 
-`GET https://partners.fantasypros.com/api/v1/consensus-rankings.php` — public,
-unauthenticated, plain JSON (no JSONP wrapper needed if `callback` is omitted
-from the query string).
+**Supersedes an earlier FantasyPros-widget-based implementation** (this doc
+used to describe separate `boone_weekly.py`/`smythe_weekly.py` modules
+hitting `partners.fantasypros.com/api/v1/consensus-rankings.php` — that
+approach is gone; both experts are pulled through one shared module now).
 
-**Query params**: `sport=NFL`, `position` (one of `QB`/`RB`/`WR`/`TE`/`DST`/`K`
-— **one call per position**, this endpoint does not return all positions at
-once), `year`, `week`, `id=1663` (Boone's FantasyPros expert id — confirmed
-live), `type=ST`, `scoring` (`HALF` or `PPR` — confirmed both work; don't pass
-anything else, unrecognized values silently fall back to an unpredictable
-default per the same pattern `Draft/docs/DATA.md` documents for the Yahoo
-consensus endpoint), `filters=317`, `widget=ST`.
+`GET https://sports.yahoo.com/api/fanPro/` — the same public, unauthenticated
+endpoint `Draft/src/sources/yahoo_consensus.py` uses for the draft-day board,
+extended here with a `week` param. Both Boone's and Smyth's individual ranks
+come back from a single response per position/scoring call — their expert
+ids (`317` Boone, `7604` Smyth) are resolved by name from the response's own
+`expertNames` map, never hardcoded/guessed.
 
-**Response shape**:
+**Query params**: `sport=NFL`, `position`, `filters=9:317:747:7604:7666`
+(all 5 of Yahoo's current analysts — required for the response to include
+any `experts` data at all), `experts=show`, `expert=7261`, `scoring`
+(`HALF`/`PPR`), `type=ST`, `week`, `wtype=ST`, `year`.
+
+**`position` gotcha — confirmed live 2026-09-18**: `position=ALL` (what the
+draft-day module uses) only works for `week=0` (preseason/draft); for any
+in-season week it 500s (`{"error": "Failed to fetch fantasy rankings"}`).
+There is no single-request "everyone" view in-season. What *does* work
+in-season is `position=FLX` — a real, one-request RB/WR/TE-combined ranking
+(QB excluded) that both Boone and Smyth populate (confirmed: ~150–240
+players). `QUERY_POSITIONS` in this module is `["QB", "FLX", "K", "DST"]`,
+not one call per real position — querying `QB`/`RB`/`WR`/`TE`/`K`/`DST`
+separately (the original, pre-2026-09-18 approach) gave each position its
+own independent 1..N ranking, so a weekly view showed an RB-1 *and* a WR-1
+*and* a TE-1 simultaneously. Each player's real `position` field in the
+response is unaffected by which query positions was used to fetch it (a
+`FLX`-queried response still tags each row `RB`/`WR`/`TE` correctly) — only
+`rank` changes meaning based on which position value was queried.
+
+**Response shape** (one player, from a `position=QB` call):
 ```json
 {
-  "position_id": "RB", "scoring": "HALF", "week": "1", "count": 50,
-  "players": [
-    {"player_id": 22968, "player_name": "Jahmyr Gibbs", "player_team_id": "DET",
-     "player_position_id": "RB", "player_bye_week": "6", "player_opponent": "vs. NO",
-     "rank_ecr": 1, "pos_rank": "RB1", "r2p_pts": "21.8", "start_sit_grade": "A+"}
-  ]
+  "id": "17233", "name": "Lamar Jackson", "position": "QB", "team": "BAL",
+  "rank": 1, "consensusRank": "1.40", "expertCount": 5,
+  "byeWeek": 13, "opponent": "at IND", "percentOwned": 100,
+  "experts": {"9": "1", "317": "3", "747": "1", "7604": "1", "7666": "1"}
 }
 ```
-`r2p_pts` is the projection ("points to reach" — the field name FantasyPros
-uses across its site). `rank_ecr` here is Boone's own rank for this single-expert
-pull (this endpoint is single-expert when `id` is given), not a consensus rank.
+`experts` maps expert id -> that expert's own rank for this player (not the
+blended `consensusRank`, which is Yahoo's average across all listed
+experts). No per-expert numeric projection is returned — only rank.
 
 ## Justin Boone trade values / ROS (`src/sources/boone_trade_values.py`)
 
@@ -144,10 +162,23 @@ Boone would obviously have posted, check the live author page's actual link
 shape before assuming it's really unpublished — Yahoo has changed this slug
 format at least once already with no warning.
 
+**Table header shape isn't consistent across positions either** — confirmed
+live 2026-09-18: the RB breakdown for week 2 dropped the leading `Rk` column
+entirely (header `['Player', 'HALF', 'PPR']`, 3 cells) while QB/WR/TE kept it
+(`['Rk', 'Player', ...]`, 4 cells) on the same day. The parser accepts both
+shapes (rank comes back `None` for the no-rank case) rather than failing the
+whole position. When a Boone position fails with an "Unexpected table
+header" error, fetch that position's live URL and diff the actual header
+against both known shapes before assuming a bigger break — and check the
+other 3 positions too, since Yahoo has changed shape asymmetrically before.
+
 ## CBS / FantasyPros / RSJ trade values (added 2026-09-17)
 
-Three more trade-value sources, captured for later accuracy analysis only —
-**not wired into the site.** All three share `in_season_trade_values` /
+Three more trade-value sources. Originally captured for accuracy-analysis
+only; **wired into the site's Trade Values page as of 2026-09-18** (see the
+`site/src/lib/tradeValues.ts` note in the Supabase section below for how the
+site picks the right column per scoring format from these differing labels).
+All three share `in_season_trade_values` /
 `TradeValueRow` with Boone, distinguished by `source="cbs"|"fantasypros"|"rsj"`.
 Each is confirmed server-rendered plain HTML (a real-user-agent
 `requests.get` returns the full data table already in the response, no JS
@@ -240,31 +271,52 @@ and FantasyPros: discover article URL -> fetch/parse -> normalize -> validate
 Confirmed live 2026-09-17 for Week 2:
 QB 36 rows, RB 75 rows, WR 90 rows, TE 37 rows.
 
-## Joel Smyth (`src/sources/smythe_weekly.py`) — UNCONFIRMED for weekly
+Both experts confirmed live and independent as of 2026-09-08 (`validate.py`'s
+`check_not_identical_to_other_source` exists to catch a silent expert-id
+fallback — flags, doesn't drop, a Smyth pull whose player order matches
+Boone's beyond a small overlap threshold).
 
-Assumed to use the identical FantasyPros endpoint above with `id=7604` (the ID
-`Draft/src/sources/yahoo_consensus.py` already resolved **by name** from
-Yahoo's draft-day consensus endpoint's `expertNames` map — not a guess, but
-also not yet independently confirmed for the *weekly* endpoint specifically).
+## Site: Trade Values page (`site/src/lib/tradeValues.ts`)
 
-**Confirmed 2026-09-08**: the Yahoo article link initially checked for Smyth
-(`2026-fantasy-football-rankings-ppr-joel-smyth-193959938.html`) is his
-**preseason overall board**, not a weekly numbered ranking — no `week` param,
-no FantasyPros iframe on the page at all (the table renders as static content
-directly in the article). Per Jared, that page's own text says PPR rankings
-"come Thursday" — so a true weekly Smyth ranking may exist starting later in
-Week 1 at a similar URL, or may only ever be this single preseason-style board
-even once "updated." **Confirm against a real Smyth-authored weekly article
-before trusting `id=7604` for weekly pulls.**
+Pivots the long-format `in_season_trade_values_latest` rows (one row per
+source per player) into one row per player with each source as a column,
+plus a cross-source "normalized score" (each source's percentile rank,
+averaged — trade-value charts use each source's own arbitrary numeric scale,
+position-agnostic on purpose so e.g. an RB1 and a WR1 are directly
+comparable, so percentile rank is what puts different sources' scales on the
+same footing before averaging them).
 
-**Until confirmed**: `id=7604` against the weekly endpoint returned data, but
-its top-8 RBs were byte-identical to Boone's (`id=1663`) pull for the same
-week/scoring — inconclusive (could be genuine top-of-position consensus, could
-be a silent fallback to a default expert). `validate.py`'s
-`check_not_identical_to_other_source` exists specifically to catch this: it
-flags — does not silently drop — a Smyth pull whose player order matches
-Boone's beyond a small overlap threshold, so a human looks at it rather than
-the pipeline trusting bad data by default.
+**Scoring-format selection is label-driven, not a hardcoded per-source
+table**: `valueForScoring` picks `value_col1`/`value_col2` by pattern-matching
+the row's own `value_col1_label`/`value_col2_label` text (`/half/i` for
+half-PPR, `/(ppr|full)/i` for full-PPR) rather than hardcoding which column
+means what per source — sources spell this differently (Boone/CBS:
+`HALF`/`PPR`; USA Today: `HALF`/`FULL`; RSJ: `PPR`-only; FantasyPros: a
+single blended `VALUE`; QB across all sources: `1QB`/`2QB`, a league-size
+split, not a scoring split). A source whose labels don't match either
+scoring tag falls back to `value_col1` regardless of the toggle (QB,
+FantasyPros) — nothing to switch between. A source that matches the *other*
+scoring tag but not the requested one (RSJ under half-PPR) returns `null`
+rather than reusing its one value under the wrong label, and the column
+auto-hides (`sourcesWithData`) rather than showing an all-blank column.
+
+**Draft Sharks "3D value" is a sixth source, but it isn't in
+`in_season_trade_values`** — `TradeValues.tsx` pulls
+`in_season_ros_rankings_latest`, keeps QB/RB/WR/TE rows for the active
+scoring only (`dsRosToSourceRow`), and injects them into the pivot as
+`source: 'draftsharks'` using `ds_value` (range roughly -116..100, so it leans
+on percentile normalization like every other source). Only the *active*
+scoring's rows may be fed to `pivotTradeValues` — it keys values by
+`(player, source)`, so a second row for the other scoring would overwrite the
+real value with `null`.
+
+**PostgREST caps every response at 1000 rows, silently** — `.limit(5000)`
+does not raise it, it just returns 1000 with no error. Full trade values
+(~1,236 rows) and one week of weekly rankings (~1,400 rows: DS alone is ~900
+incl. DL/K/DST) both exceed it; the symptom is a whole source or scattered
+players missing (USA Today, Trevor Lawrence's DS row), not an error. Use
+`fetchAllRows` (`site/src/lib/supabase.ts`, pages via `.range()`, needs a
+unique `.order('id')`) for any query that can grow past 1000.
 
 ## Supabase shape (`supabase/migrations/0001_in_season_foundation.sql`)
 
@@ -316,13 +368,11 @@ from `Draft/data/aliases.csv` (the same alias file `Draft/src/matching.py`
 and Vampire's `name-matching.js` already read). That file is keyed by
 `(raw_name, raw_team, source)` where `source` means the *site* a name was
 scraped from ("yahoo", "footballguys") — none of in-season's own sources
-(`draftsharks`, `boone`, `smythe`) ever appear in that column, so lookups
+(`draftsharks`, `boone`, `smythe`, `harmon`, `pianowski`, `winks`) ever appear in that column, so lookups
 here deliberately ignore `source`/`team` and match on normalized name only
-(punctuation/case/suffix-stripped). The file is small and curated
-(~20 rows), so name-only collisions aren't a practical risk — but this does
-**not** solve cross-dataset gaps like a player missing entirely from one
-source's pull; see `docs/superpowers/specs/2026-09-12-supabase-foundation-design.md`
-for what's explicitly out of scope.
+(punctuation/case/suffix-stripped, both straight `'` and curly `'`/`'`
+apostrophes since 2026-09-18 — two spellings of the same player were
+silently splitting into two `canonical_name` rows before that fix).
 
 **Alias targets are normalized too (2026-09-19).** `aliases.csv`'s `canonical_name` column is a
 human-cased display name ("Cameron Skattebo"), and `canonical_name_for` used to return it verbatim
@@ -333,3 +383,20 @@ lowercase normalized form. Supabase was backfilled the same day (3,217 rows acro
 `in_season_rankings` / `in_season_trade_values` / `in_season_ros_rankings`, 12 names); a capitalized
 `canonical_name` in any of them is a regression. Local `data/processed/*.csv` were **not** rewritten and
 may still hold the old capitalized names for those players.
+
+**`canonical_name` alone is NOT a safe cross-source join/group key** — this
+doc previously claimed name-only collisions "aren't a practical risk"; that
+was wrong, confirmed live 2026-09-18: a real WR Justin Jefferson (MIN) and a
+different real person, an LB also named Justin Jefferson, share a
+`canonical_name`. Code that grouped rows by `canonical_name` alone (the
+site's Weekly tab, `blendRosValues`) silently merged their two rows into
+one, each stealing the other's data. The established fix is to join on
+`(canonical_name, normalized_position)` instead — see
+`normalizePosition`/`identityKey` in `site/src/lib/blend.ts` (also handles
+Draft Sharks spelling defense `"DEF"` vs. Boone/Smyth's `"DST"`, so same-team
+defenses still merge under the composite key) and the equivalent composite
+key in `site/src/lib/tradeValues.ts`'s pivot. Any new code joining across
+sources by name should follow this pattern, not `canonical_name` alone. This
+still doesn't solve cross-dataset gaps like a player missing entirely from
+one source's pull; see `docs/superpowers/specs/2026-09-12-supabase-foundation-design.md`
+for what's explicitly out of scope.

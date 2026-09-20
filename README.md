@@ -29,6 +29,12 @@ and Jared wants the history preserved, not just the latest snapshot.
   validation failure (`"Pull returned zero rows."`) rather than a true scrape
   break; `scripts/scheduled_pull.ps1`'s status email treats that specific
   message as "not yet published," distinct from a real failure.
+- **Matt Harmon, Scott Pianowski, Hayden Winks** (added 2026-09-18) — the other
+  three Yahoo analysts, same mechanism and same weekly pull (sources `harmon`,
+  `pianowski`, `winks`). **Archival only**: they land in `in_season_rankings`
+  so the full-season history exists, but the site deliberately ignores them
+  (`site/src/lib/useWeeklyRows.ts` filters to draftsharks/boone/smythe) until
+  they're wired into the blend. Verified live for week 2: ~260–310 rows each.
 - **Justin Boone rest-of-season trade values** — scraped directly from
   Boone's Yahoo article pages since there's no JSON API for this data.
   Article URLs aren't predictable/guessable week to week, so
@@ -52,8 +58,8 @@ and Jared wants the history preserved, not just the latest snapshot.
   columns weekly's trade-value table doesn't have, and it isn't a
   per-week-published report the way weekly rankings are.
 - **CBS Sports (Dave Richard), FantasyPros, and Roto Street Journal (RSJ)
-  trade values** — three more trade-value sources added 2026-09-17,
-  **captured for accuracy analysis only, not yet wired into the site.**
+  trade values** — three more trade-value sources added 2026-09-17, wired
+  into the site's Trade Values page as of 2026-09-18 alongside Boone.
   Each appends `source="cbs"|"fantasypros"|"rsj"` rows to the same
   `trade_values_long.csv` / `in_season_trade_values` table Boone uses — no
   schema change needed, since `TradeValueRow`'s two-value-column shape fits
@@ -133,10 +139,18 @@ of the data). **Gotcha**: that file's `source` column (`yahoo`,
 `footballguys`) is the site that spelled a name a certain way, not a
 fantasy-analyst source — none of this project's own sources (`draftsharks`,
 `boone`, `smythe`) ever appear there, so matching ignores source/team
-entirely and keys on normalized name alone. The Draft Sharks → Vampire
+entirely and keys on normalized name alone (both straight and curly
+apostrophes since 2026-09-18). The Draft Sharks → Vampire
 weekly-projection handoff (see `../Vampire/matchup-tool/scripts/refresh-weekly-projection.js`)
 still reuses Vampire's own separate `normalizeName` for its own matching —
 the two aren't unified, just both reading the same source CSV.
+
+**Gotcha — `canonical_name` isn't a safe join key on its own**: two
+different real people can share a name (confirmed: a WR and an LB both
+named Justin Jefferson). Any code joining/grouping rows across sources must
+key on `(canonical_name, normalized_position)`, not name alone — see
+`docs/DATA.md`'s Supabase-shape section and `normalizePosition`/`identityKey`
+in `site/src/lib/blend.ts` for the established pattern.
 
 ## Site (`site/`)
 
@@ -144,11 +158,21 @@ A Vite+React+TS+Tailwind app — the future home of the roadmap's consolidated
 tools (Start/Sit, Trade Analyzer, etc., see `../SITE_ROADMAP.md` at the repo
 root above this one). Deployed via Vercel from
 `https://github.com/JFrank136/NFL-Fantasy.git`, live at
-`https://nfl-fantasy-sigma.vercel.app`. `site/src/lib/supabase.ts` has a
-working Supabase client (verified against the live project) but **no page
-queries it yet** — the current tabs still render pre-Supabase placeholder
-components. Building real pages against `in_season_rankings_latest` /
-`in_season_trade_values_latest` is the next work here.
+`https://nfl-fantasy-sigma.vercel.app`. Two real pages are live against
+Supabase as of 2026-09-18:
+
+- **Rankings** (`site/src/pages/Rankings.tsx`) — Weekly (default tab,
+  auto-sorted by a DS/Boone/Smyth blended "Agg. Rank", QB/RB/WR/TE position
+  filter only — no K/DST) and ROS (Draft Sharks + Boone blended value,
+  cross-position overall rank, `ALL` position option retained since that
+  rank genuinely is cross-position). Pure blending logic lives in
+  `site/src/lib/blend.ts`, tested in `blend.test.ts`.
+- **Trade Values** (`site/src/pages/TradeValues.tsx`) — pivots all 5 trade-value
+  sources plus Draft Sharks' ROS `ds_value` ("DS 3D") into one row per player with a normalized cross-source score, a
+  PPR/Half-PPR toggle, and per-source column show/hide. Pure logic in
+  `site/src/lib/tradeValues.ts`, tested in `tradeValues.test.ts` — see
+  `docs/DATA.md`'s "Site: Trade Values page" section for the label-parsing
+  convention it uses.
 
 ## Usage
 
