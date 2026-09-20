@@ -2,9 +2,9 @@
 //
 // Single source of truth for site navigation, consumed by both Sidebar
 // (desktop) and MobileNav (mobile drawer). Adding a future roadmap page
-// (Data Health, Start/Sit, etc.) is a one-line addition here.
+// (Data Health, Home, etc.) is a one-line addition here.
 
-export type PageId = 'rankings' | 'tradevalues' | 'trade' | 'movers' | 'disagreement' | 'compare'
+export type PageId = 'rankings' | 'tradevalues' | 'trade' | 'startsit' | 'adddrop' | 'movers' | 'disagreement' | 'compare'
 
 export interface NavItem {
   id: PageId
@@ -15,6 +15,8 @@ export const NAV_ITEMS: NavItem[] = [
   { id: 'rankings', label: 'Rankings' },
   { id: 'tradevalues', label: 'Trade Values' },
   { id: 'trade', label: 'Trade Analyzer' },
+  { id: 'startsit', label: 'Start/Sit' },
+  { id: 'adddrop', label: 'Add/Drop' },
   { id: 'movers', label: 'Movers & Fallers' },
   { id: 'disagreement', label: 'Expert Disagreement' },
   { id: 'compare', label: 'Player Comparison' },

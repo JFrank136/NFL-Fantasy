@@ -1,7 +1,7 @@
-import { useEffect, useMemo, useState } from 'react'
-import { supabase, fetchAllRows, type RankingLatestRow, type RosRankingRow, type TradeValueLatestRow } from '../lib/supabase'
-import { blendRosValues, aggregateWeeklyRanks, identityKey, normalizePosition, type BlendedRosRow, type AggregatedWeeklyRow } from '../lib/blend'
+import { useMemo, useState } from 'react'
+import { blendRosValues, identityKey, type BlendedRosRow, type AggregatedWeeklyRow } from '../lib/blend'
 import { useRosHistory } from '../lib/useRosHistory'
+import { useWeeklyRows } from '../lib/useWeeklyRows'
 import { toBooneRosInput, toDsRosInput } from '../lib/useBlendedRos'
 import { buildMovers, splitSnapshots, TIMEFRAME_MIN_GAP_MS } from '../lib/movers'
 
@@ -121,33 +121,6 @@ const WEEKLY_COLUMNS: ColumnDef<AggregatedWeeklyRow>[] = [
   { key: 'dsCeiling', label: 'Ceiling', type: 'number' },
 ]
 
-function useCurrentWeek() {
-  const [week, setWeek] = useState<number | null>(null)
-  const [error, setError] = useState<string | null>(null)
-
-  useEffect(() => {
-    let cancelled = false
-    supabase
-      .from('in_season_rankings_latest')
-      .select('week')
-      .in('source', ['boone', 'smythe'])
-      .order('week', { ascending: false })
-      .limit(1)
-      .then(({ data, error }) => {
-        if (cancelled) return
-        if (error) {
-          console.error('Failed to fetch current week:', error)
-          setError(error.message)
-          return
-        }
-        setWeek(data?.[0]?.week ?? null)
-      })
-    return () => { cancelled = true }
-  }, [])
-
-  return { week, error }
-}
-
 function useRosTab(scoring: Scoring) {
   const { dsRows, booneRows, loading, error } = useRosHistory(scoring)
 
@@ -176,91 +149,17 @@ function useRosTab(scoring: Scoring) {
   return { rows, loading, error, freshest }
 }
 
-function useWeeklyTab(scoring: Scoring, week: number | null, weekError: string | null) {
-  const [rows, setRows] = useState<AggregatedWeeklyRow[]>([])
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
-  const [freshest, setFreshest] = useState<string | null>(null)
-
-  useEffect(() => {
-    if (week == null) {
-      if (weekError) {
-        setError(weekError)
-        setLoading(false)
-      }
-      return
-    }
-    let cancelled = false
-    setLoading(true)
-    setError(null)
-
-    // One week across all sources is ~1400 rows (DS alone includes DL/K/DST),
-    // over PostgREST's 1000-row cap -- paginate or later players (e.g. a QB's
-    // DS row) silently drop out.
-    fetchAllRows<RankingLatestRow>((from, to) =>
-      supabase
-        .from('in_season_rankings_latest')
-        .select('*')
-        .eq('scoring', scoring)
-        .eq('week', week)
-        .order('id')
-        .range(from, to),
-    )
-      .then(({ data, error }) => {
-        if (cancelled) return
-        if (error) { setError(error.message); setLoading(false); return }
-
-        const rankingRows = data
-        const byPlayer = new Map<string, RankingLatestRow[]>()
-        rankingRows.forEach(r => {
-          const key = identityKey(r.canonical_name, r.position)
-          const list = byPlayer.get(key) ?? []
-          list.push(r)
-          byPlayer.set(key, list)
-        })
-
-        const players = Array.from(byPlayer.values()).map(sourceRows => {
-          const ds = sourceRows.find(r => r.source === 'draftsharks')
-          const boone = sourceRows.find(r => r.source === 'boone')
-          const smythe = sourceRows.find(r => r.source === 'smythe')
-          const any = ds ?? boone ?? smythe ?? sourceRows[0]
-          return {
-            canonicalName: any.canonical_name,
-            playerName: any.player_name,
-            position: normalizePosition(any.position),
-            team: any.team,
-            draftsharksRank: ds?.rank ?? null,
-            booneRank: boone?.rank ?? null,
-            smytheRank: smythe?.rank ?? null,
-            dsProjection: ds?.projection ?? null,
-            dsFloor: ds?.floor_proj ?? null,
-            dsCeiling: ds?.ceiling_proj ?? null,
-            opponent: any.opponent,
-          }
-        })
-
-        setRows(aggregateWeeklyRanks(players))
-        setFreshest(rankingRows.reduce((max, r) => (r.pulled_at > max ? r.pulled_at : max), rankingRows[0]?.pulled_at ?? '') || null)
-        setLoading(false)
-      })
-
-    return () => { cancelled = true }
-  }, [scoring, week, weekError])
-
-  return { rows, loading, error, freshest }
-}
-
 export default function Rankings() {
   const [tab, setTab] = useState<'ros' | 'weekly'>('weekly')
   const [pos, setPos] = useState('QB')
   const [scoring, setScoring] = useState<Scoring>('ppr')
   const [query, setQuery] = useState('')
 
-  const { week, error: weekError } = useCurrentWeek()
   const [rosSort, setRosSort] = useState<SortState>({ key: null, dir: 'asc' })
   const [weeklySort, setWeeklySort] = useState<SortState>({ key: 'aggregateRank', dir: 'asc' })
   const ros = useRosTab(scoring)
-  const weekly = useWeeklyTab(scoring, week, weekError)
+  const weekly = useWeeklyRows(scoring)
+  const week = weekly.week
 
   const active = tab === 'ros' ? ros : weekly
   const positions = tab === 'ros' ? ROS_POSITIONS : WEEKLY_POSITIONS

@@ -112,32 +112,33 @@ Typical use will be 2–3 players, including FLEX decisions.
 
 ## Comparison Fields
 
-- [ ] Aggregate weekly rank — primary decision anchor
-- [ ] Draft Sharks weekly rank
-- [ ] Boone weekly rank
-- [ ] Draft Sharks weekly projection
-- [ ] Draft Sharks floor
-- [ ] Draft Sharks ceiling
-- [ ] Matchup rating
-- [ ] ROS value/rank as secondary context
-- [ ] Confidence level
+- [x] Aggregate weekly rank — primary decision anchor
+- [x] Draft Sharks weekly rank
+- [x] Boone weekly rank
+- [x] Draft Sharks weekly projection
+- [x] Draft Sharks floor
+- [x] Draft Sharks ceiling
+- [ ] Matchup rating — v1 shows the opponent (home/away) only; a real rating needs a data source
+- [x] ROS value/rank as secondary context
+- [x] Confidence level
 
 ## Behavior
 
-- [ ] Support 2–5 players
-- [ ] Allow FLEX comparisons across RB/WR/TE
-- [ ] Use row-based comparison so values can be scanned left-to-right
-- [ ] Highlight best/worst values by row
-- [ ] Show recommended starter
-- [ ] Show confidence: High / Medium / Toss-up
-- [ ] Add 1–2 short reasons based on biggest differences
+- [x] Support 2–5 players
+- [x] Allow FLEX comparisons across RB/WR/TE
+- [x] Use row-based comparison so values can be scanned left-to-right
+- [x] Highlight best/worst values by row
+- [x] Show recommended starter
+- [x] Show confidence: High / Medium / Toss-up
+- [x] Add 1–2 short reasons based on biggest differences
 
 ## Recommendation Logic
 
-- [ ] Aggregate weekly rank is the anchor
-- [ ] Boone and Draft Sharks shown separately for transparency
-- [ ] Projection/floor/ceiling/matchup are supporting context
-- [ ] ROS context is secondary and should mainly help with "start your studs" situations
+- [x] Aggregate weekly rank is the anchor
+- [x] Boone and Draft Sharks shown separately for transparency
+- [x] Projection/floor/ceiling/matchup are supporting context
+- [x] ROS context is secondary and should mainly help with "start your studs" situations
+- v1 anchors on the weighted rank score (comparable across RB/WR/TE); a QB mixed with a non-QB gets no recommendation. FLEX rank is shown alongside position rank.
 - [ ] Develop weighting model later
 - [ ] Backtest weighting against historical weekly outcomes
 - [ ] Tune weights after enough data exists
@@ -195,15 +196,15 @@ This should also work as a broader comparison tool because multiple waiver playe
 
 ## Must Have
 
-- [ ] Compare multiple add candidates
-- [ ] Compare multiple current roster/bench candidates
-- [ ] Allow user to compare several waiver players against several bench players
-- [ ] Blended ROS value
-- [ ] Draft Sharks upside / ceiling value
-- [ ] ROS trend
-- [ ] Current-week outlook as secondary context
-- [ ] SOS shown as context
-- [ ] Position shown clearly
+- [x] Compare multiple add candidates
+- [x] Compare multiple current roster/bench candidates
+- [x] Allow user to compare several waiver players against several bench players
+- [x] Blended ROS value
+- [x] Draft Sharks upside / ceiling value
+- [x] ROS trend
+- [x] Current-week outlook as secondary context
+- [x] SOS shown as context
+- [x] Position shown clearly
 
 ## Evaluation Philosophy
 

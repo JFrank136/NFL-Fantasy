@@ -2,53 +2,20 @@ import { useMemo, useState } from 'react'
 import PlayerPicker from '../components/PlayerPicker'
 import ComparisonTable from '../components/ComparisonTable'
 import ScoringToggle from '../components/ScoringToggle'
-import { useRosHistory } from '../lib/useRosHistory'
-import { toBooneRosInput, toDsRosInput, type Scoring } from '../lib/useBlendedRos'
-import { blendRosValues, identityKey } from '../lib/blend'
-import { buildMovers, splitSnapshots, TIMEFRAME_MIN_GAP_MS } from '../lib/movers'
+import { useComparisonPool } from '../lib/useComparisonPool'
+import type { Scoring } from '../lib/useBlendedRos'
 import {
-  buildComparisonPool, comparisonRows, summarizeComparison,
-  type CellFormat, type ComparisonPlayer,
+  comparisonRows, formatCell, summarizeComparison,
+  type ComparisonPlayer,
 } from '../lib/playerComparison'
 
 const MIN_PLAYERS = 2
 const MAX_PLAYERS = 5
 
-const r1 = (n: number) => Math.round(n * 10) / 10
-
-function formatCell(value: number | string | null, format: CellFormat): string {
-  if (value == null) return '—'
-  if (typeof value === 'string') return value
-  switch (format) {
-    case 'rank': return `#${value}`
-    case 'signed': return `${value > 0 ? '+' : ''}${r1(value)}`
-    default: return String(r1(value))
-  }
-}
-
 export default function PlayerComparison() {
   const [scoring, setScoring] = useState<Scoring>('ppr')
   const [selectedKeys, setSelectedKeys] = useState<string[]>([])
-  const { dsRows, booneRows, loading, error } = useRosHistory(scoring)
-
-  const { pool, freshest } = useMemo(() => {
-    const gap = TIMEFRAME_MIN_GAP_MS.latest
-    const ds = splitSnapshots(dsRows, gap)
-    const boone = splitSnapshots(booneRows, gap)
-    const current = { ds: ds.current.map(toDsRosInput), boone: boone.current.map(r => toBooneRosInput(r, scoring)) }
-
-    const { rows: movers } = buildMovers('blended', current, {
-      ds: ds.baseline.length ? ds.baseline.map(toDsRosInput) : null,
-      boone: boone.baseline.length ? boone.baseline.map(r => toBooneRosInput(r, scoring)) : null,
-    })
-    const trendByKey = new Map(movers.map(m => [identityKey(m.canonicalName, m.position), m.change]))
-    const sosByKey = new Map(ds.current.map(r => [identityKey(r.canonical_name, r.position), r.strength_of_schedule]))
-
-    return {
-      pool: buildComparisonPool(blendRosValues(current.ds, current.boone), trendByKey, sosByKey),
-      freshest: ds.current.reduce((max, r) => (r.pulled_at > max ? r.pulled_at : max), ''),
-    }
-  }, [dsRows, booneRows, scoring])
+  const { pool, freshest, loading, error } = useComparisonPool(scoring)
 
   const byKey = useMemo(() => new Map(pool.map(p => [p.key, p])), [pool])
   const selected = useMemo(

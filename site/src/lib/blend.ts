@@ -167,13 +167,34 @@ export interface WeeklyPlayerInput {
   playerName: string
   position: string
   team: string | null
+  /**
+   * Draft Sharks' rank exactly as published: an OVERALL rank across
+   * everything it returns for the week, IDP/K/DST included. Week 2 2026 RBs
+   * spanned 3-836 and WRs 10-870 while Boone/Smyth (Yahoo's FLX query) ran
+   * 1-~155. Kept raw because the Rankings page displays it; the blend uses
+   * `draftsharksScaledRank` instead. See rescaleDraftSharksRanks.
+   */
   draftsharksRank: number | null
+  /**
+   * `draftsharksRank` re-ranked within the RB/WR/TE (FLEX) or QB group, so
+   * it is on the same scale as Boone/Smyth. Set by rescaleDraftSharksRanks;
+   * optional so callers that never rescale still type-check.
+   */
+  draftsharksScaledRank?: number | null
   booneRank: number | null
   smytheRank: number | null
   dsProjection: number | null
   dsFloor: number | null
   dsCeiling: number | null
   opponent: string | null
+  /**
+   * The player's bye WEEK number as stored in `in_season_rankings_latest.bye`
+   * (not a boolean). Optional because not every source row carries one.
+   * Callers compare it against the week being displayed -- an empty
+   * `opponent` is the other bye signal, and sources don't agree on which
+   * they populate.
+   */
+  byeWeek?: number | null
 }
 
 export interface AggregatedWeeklyRow extends WeeklyPlayerInput {
@@ -181,12 +202,60 @@ export interface AggregatedWeeklyRow extends WeeklyPlayerInput {
   aggregateRank: number | null
 }
 
+/** RB/WR/TE share one scale; every other position is ranked against itself. */
+const FLEX_SCALE_POSITIONS = ['RB', 'WR', 'TE']
+const scaleGroupOf = (position: string) =>
+  FLEX_SCALE_POSITIONS.includes(position) ? 'FLEX' : position
+
+/**
+ * Puts Draft Sharks' weekly rank on the same scale as Boone's and Smyth's
+ * before they are averaged together.
+ *
+ * Draft Sharks publishes ONE overall weekly rank covering every player it
+ * returns -- IDP, kickers and defenses included -- so a mid-range RB can sit
+ * at 300 while Boone and Smyth, who rank within Yahoo's FLX (RB/WR/TE) and QB
+ * groups, have that same player near 20. Averaging those raw numbers let
+ * Draft Sharks' magnitude decide almost every score at weight .5, and a
+ * player with no Draft Sharks row had that weight redistributed onto its much
+ * smaller Boone/Smyth ranks, vaulting it many FLEX places above identical
+ * peers (and opening fake 100+ point gaps that read as "High" confidence).
+ *
+ * Re-ranking within the FLEX and QB groups removes the magnitude difference
+ * while preserving Draft Sharks' ordering, which is the part of its opinion
+ * the blend actually wants. Ties share a rank (competition ranking: 1, 1, 3).
+ * Pure: returns new objects and never mutates the input.
+ *
+ * Bye-week players stay in the ranking. They sort to wherever Draft Sharks
+ * put them and are excluded downstream (buildWeeklyPool / computeFlexRanks),
+ * so dropping them here would only shift everyone below them by one without
+ * changing any comparison that is actually made.
+ */
+export function rescaleDraftSharksRanks<T extends WeeklyPlayerInput>(players: T[]): T[] {
+  const rawByGroup = new Map<string, number[]>()
+  players.forEach(p => {
+    if (p.draftsharksRank == null) return
+    const group = scaleGroupOf(p.position)
+    const list = rawByGroup.get(group) ?? []
+    list.push(p.draftsharksRank)
+    rawByGroup.set(group, list)
+  })
+
+  return players.map(p => {
+    if (p.draftsharksRank == null) return { ...p, draftsharksScaledRank: null }
+    const peers = rawByGroup.get(scaleGroupOf(p.position)) as number[]
+    const better = peers.filter(r => r < (p.draftsharksRank as number)).length
+    return { ...p, draftsharksScaledRank: better + 1 }
+  })
+}
+
 /** Re-ranks weightedAverageRank's output within each position (ascending -- lower weighted rank score is better). */
 export function aggregateWeeklyRanks(players: WeeklyPlayerInput[]): AggregatedWeeklyRow[] {
   const withScores: AggregatedWeeklyRow[] = players.map(p => ({
     ...p,
     aggregateScore: weightedAverageRank(p.position, {
-      draftsharks: p.draftsharksRank,
+      // Falls back to the raw rank when nothing has been rescaled, so callers
+      // that skip rescaleDraftSharksRanks keep their previous behaviour.
+      draftsharks: p.draftsharksScaledRank ?? p.draftsharksRank,
       boone: p.booneRank,
       smythe: p.smytheRank,
     }),

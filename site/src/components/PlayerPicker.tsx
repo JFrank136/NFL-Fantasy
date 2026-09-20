@@ -6,6 +6,8 @@ export interface PickablePlayer {
   position: string
   team: string | null
   blended: number | null
+  /** When defined (even null), shown instead of `blended` in the dropdown row. */
+  detail?: string | null
 }
 
 /** Shared search-and-add player box (Player Comparison now; Start/Sit and
@@ -47,7 +49,7 @@ export default function PlayerPicker({
               onMouseDown={() => { onAdd(p); setQuery('') }}
             >
               <span>{p.playerName} <span className="subtle">{p.position}{p.team ? ` · ${p.team}` : ''}</span></span>
-              <span className="subtle">{p.blended != null ? Math.round(p.blended) : '—'}</span>
+              <span className="subtle">{p.detail !== undefined ? (p.detail ?? '—') : p.blended != null ? Math.round(p.blended) : '—'}</span>
             </div>
           ))}
         </div>
