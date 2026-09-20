@@ -87,6 +87,20 @@ def test_boone_and_smyth_get_different_ranks_from_same_response():
     assert smyth_ranks == {"Lamar Jackson": 1, "Jalen Hurts": 2}
 
 
+def test_remaining_yahoo_experts_resolve_by_name():
+    session = FakeSession(REAL_RESPONSE)
+    ranks = {}
+    for name in ("Matt Harmon", "Scott Pianowski", "Hayden Winks"):
+        rows = fetch_expert_weekly(
+            name, week=1, year=2026, scoring_slug="half-ppr",
+            positions=["QB"], request_delay=0, session=session,
+        )
+        ranks[name] = {r.player_name: r.rank for r in rows}
+    assert ranks["Matt Harmon"] == {"Lamar Jackson": 1, "Jalen Hurts": 3}
+    assert ranks["Scott Pianowski"] == {"Lamar Jackson": 1, "Jalen Hurts": 3}
+    assert ranks["Hayden Winks"] == {"Lamar Jackson": 1, "Jalen Hurts": 3}
+
+
 def test_unknown_expert_raises():
     session = FakeSession(REAL_RESPONSE)
     with pytest.raises(YahooConsensusFetchError):

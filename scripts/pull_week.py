@@ -49,8 +49,15 @@ RAW_DIR = BASE_DIR / "data" / "raw"
 PROCESSED_PATH = BASE_DIR / "data" / "processed" / "rankings_long.csv"
 STATUS_PATH = BASE_DIR / "data" / "last_run_status.json"
 
-ALL_SOURCES = ["draftsharks", "boone", "smythe"]
-YAHOO_EXPERT_NAMES = {"boone": "Justin Boone", "smythe": "Joel Smyth"}
+ALL_SOURCES = ["draftsharks", "boone", "smythe", "harmon", "pianowski", "winks"]
+YAHOO_EXPERT_NAMES = {
+    "boone": "Justin Boone",
+    "smythe": "Joel Smyth",
+    # Pulled and stored for end-of-season analysis only -- not surfaced on the site yet.
+    "harmon": "Matt Harmon",
+    "pianowski": "Scott Pianowski",
+    "winks": "Hayden Winks",
+}
 
 
 def fetch_and_normalize(source: str, week: int, season: int, scoring: str, pulled_at: str):

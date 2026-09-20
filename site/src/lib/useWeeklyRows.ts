@@ -78,6 +78,9 @@ export function useWeeklyRows(scoring: Scoring): WeeklyRowsResult {
         .select('*')
         .eq('scoring', scoring)
         .eq('week', week)
+        // Harmon/Pianowski/Winks are pulled for archival only -- keep them
+        // out of this view until they're wired into the blend.
+        .in('source', ['draftsharks', 'boone', 'smythe'])
         .order('id')
         .range(from, to),
     )

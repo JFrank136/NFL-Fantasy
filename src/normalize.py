@@ -37,7 +37,8 @@ def yahoo_expert_to_ranking_rows(
     rows: list[ExpertWeeklyRow], source: str, season: int, week: int, scoring: str,
     pulled_at: str,
 ) -> list[RankingRow]:
-    """`source` is "boone" or "smythe" -- Yahoo's fanPro endpoint doesn't
+    """`source` is a Yahoo expert key ("boone", "smythe", "harmon",
+    "pianowski", "winks") -- Yahoo's fanPro endpoint doesn't
     return a per-expert numeric projection, only a rank, so `projection`
     stays None for these rows (unlike Draft Sharks, which does have one)."""
     return [

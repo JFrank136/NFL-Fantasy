@@ -20,7 +20,7 @@ LONG_FORMAT_COLUMNS = [
 class RankingRow:
     season: int
     week: int
-    source: str          # "draftsharks" | "boone" | "smythe"
+    source: str          # "draftsharks" | "boone" | "smythe" | "harmon" | "pianowski" | "winks"
     scoring: str          # "half-ppr" | "ppr"
     pulled_at: str         # ISO 8601 timestamp, UTC
     source_player_id: str
