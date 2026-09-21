@@ -428,7 +428,17 @@ function Send-SuccessEmailIfWarranted($CurrentWeek, $CsvPath) {
     Send-SuccessEmail -Html "Fantasy pull OK ($(Get-Date -Format 'yyyy-MM-dd')) -- $reason" $htmlBody
 }
 
+# This laptop uses Modern Standby: a catch-up run (StartWhenAvailable) fires
+# when the machine wakes, then the machine drops back into standby within
+# seconds -- the script keeps running but Windows throttles the network, so
+# fetches fail across every host (2026-09-21: 22/44 combos, 5 sources failed
+# over a 3.5h run). Hold a system-required request for the life of this
+# process (released automatically on exit). Closing the lid still sleeps it.
+Add-Type -Namespace Win32 -Name Power -MemberDefinition '[DllImport("kernel32.dll")] public static extern uint SetThreadExecutionState(uint esFlags);'
+$keepAwake = [Win32.Power]::SetThreadExecutionState(2147483649)  # 0x80000001 = ES_CONTINUOUS | ES_SYSTEM_REQUIRED (hex literal parses as negative Int32 in PowerShell)
+
 Log "=== Scheduled pull starting ==="
+if ($keepAwake -eq 0) { Log "WARNING: keep-awake request failed; run may stall if the machine goes back to sleep." } else { Log "Keep-awake requested (system will not sleep during this run)." }
 Log "in-season dir: $InSeasonDir"
 Log "Vampire dir:   $VampireDir"
 
