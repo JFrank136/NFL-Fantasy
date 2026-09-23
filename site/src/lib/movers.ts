@@ -70,6 +70,39 @@ export function splitSnapshots<T extends Snapshotted>(rows: T[], minGapMs: numbe
   return { current, baseline, baselineTimes }
 }
 
+/**
+ * Picks, per position, the most recent pull tagged with the given NFL week
+ * -- "Since last week" wants the latest snapshot actually FROM last week,
+ * not just any pull that happens to be old enough by wall-clock time
+ * (that's what "Latest change" already does via splitSnapshots' minGapMs
+ * cutoff, and stays duration-based on purpose: it's about the most recent
+ * real change, not a specific week).
+ */
+export function weekSnapshot<T extends Snapshotted>(
+  rows: T[],
+  week: number | null,
+  weekOf: (row: T) => number,
+): { rows: T[]; times: string[] } {
+  if (week == null) return { rows: [], times: [] }
+
+  const byPosition = new Map<string, T[]>()
+  rows.forEach(row => {
+    if (weekOf(row) !== week) return
+    const list = byPosition.get(row.position) ?? []
+    list.push(row)
+    byPosition.set(row.position, list)
+  })
+
+  const result: T[] = []
+  const times: string[] = []
+  byPosition.forEach(list => {
+    const newest = list.reduce((max, r) => (r.pulled_at > max ? r.pulled_at : max), list[0].pulled_at)
+    result.push(...list.filter(r => r.pulled_at === newest))
+    times.push(newest)
+  })
+  return { rows: result, times }
+}
+
 /** "Draft Sharks: vs. 9/13/2026-9/18/2026" -- which snapshots a change is measured against. */
 export function describeBaseline(label: string, times: string[]): string {
   if (times.length === 0) return `${label}: no baseline yet`
@@ -89,6 +122,14 @@ export function explainMissingBaseline(label: string, rows: { pulled_at: string 
   const earliest = rows.reduce((min, r) => (r.pulled_at < min ? r.pulled_at : min), rows[0].pulled_at)
   const readyAt = new Date(Date.parse(earliest) + minGapMs)
   return `${label}: pull history only goes back to ${new Date(earliest).toLocaleDateString()} -- check back after ${readyAt.toLocaleDateString()}`
+}
+
+/** Why a source has no "since last week" baseline: it simply has no data
+ * tagged with the previous NFL week yet (as opposed to "Latest change",
+ * which is a wall-clock-age question -- see explainMissingBaseline). */
+export function explainMissingWeekBaseline(label: string, previousWeek: number | null): string {
+  if (previousWeek == null) return `${label}: no previous week yet`
+  return `${label}: no Week ${previousWeek} data yet`
 }
 
 export interface SourceInputs {

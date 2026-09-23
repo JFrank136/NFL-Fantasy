@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { splitSnapshots, buildMovers, topMovers, type MoverRow } from './movers'
+import { splitSnapshots, buildMovers, topMovers, weekSnapshot, explainMissingWeekBaseline, type MoverRow } from './movers'
 import type { RosSourceRow, BooneRosRow } from './blend'
 
 const H = 60 * 60 * 1000
@@ -40,6 +40,53 @@ describe('splitSnapshots', () => {
     ]
     const { baseline } = splitSnapshots(rows, 7 * 24 * H)
     expect(baseline).toEqual([])
+  })
+})
+
+describe('weekSnapshot', () => {
+  function weekly(position: string, week: number, pulled_at: string, id: string) {
+    return { position, week, pulled_at, id }
+  }
+
+  it('picks the most recent pull tagged with the given week, per position', () => {
+    const rows = [
+      weekly('RB', 2, '2026-09-18T00:00:00Z', 'w2-early'),
+      weekly('RB', 2, '2026-09-20T17:48:03Z', 'w2-latest'),
+      weekly('RB', 3, '2026-09-22T22:54:34Z', 'w3'),
+    ]
+    const { rows: picked, times } = weekSnapshot(rows, 2, r => r.week)
+    expect(picked.map(r => r.id)).toEqual(['w2-latest'])
+    expect(times).toEqual(['2026-09-20T17:48:03Z'])
+  })
+
+  it('is independent per position', () => {
+    const rows = [
+      weekly('RB', 2, '2026-09-18T00:00:00Z', 'rb-w2'),
+      weekly('WR', 2, '2026-09-19T00:00:00Z', 'wr-w2'),
+      weekly('WR', 3, '2026-09-22T00:00:00Z', 'wr-w3'),
+    ]
+    const { rows: picked } = weekSnapshot(rows, 2, r => r.week)
+    expect(picked.map(r => r.id).sort()).toEqual(['rb-w2', 'wr-w2'])
+  })
+
+  it('returns nothing when the source has no rows for that week', () => {
+    const rows = [weekly('RB', 3, '2026-09-22T00:00:00Z', 'w3')]
+    expect(weekSnapshot(rows, 2, r => r.week)).toEqual({ rows: [], times: [] })
+  })
+
+  it('returns nothing when the week is not yet known', () => {
+    const rows = [weekly('RB', 2, '2026-09-18T00:00:00Z', 'w2')]
+    expect(weekSnapshot(rows, null, r => r.week)).toEqual({ rows: [], times: [] })
+  })
+})
+
+describe('explainMissingWeekBaseline', () => {
+  it('names the missing week', () => {
+    expect(explainMissingWeekBaseline('Draft Sharks', 2)).toBe('Draft Sharks: no Week 2 data yet')
+  })
+
+  it('handles no previous week (e.g. week 1)', () => {
+    expect(explainMissingWeekBaseline('Draft Sharks', null)).toBe('Draft Sharks: no previous week yet')
   })
 })
 

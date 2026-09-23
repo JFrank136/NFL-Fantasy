@@ -2,7 +2,7 @@ import { useMemo, useState } from 'react'
 import { useRosHistory } from '../lib/useRosHistory'
 import { toBooneRosInput, toDsRosInput, type Scoring } from '../lib/useBlendedRos'
 import { blendRosValues } from '../lib/blend'
-import { buildMovers, describeBaseline, splitSnapshots, TIMEFRAME_MIN_GAP_MS, type Timeframe } from '../lib/movers'
+import { buildMovers, describeBaseline, explainMissingBaseline, explainMissingWeekBaseline, splitSnapshots, weekSnapshot, TIMEFRAME_MIN_GAP_MS, type Timeframe } from '../lib/movers'
 import { onlyWeek } from '../lib/freshness'
 import { useCurrentWeek } from '../lib/useCurrentWeek'
 import { currentDisagreements, directionDisagreements } from '../lib/disagreement'
@@ -45,20 +45,36 @@ export default function ExpertDisagreement() {
   const [pos, setPos] = useState('ALL')
   const { dsRows, booneRows, loading, error } = useRosHistory(scoring)
   const { week: currentWeek } = useCurrentWeek()
+  const previousWeek = currentWeek != null ? currentWeek - 1 : null
 
   const data = useMemo(() => {
-    const gap = TIMEFRAME_MIN_GAP_MS[timeframe]
-    const ds = splitSnapshots(dsRows, gap)
-    const boone = splitSnapshots(booneRows, gap)
+    // "Current" is always each source's newest pull per position -- gap-
+    // independent, so any minGapMs works here (it only affects baseline).
+    const ds = splitSnapshots(dsRows, TIMEFRAME_MIN_GAP_MS.latest)
+    const boone = splitSnapshots(booneRows, TIMEFRAME_MIN_GAP_MS.latest)
     // A source's own newest pull can still be a stale week if it hasn't
     // refreshed since the NFL week turned over -- gate "current" to this
     // week's data so a lagging source drops out instead of blending in.
     const dsCurrentRows = onlyWeek(ds.current, currentWeek, r => r.as_of_week)
     const booneCurrentRows = onlyWeek(boone.current, currentWeek, r => r.week)
+    const boonePending = currentWeek != null && boone.current.length > 0 && booneCurrentRows.length === 0
     const current = { ds: dsCurrentRows.map(toDsRosInput), boone: booneCurrentRows.map(r => toBooneRosInput(r, scoring)) }
+
+    // "Since last week" wants the most recent pull actually tagged with the
+    // PREVIOUS NFL week, not just a pull old enough by wall-clock time --
+    // see weekSnapshot in movers.ts.
+    const dsBase = timeframe === 'week'
+      ? weekSnapshot(dsRows, previousWeek, r => r.as_of_week)
+      : { rows: ds.baseline, times: ds.baselineTimes }
+    const booneBase = timeframe === 'week'
+      ? weekSnapshot(booneRows, previousWeek, r => r.week)
+      : { rows: boone.baseline, times: boone.baselineTimes }
     const baseline = {
-      ds: ds.baseline.length ? ds.baseline.map(toDsRosInput) : null,
-      boone: boone.baseline.length ? boone.baseline.map(r => toBooneRosInput(r, scoring)) : null,
+      ds: dsBase.rows.length ? dsBase.rows.map(toDsRosInput) : null,
+      // A pending Boone has nothing in "current" at all, so comparing it
+      // against a real week-old Boone baseline would misattribute Boone's
+      // absence (not real movement) as a change.
+      boone: !boonePending && booneBase.rows.length ? booneBase.rows.map(r => toBooneRosInput(r, scoring)) : null,
     }
 
     const dsMovers = buildMovers('ds', current, baseline)
@@ -67,12 +83,12 @@ export default function ExpertDisagreement() {
       currentRows: currentDisagreements(blendRosValues(current.ds, current.boone)),
       directionRows: directionDisagreements(dsMovers.rows, booneMovers.rows),
       directionAvailable: dsMovers.baselineAvailable && booneMovers.baselineAvailable,
-      baselineDs: ds.baselineTimes,
-      baselineBoone: boone.baselineTimes,
+      baselineDs: dsBase.times,
+      baselineBoone: booneBase.times,
       freshest: dsCurrentRows.reduce((max, r) => (r.pulled_at > max ? r.pulled_at : max), ''),
-      boonePending: currentWeek != null && boone.current.length > 0 && booneCurrentRows.length === 0,
+      boonePending,
     }
-  }, [dsRows, booneRows, scoring, timeframe, currentWeek])
+  }, [dsRows, booneRows, scoring, timeframe, currentWeek, previousWeek])
 
   const matchesPos = (p: string) => pos === 'ALL' || p === pos
   const currentRows = useMemo(() => data.currentRows.filter(r => matchesPos(r.position)).slice(0, LIST_SIZE), [data, pos])
@@ -153,8 +169,24 @@ export default function ExpertDisagreement() {
       )}
 
       {!loading && !error && view === 'direction' && !data.directionAvailable && (
-        <div className="card p-4 subtle">
-          Not enough history for this timeframe yet — both sources need a snapshot old enough to compare against.
+        <div className="card p-4 space-y-1">
+          <div className="subtle">Not enough history for this timeframe yet -- both sources need a baseline to compare against:</div>
+          {!data.baselineDs.length && (
+            <div className="subtle">
+              {timeframe === 'week'
+                ? explainMissingWeekBaseline('Draft Sharks', previousWeek)
+                : explainMissingBaseline('Draft Sharks', dsRows, TIMEFRAME_MIN_GAP_MS.latest)}
+            </div>
+          )}
+          {(data.boonePending || !data.baselineBoone.length) && (
+            <div className="subtle">
+              {data.boonePending
+                ? `Boone hasn't updated ROS values for Week ${currentWeek} yet, so there's nothing current to compare.`
+                : timeframe === 'week'
+                  ? explainMissingWeekBaseline('Boone', previousWeek)
+                  : explainMissingBaseline('Boone', booneRows, TIMEFRAME_MIN_GAP_MS.latest)}
+            </div>
+          )}
         </div>
       )}
 
