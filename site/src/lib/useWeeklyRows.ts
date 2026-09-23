@@ -7,39 +7,11 @@
 import { useEffect, useState } from 'react'
 import { supabase, fetchAllRows, type RankingLatestRow } from './supabase'
 import { aggregateWeeklyRanks, identityKey, normalizePosition, rescaleDraftSharksRanks, type AggregatedWeeklyRow } from './blend'
+import { dropStaleStragglers } from './freshness'
+import { useCurrentWeek } from './useCurrentWeek'
 import type { Scoring } from './useBlendedRos'
 
-export function useCurrentWeek() {
-  const [week, setWeek] = useState<number | null>(null)
-  const [error, setError] = useState<string | null>(null)
-  // `week == null` is ambiguous on its own: still loading, or the query came
-  // back empty? Without this flag consumers wait forever on an empty table.
-  const [resolved, setResolved] = useState(false)
-
-  useEffect(() => {
-    let cancelled = false
-    supabase
-      .from('in_season_rankings_latest')
-      .select('week')
-      .in('source', ['boone', 'smythe'])
-      .order('week', { ascending: false })
-      .limit(1)
-      .then(({ data, error }) => {
-        if (cancelled) return
-        if (error) {
-          console.error('Failed to fetch current week:', error)
-          setError(error.message)
-          setResolved(true)
-          return
-        }
-        setWeek(data?.[0]?.week ?? null)
-        setResolved(true)
-      })
-    return () => { cancelled = true }
-  }, [])
-
-  return { week, error, resolved }
-}
+export { useCurrentWeek }
 
 export interface WeeklyRowsResult {
   rows: AggregatedWeeklyRow[]
@@ -88,7 +60,13 @@ export function useWeeklyRows(scoring: Scoring): WeeklyRowsResult {
         if (cancelled) return
         if (error) { setError(error.message); setLoading(false); return }
 
-        const rankingRows = data
+        // Drop stragglers left behind from an earlier pull: the "_latest"
+        // view serves each player their own latest row, so a player a
+        // source has since removed from its rankings (e.g. ruled out with
+        // an injury) keeps showing that stale row forever otherwise -- seen
+        // live with Draft Sharks still listing Jayden Daniels/Caleb
+        // Williams a day after DS itself dropped them from week 3.
+        const rankingRows = dropStaleStragglers(data)
         const byPlayer = new Map<string, RankingLatestRow[]>()
         rankingRows.forEach(r => {
           const key = identityKey(r.canonical_name, r.position)
