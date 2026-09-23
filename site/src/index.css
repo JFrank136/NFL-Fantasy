@@ -17,6 +17,10 @@
   --side-a: #ebdfbd;
   --side-b: #e08a5c;
   --side-ink: #10261d;
+  /* Default for anything using the search popover outside a trade-side card
+     (.trade-side-a/-b override this locally) -- keeps the popover's accent
+     border/hover meaningful wherever PlayerPicker is used. */
+  --side: var(--accent-gold);
 }
 
 body {
@@ -68,8 +72,13 @@ body {
   @apply py-2 px-3;
   border-bottom: 1px solid var(--bg-card-border);
 }
-/* Numeric columns: headers right-align to sit over right-aligned values. */
-.table th.num {
+/* Numeric columns: headers right-align to sit over right-aligned values.
+   Also covers plain `text-right` header cells (ComparisonTable, Movers &
+   Fallers, Expert Disagreement) -- ".table th" above beats the bare
+   Tailwind `.text-right` utility on specificity alone, so without this the
+   header sits left-aligned while its column's values sit right-aligned. */
+.table th.num,
+.table th.text-right {
   text-align: right;
 }
 .table th.sortable {
@@ -210,6 +219,11 @@ body {
   @apply text-xs font-bold px-2 py-0.5 rounded-md whitespace-nowrap;
   background: #1f4a3a;
   color: #fbf8ef;
+}
+/* `.subtle` is tuned for the dark cards, not this light popover -- dims the
+   dark ink color instead of switching to a light-on-light gray. */
+.search-result-sub {
+  opacity: 0.65;
 }
 
 .verdict-panel {
