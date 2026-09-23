@@ -3,6 +3,8 @@ import { useRosHistory } from '../lib/useRosHistory'
 import { toBooneRosInput, toDsRosInput, type Scoring } from '../lib/useBlendedRos'
 import { blendRosValues } from '../lib/blend'
 import { buildMovers, describeBaseline, splitSnapshots, TIMEFRAME_MIN_GAP_MS, type Timeframe } from '../lib/movers'
+import { onlyWeek } from '../lib/freshness'
+import { useCurrentWeek } from '../lib/useCurrentWeek'
 import { currentDisagreements, directionDisagreements } from '../lib/disagreement'
 
 const POSITIONS = ['ALL', 'QB', 'RB', 'WR', 'TE']
@@ -42,12 +44,18 @@ export default function ExpertDisagreement() {
   const [timeframe, setTimeframe] = useState<Timeframe>('latest')
   const [pos, setPos] = useState('ALL')
   const { dsRows, booneRows, loading, error } = useRosHistory(scoring)
+  const { week: currentWeek } = useCurrentWeek()
 
   const data = useMemo(() => {
     const gap = TIMEFRAME_MIN_GAP_MS[timeframe]
     const ds = splitSnapshots(dsRows, gap)
     const boone = splitSnapshots(booneRows, gap)
-    const current = { ds: ds.current.map(toDsRosInput), boone: boone.current.map(r => toBooneRosInput(r, scoring)) }
+    // A source's own newest pull can still be a stale week if it hasn't
+    // refreshed since the NFL week turned over -- gate "current" to this
+    // week's data so a lagging source drops out instead of blending in.
+    const dsCurrentRows = onlyWeek(ds.current, currentWeek, r => r.as_of_week)
+    const booneCurrentRows = onlyWeek(boone.current, currentWeek, r => r.week)
+    const current = { ds: dsCurrentRows.map(toDsRosInput), boone: booneCurrentRows.map(r => toBooneRosInput(r, scoring)) }
     const baseline = {
       ds: ds.baseline.length ? ds.baseline.map(toDsRosInput) : null,
       boone: boone.baseline.length ? boone.baseline.map(r => toBooneRosInput(r, scoring)) : null,
@@ -61,9 +69,10 @@ export default function ExpertDisagreement() {
       directionAvailable: dsMovers.baselineAvailable && booneMovers.baselineAvailable,
       baselineDs: ds.baselineTimes,
       baselineBoone: boone.baselineTimes,
-      freshest: ds.current.reduce((max, r) => (r.pulled_at > max ? r.pulled_at : max), ''),
+      freshest: dsCurrentRows.reduce((max, r) => (r.pulled_at > max ? r.pulled_at : max), ''),
+      boonePending: currentWeek != null && boone.current.length > 0 && booneCurrentRows.length === 0,
     }
-  }, [dsRows, booneRows, scoring, timeframe])
+  }, [dsRows, booneRows, scoring, timeframe, currentWeek])
 
   const matchesPos = (p: string) => pos === 'ALL' || p === pos
   const currentRows = useMemo(() => data.currentRows.filter(r => matchesPos(r.position)).slice(0, LIST_SIZE), [data, pos])
@@ -101,6 +110,9 @@ export default function ExpertDisagreement() {
         </div>
         {loading && <div className="subtle">Loading…</div>}
         {error && <div style={{ color: 'var(--signal-down)' }}>Failed to load: {error}</div>}
+        {!loading && !error && data.boonePending && (
+          <div className="subtle">Boone hasn't updated ROS values for this week yet -- rows below reflect Draft Sharks only until it does.</div>
+        )}
       </div>
 
       {!loading && !error && view === 'current' && (

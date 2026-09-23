@@ -4,6 +4,8 @@ import { useRosHistory } from '../lib/useRosHistory'
 import { useWeeklyRows } from '../lib/useWeeklyRows'
 import { toBooneRosInput, toDsRosInput } from '../lib/useBlendedRos'
 import { buildMovers, splitSnapshots, TIMEFRAME_MIN_GAP_MS } from '../lib/movers'
+import { onlyWeek } from '../lib/freshness'
+import { useCurrentWeek } from '../lib/useCurrentWeek'
 
 // Weekly has no 'ALL' -- aggregateWeeklyRanks ranks within each position, so
 // an "ALL" view would just interleave separate position-scoped #1's (the
@@ -123,12 +125,18 @@ const WEEKLY_COLUMNS: ColumnDef<AggregatedWeeklyRow>[] = [
 
 function useRosTab(scoring: Scoring) {
   const { dsRows, booneRows, loading, error } = useRosHistory(scoring)
+  const { week: currentWeek } = useCurrentWeek()
 
-  const { rows, freshest } = useMemo(() => {
+  const { rows, freshest, boonePending } = useMemo(() => {
     const gap = TIMEFRAME_MIN_GAP_MS.latest
     const ds = splitSnapshots(dsRows, gap)
     const boone = splitSnapshots(booneRows, gap)
-    const current = { ds: ds.current.map(toDsRosInput), boone: boone.current.map(r => toBooneRosInput(r, scoring)) }
+    // A source's own newest pull can still be a stale week if it hasn't
+    // refreshed since the NFL week turned over -- gate "current" to this
+    // week's data so a lagging source drops out instead of blending in.
+    const dsCurrentRows = onlyWeek(ds.current, currentWeek, r => r.as_of_week)
+    const booneCurrentRows = onlyWeek(boone.current, currentWeek, r => r.week)
+    const current = { ds: dsCurrentRows.map(toDsRosInput), boone: booneCurrentRows.map(r => toBooneRosInput(r, scoring)) }
 
     // Same per-position baseline as Movers & Fallers, so ROS Δ here and the
     // "Latest change" there always agree.
@@ -142,11 +150,15 @@ function useRosTab(scoring: Scoring) {
       ...r,
       rosChange: changeByKey.get(identityKey(r.canonicalName, r.position)) ?? null,
     }))
-    const newest = ds.current.reduce((max, r) => (r.pulled_at > max ? r.pulled_at : max), '')
-    return { rows: tabRows, freshest: newest || null }
-  }, [dsRows, booneRows, scoring])
+    const newest = dsCurrentRows.reduce((max, r) => (r.pulled_at > max ? r.pulled_at : max), '')
+    return {
+      rows: tabRows,
+      freshest: newest || null,
+      boonePending: currentWeek != null && boone.current.length > 0 && booneCurrentRows.length === 0,
+    }
+  }, [dsRows, booneRows, scoring, currentWeek])
 
-  return { rows, loading, error, freshest }
+  return { rows, loading, error, freshest, boonePending, currentWeek }
 }
 
 export default function Rankings() {
@@ -212,11 +224,17 @@ export default function Rankings() {
           {tab === 'weekly' && (
             <span className="btn btn-primary" style={{ cursor: 'default' }}>Week {week ?? '…'}</span>
           )}
+          {tab === 'ros' && ros.currentWeek != null && (
+            <span className="btn btn-primary" style={{ cursor: 'default' }}>Week {ros.currentWeek}</span>
+          )}
           {active.freshest && <span className="subtle ml-auto">Data as of {new Date(active.freshest).toLocaleString()}</span>}
         </div>
 
         {active.loading && <div className="subtle">Loading…</div>}
         {active.error && <div style={{ color: 'var(--signal-down)' }}>Failed to load: {active.error}</div>}
+        {tab === 'ros' && !ros.loading && !ros.error && ros.boonePending && (
+          <div className="subtle">Boone hasn't updated ROS values for Week {ros.currentWeek} yet -- Boone Value/Blended below are Draft Sharks only until it does.</div>
+        )}
 
         {!active.loading && !active.error && tab === 'ros' && (
           <table className="table">

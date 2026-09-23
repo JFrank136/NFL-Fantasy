@@ -1,7 +1,9 @@
 import { useMemo, useState } from 'react'
 import { useRosHistory } from '../lib/useRosHistory'
 import { toBooneRosInput, toDsRosInput, type Scoring } from '../lib/useBlendedRos'
-import { buildMovers, describeBaseline, splitSnapshots, topMovers, TIMEFRAME_MIN_GAP_MS, type Metric, type MoverRow, type Timeframe } from '../lib/movers'
+import { buildMovers, describeBaseline, explainMissingBaseline, metricSources, splitSnapshots, topMovers, TIMEFRAME_MIN_GAP_MS, type Metric, type MoverRow, type Timeframe } from '../lib/movers'
+import { onlyWeek } from '../lib/freshness'
+import { useCurrentWeek } from '../lib/useCurrentWeek'
 
 const POSITIONS = ['ALL', 'QB', 'RB', 'WR', 'TE']
 const SCORINGS = ['ppr', 'half-ppr'] as const
@@ -79,14 +81,20 @@ export default function MoversFallers() {
   const [timeframe, setTimeframe] = useState<Timeframe>('latest')
   const [pos, setPos] = useState('ALL')
   const { dsRows, booneRows, loading, error } = useRosHistory(scoring)
+  const { week: currentWeek } = useCurrentWeek()
 
   const result = useMemo(() => {
     const gap = TIMEFRAME_MIN_GAP_MS[timeframe]
     const ds = splitSnapshots(dsRows, gap)
     const boone = splitSnapshots(booneRows, gap)
+    // A source's own newest pull can still be a stale week if it hasn't
+    // refreshed since the NFL week turned over -- gate "current" to this
+    // week's data so a lagging source drops out instead of blending in.
+    const dsCurrentRows = onlyWeek(ds.current, currentWeek, r => r.as_of_week)
+    const booneCurrentRows = onlyWeek(boone.current, currentWeek, r => r.week)
     const movers = buildMovers(
       metric,
-      { ds: ds.current.map(toDsRosInput), boone: boone.current.map(r => toBooneRosInput(r, scoring)) },
+      { ds: dsCurrentRows.map(toDsRosInput), boone: booneCurrentRows.map(r => toBooneRosInput(r, scoring)) },
       {
         ds: ds.baseline.length ? ds.baseline.map(toDsRosInput) : null,
         boone: boone.baseline.length ? boone.baseline.map(r => toBooneRosInput(r, scoring)) : null,
@@ -95,11 +103,12 @@ export default function MoversFallers() {
     const sorted = (times: string[]) => [...times].sort((a, b) => Date.parse(a) - Date.parse(b))
     return {
       movers,
-      currentDs: ds.current.reduce((max, r) => (r.pulled_at > max ? r.pulled_at : max), ''),
+      currentDs: dsCurrentRows.reduce((max, r) => (r.pulled_at > max ? r.pulled_at : max), ''),
       baselineDs: sorted(ds.baselineTimes),
       baselineBoone: sorted(boone.baselineTimes),
+      boonePending: currentWeek != null && boone.current.length > 0 && booneCurrentRows.length === 0,
     }
-  }, [dsRows, booneRows, scoring, metric, timeframe])
+  }, [dsRows, booneRows, scoring, metric, timeframe, currentWeek])
 
   const { risers, fallers } = useMemo(() => {
     const rows = pos === 'ALL' ? result.movers.rows : result.movers.rows.filter(r => r.position === pos)
@@ -135,13 +144,22 @@ export default function MoversFallers() {
             {describeBaseline('Draft Sharks', result.baselineDs)} · {describeBaseline('Boone', result.baselineBoone)}
           </div>
         )}
+        {!loading && !error && result.boonePending && (
+          <div className="subtle">Boone hasn't updated ROS values for Week {currentWeek} yet -- excluded from "Current" until it does.</div>
+        )}
         {loading && <div className="subtle">Loading history…</div>}
         {error && <div style={{ color: 'var(--signal-down)' }}>Failed to load: {error}</div>}
       </div>
 
       {!loading && !error && !result.movers.baselineAvailable && (
-        <div className="card p-4 subtle">
-          Not enough history for this metric and timeframe yet — every source it needs must have a snapshot old enough to compare against.
+        <div className="card p-4 space-y-1">
+          <div className="subtle">Not enough history for this metric and timeframe yet:</div>
+          {metricSources(metric).includes('ds') && !result.baselineDs.length && (
+            <div className="subtle">{explainMissingBaseline('Draft Sharks', dsRows, TIMEFRAME_MIN_GAP_MS[timeframe])}</div>
+          )}
+          {metricSources(metric).includes('boone') && !result.baselineBoone.length && (
+            <div className="subtle">{explainMissingBaseline('Boone', booneRows, TIMEFRAME_MIN_GAP_MS[timeframe])}</div>
+          )}
         </div>
       )}
 

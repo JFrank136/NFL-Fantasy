@@ -25,7 +25,7 @@ export default function AddDrop() {
   const [scoring, setScoring] = useState<Scoring>('ppr')
   const [addKeys, setAddKeys] = useState<string[]>([])
   const [dropKeys, setDropKeys] = useState<string[]>([])
-  const { pool, freshest, loading, error } = useComparisonPool(scoring)
+  const { pool, freshest, loading, error, boonePending, currentWeek } = useComparisonPool(scoring)
   // This week's outlook is secondary context, so it never blocks or fails the page.
   const weekly = useWeeklyRows(scoring)
 
@@ -71,6 +71,9 @@ export default function AddDrop() {
 
         {loading && <div className="subtle">Loading player values…</div>}
         {error && <div style={{ color: 'var(--signal-down)' }}>Failed to load: {error}</div>}
+        {!loading && !error && boonePending && (
+          <div className="subtle">Boone hasn't updated ROS values for Week {currentWeek} yet -- values below are Draft Sharks only until it does.</div>
+        )}
 
         {!loading && !error && (
           <div className="grid gap-3 md:grid-cols-2">

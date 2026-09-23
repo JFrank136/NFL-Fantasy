@@ -79,6 +79,18 @@ export function describeBaseline(label: string, times: string[]): string {
   return `${label}: vs. ${first === last ? first : `${first}–${last}`}`
 }
 
+/** Why a source has no baseline yet for this timeframe -- how far back its
+ * pull history actually goes vs. how old a baseline this timeframe needs,
+ * so "not enough history" reads as a concrete, dated explanation (e.g.
+ * Draft Sharks pull history starting 9/18 genuinely can't have a 7-day-old
+ * "since last week" baseline until 9/25) instead of a generic message. */
+export function explainMissingBaseline(label: string, rows: { pulled_at: string }[], minGapMs: number): string {
+  if (rows.length === 0) return `${label}: no pulls yet`
+  const earliest = rows.reduce((min, r) => (r.pulled_at < min ? r.pulled_at : min), rows[0].pulled_at)
+  const readyAt = new Date(Date.parse(earliest) + minGapMs)
+  return `${label}: pull history only goes back to ${new Date(earliest).toLocaleDateString()} -- check back after ${readyAt.toLocaleDateString()}`
+}
+
 export interface SourceInputs {
   ds: RosSourceRow[]
   boone: BooneRosRow[]
@@ -118,15 +130,22 @@ function valueOf(row: BlendedRosRow, metric: Metric): number | null {
   }
 }
 
-function baselineAvailableFor(metric: Metric, base: BaselineInputs): boolean {
+/** Which raw sources a metric is derived from -- 'blended'/'booneScaled'
+ * need both (scaling Boone onto the DS scale needs both baselines, same as
+ * the blend); everything else needs just its own source. Used both to gate
+ * baseline availability and to explain, per source, why one is missing. */
+export function metricSources(metric: Metric): ('ds' | 'boone')[] {
   switch (metric) {
-    // Scaling Boone onto the DS scale needs both baselines, same as the blend.
     case 'blended':
-    case 'booneScaled': return base.ds != null && base.boone != null
-    case 'boone': return base.boone != null
+    case 'booneScaled': return ['ds', 'boone']
+    case 'boone': return ['boone']
     case 'ds':
-    case 'ceiling': return base.ds != null
+    case 'ceiling': return ['ds']
   }
+}
+
+function baselineAvailableFor(metric: Metric, base: BaselineInputs): boolean {
+  return metricSources(metric).every(source => base[source] != null)
 }
 
 export function buildMovers(metric: Metric, current: SourceInputs, baseline: BaselineInputs): MoversResult {

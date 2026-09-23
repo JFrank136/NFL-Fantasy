@@ -15,7 +15,7 @@ const MAX_PLAYERS = 5
 export default function PlayerComparison() {
   const [scoring, setScoring] = useState<Scoring>('ppr')
   const [selectedKeys, setSelectedKeys] = useState<string[]>([])
-  const { pool, freshest, loading, error } = useComparisonPool(scoring)
+  const { pool, freshest, loading, error, boonePending, currentWeek } = useComparisonPool(scoring)
 
   const byKey = useMemo(() => new Map(pool.map(p => [p.key, p])), [pool])
   const selected = useMemo(
@@ -39,6 +39,9 @@ export default function PlayerComparison() {
 
         {loading && <div className="subtle">Loading player values…</div>}
         {error && <div style={{ color: 'var(--signal-down)' }}>Failed to load: {error}</div>}
+        {!loading && !error && boonePending && (
+          <div className="subtle">Boone hasn't updated ROS values for Week {currentWeek} yet -- values below are Draft Sharks only until it does.</div>
+        )}
 
         {!loading && !error && (
           <PlayerPicker

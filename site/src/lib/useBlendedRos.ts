@@ -9,6 +9,8 @@
 import { useEffect, useState } from 'react'
 import { supabase, type RosRankingRow, type TradeValueLatestRow } from './supabase'
 import { blendRosValues, type BlendedRosRow, type RosSourceRow, type BooneRosRow } from './blend'
+import { dropStaleStragglers, onlyWeek } from './freshness'
+import { useCurrentWeek } from './useCurrentWeek'
 
 export type Scoring = 'ppr' | 'half-ppr'
 
@@ -35,15 +37,24 @@ export interface BlendedRosResult {
   loading: boolean
   error: string | null
   freshest: string | null
+  /** True once Boone's data is in but none of it is tagged for the current
+   * week yet -- its trade-value sheet hasn't been re-pulled since the NFL
+   * week turned over, so `rows` blends Draft Sharks alone rather than
+   * silently mixing in Boone's stale prior-week numbers. */
+  boonePending: boolean
+  currentWeek: number | null
 }
 
 export function useBlendedRos(scoring: Scoring): BlendedRosResult {
+  const { week: currentWeek, resolved: weekResolved } = useCurrentWeek()
   const [rows, setRows] = useState<BlendedRosRow[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [freshest, setFreshest] = useState<string | null>(null)
+  const [boonePending, setBoonePending] = useState(false)
 
   useEffect(() => {
+    if (!weekResolved) return
     let cancelled = false
     setLoading(true)
     setError(null)
@@ -56,8 +67,15 @@ export function useBlendedRos(scoring: Scoring): BlendedRosResult {
       if (dsRes.error) { setError(dsRes.error.message); setLoading(false); return }
       if (booneRes.error) { setError(booneRes.error.message); setLoading(false); return }
 
-      const dsRows = (dsRes.data ?? []) as RosRankingRow[]
-      const booneRows = (booneRes.data ?? []) as TradeValueLatestRow[]
+      // Both views serve each player their own latest row, which can be a
+      // straggler left behind by an earlier pull (dropStaleStragglers) or,
+      // for Boone specifically, an entire source that hasn't re-pulled for
+      // the new NFL week yet (onlyWeek) -- either way, blending it in
+      // unlabeled would misrepresent stale data as current.
+      const dsRowsAll = dropStaleStragglers((dsRes.data ?? []) as RosRankingRow[])
+      const booneRowsAll = dropStaleStragglers((booneRes.data ?? []) as TradeValueLatestRow[])
+      const dsRows = onlyWeek(dsRowsAll, currentWeek, r => r.as_of_week)
+      const booneRows = onlyWeek(booneRowsAll, currentWeek, r => r.week)
       const currentPulledAt = dsRows.reduce((max, r) => (r.pulled_at > max ? r.pulled_at : max), dsRows[0]?.pulled_at ?? '')
 
       const blended = blendRosValues(
@@ -67,11 +85,12 @@ export function useBlendedRos(scoring: Scoring): BlendedRosResult {
 
       setRows(blended)
       setFreshest(currentPulledAt || null)
+      setBoonePending(currentWeek != null && booneRowsAll.length > 0 && booneRows.length === 0)
       setLoading(false)
     })
 
     return () => { cancelled = true }
-  }, [scoring])
+  }, [scoring, currentWeek, weekResolved])
 
-  return { rows, loading, error, freshest }
+  return { rows, loading, error, freshest, boonePending, currentWeek }
 }

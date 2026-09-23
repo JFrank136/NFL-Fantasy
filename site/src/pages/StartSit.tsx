@@ -69,6 +69,9 @@ export default function StartSit() {
 
         {loading && <div className="subtle">Loading weekly rankings…</div>}
         {error && <div style={{ color: 'var(--signal-down)' }}>Failed to load: {error}</div>}
+        {!loading && !error && ros.boonePending && (
+          <div className="subtle">Boone hasn't updated ROS values for Week {ros.currentWeek} yet -- ROS column is Draft Sharks only until it does.</div>
+        )}
 
         {!loading && !error && (
           <PlayerPicker

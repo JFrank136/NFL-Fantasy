@@ -240,7 +240,7 @@ function Verdict({ comparison }: { comparison: TradeComparison }) {
 
 export default function TradeAnalyzer() {
   const [scoring, setScoring] = useState<Scoring>('ppr')
-  const { rows, loading, error, freshest } = useBlendedRos(scoring)
+  const { rows, loading, error, freshest, boonePending, currentWeek } = useBlendedRos(scoring)
   const { rows: tradeValueRows } = useTradeValueRows()
   const [sideAKeys, setSideAKeys] = useState<string[]>([])
   const [sideBKeys, setSideBKeys] = useState<string[]>([])
@@ -293,6 +293,11 @@ export default function TradeAnalyzer() {
 
         {loading && <div className="subtle">Loading player values…</div>}
         {error && <div style={{ color: 'var(--signal-down)' }}>Failed to load: {error}</div>}
+        {!loading && !error && boonePending && (
+          <div className="subtle">
+            Boone hasn't updated ROS values for Week {currentWeek} yet -- values below are Draft Sharks only until it does.
+          </div>
+        )}
       </div>
 
       {!loading && !error && (

@@ -1,6 +1,8 @@
 import { useEffect, useMemo, useState } from 'react'
 import { supabase, fetchAllRows, type RosRankingRow, type TradeValueLatestRow } from '../lib/supabase'
 import { pivotTradeValues, sourcesWithData, type Scoring, type TradeValueSourceRow } from '../lib/tradeValues'
+import { dropStaleStragglers, onlyWeek, staleSources } from '../lib/freshness'
+import { useCurrentWeek } from '../lib/useCurrentWeek'
 
 const POSITIONS = ['ALL', 'QB', 'RB', 'WR', 'TE']
 const FANTASY_POSITIONS = new Set(POSITIONS.filter(p => p !== 'ALL'))
@@ -69,6 +71,7 @@ function dsRosToSourceRow(r: RosRankingRow, scoring: Scoring): TradeValueSourceR
 }
 
 export default function TradeValues() {
+  const { week: currentWeek, resolved: weekResolved } = useCurrentWeek()
   const [rows, setRows] = useState<TradeValueLatestRow[]>([])
   const [rosRows, setRosRows] = useState<RosRankingRow[]>([])
   const [loading, setLoading] = useState(true)
@@ -79,6 +82,7 @@ export default function TradeValues() {
   const [hiddenSources, setHiddenSources] = useState<Set<string>>(new Set())
 
   useEffect(() => {
+    if (!weekResolved) return
     let cancelled = false
     setLoading(true)
     setError(null)
@@ -100,18 +104,28 @@ export default function TradeValues() {
       const err = tvRes.error ?? rosRes.error
       if (err) setError(err.message)
       else {
-        setRows(tvRes.data)
-        setRosRows(rosRes.data)
+        // Both "_latest" views serve each player their own latest row, which
+        // can be a straggler left behind by an earlier pull once a source
+        // stops including that player (dropStaleStragglers) -- see
+        // freshness.ts.
+        setRows(dropStaleStragglers(tvRes.data))
+        setRosRows(dropStaleStragglers(rosRes.data))
       }
       setLoading(false)
     })
 
     return () => { cancelled = true }
-  }, [])
+  }, [weekResolved])
+
+  // Only this week's values count as current -- a source that hasn't been
+  // re-pulled since the NFL week turned over (e.g. Boone still on last
+  // week's ROS sheet) is left out entirely rather than shown as if fresh.
+  const currentRows = useMemo(() => onlyWeek(rows, currentWeek, r => r.week), [rows, currentWeek])
+  const currentRosRows = useMemo(() => onlyWeek(rosRows, currentWeek, r => r.as_of_week), [rosRows, currentWeek])
 
   const pivoted = useMemo(
-    () => pivotTradeValues([...rows.map(toSourceRow), ...rosRows.map(r => dsRosToSourceRow(r, scoring)).filter(nonNull)], scoring),
-    [rows, rosRows, scoring],
+    () => pivotTradeValues([...currentRows.map(toSourceRow), ...currentRosRows.map(r => dsRosToSourceRow(r, scoring)).filter(nonNull)], scoring),
+    [currentRows, currentRosRows, scoring],
   )
 
   const availableSources = useMemo(() => sourcesWithData(pivoted), [pivoted])
@@ -119,6 +133,12 @@ export default function TradeValues() {
     () => availableSources.filter(s => !hiddenSources.has(s)),
     [availableSources, hiddenSources],
   )
+
+  // Sources with values for an older week, but nothing for the current one
+  // yet -- named here so their absence from the table above reads as "not
+  // updated yet" instead of "missing."
+  const staleTradeSources = useMemo(() => staleSources(rows.map(toSourceRow), currentRows.map(toSourceRow)), [rows, currentRows])
+  const dsStale = currentWeek != null && rosRows.length > 0 && currentRosRows.length === 0
 
   const display = useMemo(() => {
     let list = pivoted
@@ -130,10 +150,14 @@ export default function TradeValues() {
     return list
   }, [pivoted, pos, query])
 
+  // Prefer the current week's freshest pull; fall back to whatever's there
+  // (e.g. before the current week has any data at all) so the timestamp
+  // doesn't just disappear.
   const freshest = useMemo(() => {
-    if (!rows.length) return null
-    return rows.reduce((max, r) => (r.pulled_at > max ? r.pulled_at : max), rows[0].pulled_at)
-  }, [rows])
+    const source = currentRows.length ? currentRows : rows
+    if (!source.length) return null
+    return source.reduce((max, r) => (r.pulled_at > max ? r.pulled_at : max), source[0].pulled_at)
+  }, [rows, currentRows])
 
   const toggleSource = (source: string) => {
     setHiddenSources(prev => {
@@ -154,6 +178,7 @@ export default function TradeValues() {
           ))}
         </div>
         <ScoringToggle value={scoring} onChange={setScoring} />
+        {currentWeek != null && <span className="btn btn-primary" style={{ cursor: 'default' }}>Week {currentWeek}</span>}
         {freshest && <span className="subtle ml-auto">Data as of {new Date(freshest).toLocaleString()}</span>}
       </div>
 
@@ -170,6 +195,12 @@ export default function TradeValues() {
           </button>
         ))}
       </div>
+
+      {!loading && !error && (staleTradeSources.length > 0 || dsStale) && (
+        <div className="subtle">
+          Not yet updated for Week {currentWeek}: {[...staleTradeSources.map(sourceLabel), ...(dsStale ? ['Draft Sharks'] : [])].join(', ')} -- shown once that source re-pulls.
+        </div>
+      )}
 
       {loading && <div className="subtle">Loading trade values…</div>}
       {error && <div style={{ color: 'var(--signal-down)' }}>Failed to load: {error}</div>}
