@@ -3,6 +3,7 @@ import { supabase, fetchAllRows, type RosRankingRow, type TradeValueLatestRow } 
 import { pivotTradeValues, sourcesWithData, type Scoring, type TradeValueSourceRow } from '../lib/tradeValues'
 import { dropStaleStragglers, onlyWeek, staleSources } from '../lib/freshness'
 import { useCurrentWeek } from '../lib/useCurrentWeek'
+import ColumnPicker, { toggleInSet } from '../components/ColumnPicker'
 
 const POSITIONS = ['ALL', 'QB', 'RB', 'WR', 'TE']
 const FANTASY_POSITIONS = new Set(POSITIONS.filter(p => p !== 'ALL'))
@@ -33,6 +34,15 @@ const SOURCE_LABELS: Record<string, string> = {
   boone: 'Boone', draftsharks: 'DS 3D', cbs: 'CBS', fantasypros: 'FantasyPros', rsj: 'RSJ', usatoday: 'USA Today',
 }
 const sourceLabel = (s: string) => SOURCE_LABELS[s] ?? s
+
+// Fixed columns the picker can hide (source columns are already toggled by
+// the Sources chips below). Player is always shown.
+const BASE_COLUMNS = [
+  { key: 'rank', label: 'Rank' },
+  { key: 'team', label: 'Team' },
+  { key: 'pos', label: 'Pos' },
+  { key: 'score', label: 'Score' },
+]
 
 function toSourceRow(r: TradeValueLatestRow): TradeValueSourceRow {
   return {
@@ -80,6 +90,8 @@ export default function TradeValues() {
   const [scoring, setScoring] = useState<Scoring>('ppr')
   const [query, setQuery] = useState('')
   const [hiddenSources, setHiddenSources] = useState<Set<string>>(new Set())
+  const [hiddenCols, setHiddenCols] = useState<Set<string>>(new Set())
+  const show = (key: string) => !hiddenCols.has(key)
 
   useEffect(() => {
     if (!weekResolved) return
@@ -196,6 +208,8 @@ export default function TradeValues() {
         ))}
       </div>
 
+      <ColumnPicker columns={BASE_COLUMNS} hidden={hiddenCols} onToggle={key => setHiddenCols(prev => toggleInSet(prev, key))} />
+
       {!loading && !error && (staleTradeSources.length > 0 || dsStale) && (
         <div className="subtle">
           Not yet updated for Week {currentWeek}: {[...staleTradeSources.map(sourceLabel), ...(dsStale ? ['Draft Sharks'] : [])].join(', ')} -- shown once that source re-pulls.
@@ -210,24 +224,26 @@ export default function TradeValues() {
         <table className="table">
           <thead>
             <tr>
-              <th>Rank</th>
+              {show('rank') && <th>Rank</th>}
               <th className="sticky-col">Player</th>
-              <th>Team</th>
-              <th>Pos</th>
-              <th className="num">Score</th>
+              {show('team') && <th>Team</th>}
+              {show('pos') && <th>Pos</th>}
+              {show('score') && <th className="num">Score</th>}
               {visibleSources.map(s => <th key={s} className="num">{sourceLabel(s)}</th>)}
             </tr>
           </thead>
           <tbody>
             {display.map(r => (
               <tr key={`${r.canonicalName}__${r.position}`}>
-                <td>{r.rank ?? ''}</td>
+                {show('rank') && <td>{r.rank ?? ''}</td>}
                 <td className="sticky-col">{r.playerName}</td>
-                <td>{r.team ?? ''}</td>
-                <td>{r.position}</td>
-                <td className="text-right font-semibold">
-                  {r.normalizedScore != null ? Math.round(r.normalizedScore) : ''}
-                </td>
+                {show('team') && <td>{r.team ?? ''}</td>}
+                {show('pos') && <td>{r.position}</td>}
+                {show('score') && (
+                  <td className="text-right font-semibold">
+                    {r.normalizedScore != null ? Math.round(r.normalizedScore) : ''}
+                  </td>
+                )}
                 {visibleSources.map(s => (
                   <td key={s} className="text-right">
                     {r.valuesBySource[s] ?? ''}

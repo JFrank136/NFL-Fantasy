@@ -24,11 +24,11 @@ export default function ComparisonTable({
   rows: ComparisonTableRow[]
 }) {
   return (
-    <div className="overflow-x-auto">
+    <div className="table-wrap">
       <table className="table">
         <thead>
           <tr>
-            <th />
+            <th className="sticky-col" />
             {columns.map(c => (
               <th key={c.key} className="text-right" style={{ textTransform: 'none' }}>
                 <div style={{ color: 'var(--text-primary)' }} className="font-semibold text-sm">{c.header}</div>
@@ -40,7 +40,7 @@ export default function ComparisonTable({
         <tbody>
           {rows.map(r => (
             <tr key={r.id}>
-              <td className="subtle">{r.label}</td>
+              <td className="subtle sticky-col">{r.label}</td>
               {r.cells.map((cell, i) => (
                 <td
                   key={columns[i].key}

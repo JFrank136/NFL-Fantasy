@@ -5,6 +5,7 @@ import { blendRosValues } from '../lib/blend'
 import { buildMovers, describeBaseline, explainMissingBaseline, explainMissingWeekBaseline, splitSnapshots, weekSnapshot, TIMEFRAME_MIN_GAP_MS, type Timeframe } from '../lib/movers'
 import { onlyWeek } from '../lib/freshness'
 import { useCurrentWeek } from '../lib/useCurrentWeek'
+import ColumnPicker, { toggleInSet } from '../components/ColumnPicker'
 import { currentDisagreements, directionDisagreements } from '../lib/disagreement'
 
 const POSITIONS = ['ALL', 'QB', 'RB', 'WR', 'TE']
@@ -15,6 +16,18 @@ const TIMEFRAMES: { id: Timeframe; label: string }[] = [
   { id: 'week', label: 'Since last week' },
 ]
 const LIST_SIZE = 25
+const CURRENT_COLUMNS = [
+  { key: 'pos', label: 'Pos' },
+  { key: 'dsRank', label: 'DS rank' },
+  { key: 'booneRank', label: 'Boone rank' },
+  { key: 'dsValue', label: 'DS value' },
+  { key: 'booneScaled', label: 'Boone (DS scale)' },
+]
+const DIRECTION_COLUMNS = [
+  { key: 'pos', label: 'Pos' },
+  { key: 'booneChange', label: 'Boone change' },
+  { key: 'dsChange', label: 'DS change' },
+]
 
 function ScoringToggle({ value, onChange }: { value: Scoring; onChange: (s: Scoring) => void }) {
   return (
@@ -43,6 +56,8 @@ export default function ExpertDisagreement() {
   const [scoring, setScoring] = useState<Scoring>('ppr')
   const [timeframe, setTimeframe] = useState<Timeframe>('latest')
   const [pos, setPos] = useState('ALL')
+  const [hiddenCols, setHiddenCols] = useState<Set<string>>(new Set())
+  const show = (key: string) => !hiddenCols.has(key)
   const { dsRows, booneRows, loading, error } = useRosHistory(scoring)
   const { week: currentWeek } = useCurrentWeek()
   const previousWeek = currentWeek != null ? currentWeek - 1 : null
@@ -119,6 +134,11 @@ export default function ExpertDisagreement() {
             ))}
           </div>
         </div>
+        <ColumnPicker
+          columns={view === 'current' ? CURRENT_COLUMNS : DIRECTION_COLUMNS}
+          hidden={hiddenCols}
+          onToggle={key => setHiddenCols(prev => toggleInSet(prev, key))}
+        />
         <div className="subtle">
           {view === 'current' && 'Players Boone and Draft Sharks value most differently right now. Boone is converted to the Draft Sharks scale so the gap is fair. Players outside the top 150 in both are hidden.'}
           {view === 'direction' && `Players the two sources are moving in opposite directions on. Under 1.5 points of movement counts as flat. ${describeBaseline('Draft Sharks', data.baselineDs)} · ${describeBaseline('Boone', data.baselineBoone)}.`}
@@ -137,11 +157,11 @@ export default function ExpertDisagreement() {
             <thead>
               <tr>
                 <th className="sticky-col">Player</th>
-                <th>Pos</th>
-                <th className="text-right">DS rank</th>
-                <th className="text-right">Boone rank</th>
-                <th className="text-right">DS value</th>
-                <th className="text-right">Boone (DS scale)</th>
+                {show('pos') && <th>Pos</th>}
+                {show('dsRank') && <th className="text-right">DS rank</th>}
+                {show('booneRank') && <th className="text-right">Boone rank</th>}
+                {show('dsValue') && <th className="text-right">DS value</th>}
+                {show('booneScaled') && <th className="text-right">Boone (DS scale)</th>}
                 <th className="text-right">Gap</th>
               </tr>
             </thead>
@@ -149,11 +169,11 @@ export default function ExpertDisagreement() {
               {currentRows.map(r => (
                 <tr key={`${r.canonicalName}::${r.position}`}>
                   <td className="sticky-col">{r.playerName} {r.team && <span className="subtle">{r.team}</span>}</td>
-                  <td>{r.position}</td>
-                  <td className="text-right">{r.dsRank}</td>
-                  <td className="text-right">{r.booneRank}</td>
-                  <td className="text-right">{r1(r.dsValue)}</td>
-                  <td className="text-right">{r1(r.booneScaled)}</td>
+                  {show('pos') && <td>{r.position}</td>}
+                  {show('dsRank') && <td className="text-right">{r.dsRank}</td>}
+                  {show('booneRank') && <td className="text-right">{r.booneRank}</td>}
+                  {show('dsValue') && <td className="text-right">{r1(r.dsValue)}</td>}
+                  {show('booneScaled') && <td className="text-right">{r1(r.booneScaled)}</td>}
                   <td className="text-right">
                     <span className={signClass(r.valueGap)}>{signed(r.valueGap)}</span>
                     <span className="subtle"> {r.valueGap > 0 ? 'Boone higher' : 'DS higher'}</span>
@@ -196,9 +216,9 @@ export default function ExpertDisagreement() {
             <thead>
               <tr>
                 <th className="sticky-col">Player</th>
-                <th>Pos</th>
-                <th className="text-right">Boone change</th>
-                <th className="text-right">DS change</th>
+                {show('pos') && <th>Pos</th>}
+                {show('booneChange') && <th className="text-right">Boone change</th>}
+                {show('dsChange') && <th className="text-right">DS change</th>}
                 <th className="text-right">Difference</th>
               </tr>
             </thead>
@@ -206,9 +226,9 @@ export default function ExpertDisagreement() {
               {directionRows.map(r => (
                 <tr key={`${r.canonicalName}::${r.position}`}>
                   <td className="sticky-col">{r.playerName} {r.team && <span className="subtle">{r.team}</span>}</td>
-                  <td>{r.position}</td>
-                  <td className={`text-right ${signClass(r.booneChange)}`}>{signed(r.booneChange)}</td>
-                  <td className={`text-right ${signClass(r.dsChange)}`}>{signed(r.dsChange)}</td>
+                  {show('pos') && <td>{r.position}</td>}
+                  {show('booneChange') && <td className={`text-right ${signClass(r.booneChange)}`}>{signed(r.booneChange)}</td>}
+                  {show('dsChange') && <td className={`text-right ${signClass(r.dsChange)}`}>{signed(r.dsChange)}</td>}
                   <td className="text-right font-semibold">{r1(r.size)}</td>
                 </tr>
               ))}

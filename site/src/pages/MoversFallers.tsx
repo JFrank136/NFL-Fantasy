@@ -4,6 +4,7 @@ import { toBooneRosInput, toDsRosInput, type Scoring } from '../lib/useBlendedRo
 import { buildMovers, describeBaseline, explainMissingBaseline, explainMissingWeekBaseline, metricSources, splitSnapshots, topMovers, weekSnapshot, TIMEFRAME_MIN_GAP_MS, type Metric, type MoverRow, type Timeframe } from '../lib/movers'
 import { onlyWeek } from '../lib/freshness'
 import { useCurrentWeek } from '../lib/useCurrentWeek'
+import ColumnPicker, { toggleInSet } from '../components/ColumnPicker'
 
 const POSITIONS = ['ALL', 'QB', 'RB', 'WR', 'TE']
 const SCORINGS = ['ppr', 'half-ppr'] as const
@@ -43,7 +44,16 @@ function ScoringToggle({ value, onChange }: { value: Scoring; onChange: (s: Scor
 
 const fmt = (n: number | null) => (n == null ? '—' : Math.round(n * 10) / 10)
 
-function MoversTable({ title, rows, kind }: { title: string; rows: MoverRow[]; kind: 'up' | 'down' }) {
+const MOVER_COLUMNS = [
+  { key: 'pos', label: 'Pos' },
+  { key: 'rank', label: 'Rank' },
+  { key: 'prev', label: 'Prev' },
+  { key: 'now', label: 'Now' },
+  { key: 'change', label: 'Change' },
+]
+
+function MoversTable({ title, rows, kind, hidden }: { title: string; rows: MoverRow[]; kind: 'up' | 'down'; hidden: Set<string> }) {
+  const show = (key: string) => !hidden.has(key)
   return (
     <div className="card p-3 sm:p-4 space-y-2">
       <span className="label">{title}</span>
@@ -52,24 +62,26 @@ function MoversTable({ title, rows, kind }: { title: string; rows: MoverRow[]; k
         <thead>
           <tr>
             <th className="sticky-col">Player</th>
-            <th>Pos</th>
-            <th className="text-right">Rank</th>
-            <th className="text-right">Prev</th>
-            <th className="text-right">Now</th>
-            <th className="text-right">Change</th>
+            {show('pos') && <th>Pos</th>}
+            {show('rank') && <th className="text-right">Rank</th>}
+            {show('prev') && <th className="text-right">Prev</th>}
+            {show('now') && <th className="text-right">Now</th>}
+            {show('change') && <th className="text-right">Change</th>}
           </tr>
         </thead>
         <tbody>
           {rows.map(r => (
             <tr key={`${r.canonicalName}::${r.position}`}>
               <td className="sticky-col">{r.playerName} {r.team && <span className="subtle">{r.team}</span>}</td>
-              <td>{r.position}</td>
-              <td className="text-right">{r.rank ?? ''}</td>
-              <td className="text-right">{fmt(r.previous)}</td>
-              <td className="text-right font-semibold">{fmt(r.current)}</td>
-              <td className={`text-right ${kind === 'up' ? 'signal-up' : 'signal-down'}`}>
-                {(r.change as number) > 0 ? '+' : ''}{fmt(r.change)}
-              </td>
+              {show('pos') && <td>{r.position}</td>}
+              {show('rank') && <td className="text-right">{r.rank ?? ''}</td>}
+              {show('prev') && <td className="text-right">{fmt(r.previous)}</td>}
+              {show('now') && <td className="text-right font-semibold">{fmt(r.current)}</td>}
+              {show('change') && (
+                <td className={`text-right ${kind === 'up' ? 'signal-up' : 'signal-down'}`}>
+                  {(r.change as number) > 0 ? '+' : ''}{fmt(r.change)}
+                </td>
+              )}
             </tr>
           ))}
         </tbody>
@@ -85,6 +97,7 @@ export default function MoversFallers() {
   const [metric, setMetric] = useState<Metric>('blended')
   const [timeframe, setTimeframe] = useState<Timeframe>('latest')
   const [pos, setPos] = useState('ALL')
+  const [hiddenCols, setHiddenCols] = useState<Set<string>>(new Set())
   const { dsRows, booneRows, loading, error } = useRosHistory(scoring)
   const { week: currentWeek } = useCurrentWeek()
 
@@ -165,6 +178,7 @@ export default function MoversFallers() {
             ))}
           </div>
         </div>
+        <ColumnPicker columns={MOVER_COLUMNS} hidden={hiddenCols} onToggle={key => setHiddenCols(prev => toggleInSet(prev, key))} />
         {!loading && !error && (
           <div className="subtle">
             {result.currentDs && `Current: ${new Date(result.currentDs).toLocaleString()} · `}
@@ -202,8 +216,8 @@ export default function MoversFallers() {
 
       {!loading && !error && result.movers.baselineAvailable && (
         <div className="grid md:grid-cols-2 gap-3">
-          <MoversTable title="Risers" rows={risers} kind="up" />
-          <MoversTable title="Fallers" rows={fallers} kind="down" />
+          <MoversTable title="Risers" rows={risers} kind="up" hidden={hiddenCols} />
+          <MoversTable title="Fallers" rows={fallers} kind="down" hidden={hiddenCols} />
         </div>
       )}
     </div>

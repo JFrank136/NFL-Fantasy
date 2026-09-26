@@ -29,7 +29,7 @@ export default function PlayerComparison() {
 
   return (
     <div className="space-y-3">
-      <div className="card p-4 space-y-3">
+      <div className="card p-3 sm:p-4 space-y-3">
         <div className="flex items-center gap-2 flex-wrap">
           <span className="subtle">Player Comparison -- compare {MIN_PLAYERS}–{MAX_PLAYERS} players on rest-of-season value.</span>
           <ScoringToggle value={scoring} onChange={setScoring} />
@@ -54,7 +54,7 @@ export default function PlayerComparison() {
       </div>
 
       {!loading && !error && selected.length > 0 && (
-        <div className="card p-4 space-y-3">
+        <div className="card p-3 sm:p-4 space-y-3">
           <ComparisonTable
             columns={selected.map(p => ({
               key: p.key,
@@ -86,14 +86,14 @@ export default function PlayerComparison() {
       )}
 
       {!loading && !error && selected.length >= MIN_PLAYERS && (
-        <div className="card p-4 space-y-1">
+        <div className="card p-3 sm:p-4 space-y-1">
           <span className="label">Summary</span>
           <div>{summary}</div>
         </div>
       )}
 
       {!loading && !error && selected.length === 0 && (
-        <div className="card p-4 subtle">Search for a player above to start comparing.</div>
+        <div className="card p-3 sm:p-4 subtle">Search for a player above to start comparing.</div>
       )}
     </div>
   )

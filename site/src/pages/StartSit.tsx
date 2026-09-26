@@ -58,7 +58,7 @@ export default function StartSit() {
 
   return (
     <div className="space-y-3">
-      <div className="card p-4 space-y-3">
+      <div className="card p-3 sm:p-4 space-y-3">
         <div className="flex items-center gap-2 flex-wrap">
           <span className="subtle">Start/Sit -- compare {MIN_PLAYERS}–{MAX_PLAYERS} players for this week's lineup.</span>
           <span className="btn btn-primary" style={{ cursor: 'default' }}>Week {weekly.week ?? '…'}</span>
@@ -84,7 +84,7 @@ export default function StartSit() {
       </div>
 
       {!loading && !error && selected.length > 0 && (
-        <div className="card p-4 space-y-3">
+        <div className="card p-3 sm:p-4 space-y-3">
           <ComparisonTable
             columns={selected.map(p => ({
               key: p.key,
@@ -122,7 +122,7 @@ export default function StartSit() {
       )}
 
       {!loading && !error && rec.status === 'ok' && starter && (
-        <div className="card p-4 space-y-2">
+        <div className="card p-3 sm:p-4 space-y-2">
           <div className="flex items-center gap-2 flex-wrap">
             <span className="label">Start</span>
             <span className="font-semibold">{starter.playerName}</span>
@@ -137,11 +137,11 @@ export default function StartSit() {
       )}
 
       {!loading && !error && selected.length > 0 && rec.status !== 'ok' && rec.note && (
-        <div className="card p-4 subtle">{rec.note}</div>
+        <div className="card p-3 sm:p-4 subtle">{rec.note}</div>
       )}
 
       {!loading && !error && selected.length === 0 && (
-        <div className="card p-4 subtle">Search for a player above to start comparing.</div>
+        <div className="card p-3 sm:p-4 subtle">Search for a player above to start comparing.</div>
       )}
     </div>
   )

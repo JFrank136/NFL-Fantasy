@@ -61,7 +61,7 @@ export default function AddDrop() {
 
   return (
     <div className="space-y-3">
-      <div className="card p-4 space-y-3">
+      <div className="card p-3 sm:p-4 space-y-3">
         <div className="flex items-center gap-2 flex-wrap">
           <span className="subtle">Add/Drop -- is anyone worth adding, and who should go?</span>
           <ScoringToggle value={scoring} onChange={setScoring} />
@@ -100,7 +100,7 @@ export default function AddDrop() {
       </div>
 
       {!loading && !error && all.length > 0 && (
-        <div className="card p-4 space-y-3">
+        <div className="card p-3 sm:p-4 space-y-3">
           <ComparisonTable
             columns={all.map(p => ({
               key: p.key,
@@ -133,7 +133,7 @@ export default function AddDrop() {
       )}
 
       {!loading && !error && analysis.status === 'ok' && analysis.bestAdd && analysis.dropTarget && (
-        <div className="card p-4 space-y-3">
+        <div className="card p-3 sm:p-4 space-y-3">
           <div className="space-y-1">
             <div className="flex items-center gap-2 flex-wrap">
               <span className="label">1. Worth adding?</span>
@@ -154,11 +154,11 @@ export default function AddDrop() {
       )}
 
       {!loading && !error && all.length > 0 && analysis.status === 'insufficient' && (
-        <div className="card p-4 subtle">Pick at least one add candidate and one drop candidate to see a verdict.</div>
+        <div className="card p-3 sm:p-4 subtle">Pick at least one add candidate and one drop candidate to see a verdict.</div>
       )}
 
       {!loading && !error && all.length === 0 && (
-        <div className="card p-4 subtle">Search for players above: waiver targets on the left, your bench on the right.</div>
+        <div className="card p-3 sm:p-4 subtle">Search for players above: waiver targets on the left, your bench on the right.</div>
       )}
     </div>
   )
