@@ -19,6 +19,9 @@ const TIMEFRAMES: { id: Timeframe; label: string }[] = [
   { id: 'week', label: 'Since last week' },
 ]
 const LIST_SIZE = 15
+// Movement among deep-bench players is noise (a 377th-ranked WR jumping 20
+// spots is still a 377th-ranked WR), so rank 250+ never makes the lists.
+const MAX_RANK = 250
 
 function ScoringToggle({ value, onChange }: { value: Scoring; onChange: (s: Scoring) => void }) {
   return (
@@ -42,12 +45,13 @@ const fmt = (n: number | null) => (n == null ? '—' : Math.round(n * 10) / 10)
 
 function MoversTable({ title, rows, kind }: { title: string; rows: MoverRow[]; kind: 'up' | 'down' }) {
   return (
-    <div className="card p-4 space-y-2">
+    <div className="card p-3 sm:p-4 space-y-2">
       <span className="label">{title}</span>
+      <div className="table-wrap">
       <table className="table">
         <thead>
           <tr>
-            <th>Player</th>
+            <th className="sticky-col">Player</th>
             <th>Pos</th>
             <th className="text-right">Rank</th>
             <th className="text-right">Prev</th>
@@ -58,7 +62,7 @@ function MoversTable({ title, rows, kind }: { title: string; rows: MoverRow[]; k
         <tbody>
           {rows.map(r => (
             <tr key={`${r.canonicalName}::${r.position}`}>
-              <td>{r.playerName} {r.team && <span className="subtle">{r.team}</span>}</td>
+              <td className="sticky-col">{r.playerName} {r.team && <span className="subtle">{r.team}</span>}</td>
               <td>{r.position}</td>
               <td className="text-right">{r.rank ?? ''}</td>
               <td className="text-right">{fmt(r.previous)}</td>
@@ -70,6 +74,7 @@ function MoversTable({ title, rows, kind }: { title: string; rows: MoverRow[]; k
           ))}
         </tbody>
       </table>
+      </div>
       {rows.length === 0 && <div className="subtle">No movement.</div>}
     </div>
   )
@@ -132,7 +137,8 @@ export default function MoversFallers() {
   }, [dsRows, booneRows, scoring, metric, timeframe, currentWeek, previousWeek])
 
   const { risers, fallers } = useMemo(() => {
-    const rows = pos === 'ALL' ? result.movers.rows : result.movers.rows.filter(r => r.position === pos)
+    const inRange = result.movers.rows.filter(r => r.rank != null && r.rank < MAX_RANK)
+    const rows = pos === 'ALL' ? inRange : inRange.filter(r => r.position === pos)
     return topMovers(rows, LIST_SIZE)
   }, [result, pos])
 
@@ -162,7 +168,7 @@ export default function MoversFallers() {
         {!loading && !error && (
           <div className="subtle">
             {result.currentDs && `Current: ${new Date(result.currentDs).toLocaleString()} · `}
-            {describeBaseline('Draft Sharks', result.baselineDs)} · {describeBaseline('Boone', result.baselineBoone)}
+            {describeBaseline('Draft Sharks', result.baselineDs)} · {describeBaseline('Boone', result.baselineBoone)} · Players ranked {MAX_RANK}+ are hidden
           </div>
         )}
         {!loading && !error && result.boonePending && (

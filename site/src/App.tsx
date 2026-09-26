@@ -11,7 +11,7 @@ export default function App() {
   return (
     <div className="md:flex min-h-screen">
       <Sidebar active={page} onSelect={setPage} />
-      <div className="flex-1 flex flex-col">
+      <div className="flex-1 min-w-0 flex flex-col">
         <MobileNav active={page} onSelect={setPage} />
         <main className="flex-1 max-w-6xl w-full mx-auto p-4 space-y-4">
           {page === 'rankings' && <Rankings />}

@@ -110,13 +110,14 @@ export default function StartSit() {
               cells: r.values.map((v, i) => ({ text: formatCell(v, r.format), highlight: r.highlights[i] })),
             }))}
           />
-          <div className="subtle">
-            The rank score is a weighted average of Draft Sharks, Boone and Smyth ranks. Draft Sharks publishes one overall weekly rank (kickers,
-            defenses and IDP included), so it is re-ranked within RB/WR/TE and within QB first, putting all three sources on the same scale. The score
-            is therefore comparable across RB/WR/TE — which is what FLEX rank uses — but a QB score is never comparable with an RB/WR/TE one, so nothing
-            scale-dependent is highlighted in a mixed comparison. Position rank is only highlighted when everyone shares a position. Opponent and ROS
-            value are context and don't affect the pick.
-          </div>
+          <details className="subtle">
+            <summary className="cursor-pointer">How the rank score works</summary>
+            <p className="mt-1">
+              A weighted average of the Draft Sharks, Boone and Smyth ranks (lower is better). Draft Sharks is re-ranked within RB/WR/TE and QB first
+              so all three sit on one scale. Scores compare across RB/WR/TE (that's FLEX rank) but never QB vs. non-QB. Opponent and ROS value are
+              context only.
+            </p>
+          </details>
         </div>
       )}
 

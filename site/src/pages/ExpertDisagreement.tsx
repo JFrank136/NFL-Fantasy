@@ -99,8 +99,8 @@ export default function ExpertDisagreement() {
       <div className="card p-4 space-y-3">
         <div className="flex items-center gap-2 flex-wrap">
           <div className="flex gap-1">
-            <button className={`btn ${view === 'current' ? 'btn-primary' : ''}`} onClick={() => setView('current')}>Current value</button>
-            <button className={`btn ${view === 'direction' ? 'btn-primary' : ''}`} onClick={() => setView('direction')}>Direction of movement</button>
+            <button className={`btn ${view === 'current' ? 'btn-primary' : ''}`} onClick={() => setView('current')}>Value gap</button>
+            <button className={`btn ${view === 'direction' ? 'btn-primary' : ''}`} onClick={() => setView('direction')}>Opposite moves</button>
           </div>
           <ScoringToggle value={scoring} onChange={setScoring} />
           {data.freshest && <span className="subtle ml-auto">Data as of {new Date(data.freshest).toLocaleString()}</span>}
@@ -120,9 +120,8 @@ export default function ExpertDisagreement() {
           </div>
         </div>
         <div className="subtle">
-          Boone and Draft Sharks use different value scales, so gaps compare Boone mapped onto the Draft Sharks scale.
-          {view === 'current' && ' Players ranked outside the top 150 in both sources are hidden.'}
-          {view === 'direction' && ` A source counts as flat under 1.5 points of movement. ${describeBaseline('Draft Sharks', data.baselineDs)} · ${describeBaseline('Boone', data.baselineBoone)}.`}
+          {view === 'current' && 'Players Boone and Draft Sharks value most differently right now. Boone is converted to the Draft Sharks scale so the gap is fair. Players outside the top 150 in both are hidden.'}
+          {view === 'direction' && `Players the two sources are moving in opposite directions on. Under 1.5 points of movement counts as flat. ${describeBaseline('Draft Sharks', data.baselineDs)} · ${describeBaseline('Boone', data.baselineBoone)}.`}
         </div>
         {loading && <div className="subtle">Loading…</div>}
         {error && <div style={{ color: 'var(--signal-down)' }}>Failed to load: {error}</div>}
@@ -132,30 +131,29 @@ export default function ExpertDisagreement() {
       </div>
 
       {!loading && !error && view === 'current' && (
-        <div className="card p-4">
+        <div className="card p-3 sm:p-4">
+          <div className="table-wrap">
           <table className="table">
             <thead>
               <tr>
-                <th>Player</th>
+                <th className="sticky-col">Player</th>
                 <th>Pos</th>
                 <th className="text-right">DS rank</th>
                 <th className="text-right">Boone rank</th>
                 <th className="text-right">DS value</th>
                 <th className="text-right">Boone (DS scale)</th>
-                <th className="text-right">Boone raw</th>
                 <th className="text-right">Gap</th>
               </tr>
             </thead>
             <tbody>
               {currentRows.map(r => (
                 <tr key={`${r.canonicalName}::${r.position}`}>
-                  <td>{r.playerName} {r.team && <span className="subtle">{r.team}</span>}</td>
+                  <td className="sticky-col">{r.playerName} {r.team && <span className="subtle">{r.team}</span>}</td>
                   <td>{r.position}</td>
                   <td className="text-right">{r.dsRank}</td>
                   <td className="text-right">{r.booneRank}</td>
                   <td className="text-right">{r1(r.dsValue)}</td>
                   <td className="text-right">{r1(r.booneScaled)}</td>
-                  <td className="text-right subtle">{r.booneValue}</td>
                   <td className="text-right">
                     <span className={signClass(r.valueGap)}>{signed(r.valueGap)}</span>
                     <span className="subtle"> {r.valueGap > 0 ? 'Boone higher' : 'DS higher'}</span>
@@ -164,6 +162,7 @@ export default function ExpertDisagreement() {
               ))}
             </tbody>
           </table>
+          </div>
           {currentRows.length === 0 && <div className="subtle">No players match.</div>}
         </div>
       )}
@@ -191,11 +190,12 @@ export default function ExpertDisagreement() {
       )}
 
       {!loading && !error && view === 'direction' && data.directionAvailable && (
-        <div className="card p-4">
+        <div className="card p-3 sm:p-4">
+          <div className="table-wrap">
           <table className="table">
             <thead>
               <tr>
-                <th>Player</th>
+                <th className="sticky-col">Player</th>
                 <th>Pos</th>
                 <th className="text-right">Boone change</th>
                 <th className="text-right">DS change</th>
@@ -205,7 +205,7 @@ export default function ExpertDisagreement() {
             <tbody>
               {directionRows.map(r => (
                 <tr key={`${r.canonicalName}::${r.position}`}>
-                  <td>{r.playerName} {r.team && <span className="subtle">{r.team}</span>}</td>
+                  <td className="sticky-col">{r.playerName} {r.team && <span className="subtle">{r.team}</span>}</td>
                   <td>{r.position}</td>
                   <td className={`text-right ${signClass(r.booneChange)}`}>{signed(r.booneChange)}</td>
                   <td className={`text-right ${signClass(r.dsChange)}`}>{signed(r.dsChange)}</td>
@@ -214,6 +214,7 @@ export default function ExpertDisagreement() {
               ))}
             </tbody>
           </table>
+          </div>
           {directionRows.length === 0 && <div className="subtle">No direction disagreements.</div>}
         </div>
       )}

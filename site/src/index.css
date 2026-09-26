@@ -29,7 +29,7 @@ body {
 }
 
 .card {
-  @apply rounded-xl border shadow;
+  @apply rounded-xl border shadow min-w-0;
   background: var(--bg-card);
   border-color: var(--bg-card-border);
 }
@@ -90,6 +90,48 @@ body {
 }
 .sort-indicator {
   color: var(--text-primary);
+}
+/* Wide tables scroll sideways inside their card instead of getting clipped
+   (or stretching the whole page) on a phone. Cells never wrap, so columns
+   stay lined up with their headers; the Player column sticks to the left
+   edge while the rest scrolls under it. */
+.table-wrap {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+.table th,
+.table td {
+  white-space: nowrap;
+}
+.table th.sticky-col,
+.table td.sticky-col {
+  position: sticky;
+  left: 0;
+  z-index: 1;
+  background: var(--bg-card);
+}
+@media (max-width: 640px) {
+  .table th,
+  .table td {
+    padding-left: 0.5rem;
+    padding-right: 0.5rem;
+  }
+  .table th.sticky-col,
+  .table td.sticky-col {
+    box-shadow: 4px 0 6px -4px rgba(0, 0, 0, 0.5);
+  }
+  .verdict-header,
+  .trade-side-header {
+    padding-left: 0.75rem;
+    padding-right: 0.75rem;
+  }
+  .verdict-headline {
+    @apply text-2xl;
+  }
+  .side-total,
+  .trade-side-winner .side-total {
+    @apply text-4xl;
+  }
 }
 .badge {
   @apply inline-flex items-center px-2 py-0.5 rounded-md text-xs border;
@@ -266,3 +308,8 @@ body {
 .compare-table tr.blended-row td.win-b { background: color-mix(in srgb, var(--side-b) 45%, var(--bg-page)); @apply text-2xl; }
 .edge-a { color: var(--side-a); }
 .edge-b { color: var(--side-b); }
+
+.compare-table th,
+.compare-table td {
+  white-space: nowrap;
+}

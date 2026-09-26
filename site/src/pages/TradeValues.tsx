@@ -169,9 +169,9 @@ export default function TradeValues() {
   }
 
   return (
-    <div className="card p-4 space-y-3">
+    <div className="card p-3 sm:p-4 space-y-3">
       <div className="flex items-center gap-2 flex-wrap">
-        <input className="input" placeholder="Search players..." value={query} onChange={e => setQuery(e.target.value)} />
+        <input className="input w-full sm:w-auto" placeholder="Search players..." value={query} onChange={e => setQuery(e.target.value)} />
         <div className="flex gap-1">
           {POSITIONS.map(p => (
             <button key={p} className={`btn ${pos === p ? 'btn-primary' : ''}`} onClick={() => setPos(p)}>{p}</button>
@@ -206,11 +206,12 @@ export default function TradeValues() {
       {error && <div style={{ color: 'var(--signal-down)' }}>Failed to load: {error}</div>}
 
       {!loading && !error && (
+        <div className="table-wrap">
         <table className="table">
           <thead>
             <tr>
               <th>Rank</th>
-              <th>Player</th>
+              <th className="sticky-col">Player</th>
               <th>Team</th>
               <th>Pos</th>
               <th className="num">Score</th>
@@ -221,7 +222,7 @@ export default function TradeValues() {
             {display.map(r => (
               <tr key={`${r.canonicalName}__${r.position}`}>
                 <td>{r.rank ?? ''}</td>
-                <td>{r.playerName}</td>
+                <td className="sticky-col">{r.playerName}</td>
                 <td>{r.team ?? ''}</td>
                 <td>{r.position}</td>
                 <td className="text-right font-semibold">
@@ -236,6 +237,7 @@ export default function TradeValues() {
             ))}
           </tbody>
         </table>
+        </div>
       )}
 
       {!loading && !error && display.length === 0 && (

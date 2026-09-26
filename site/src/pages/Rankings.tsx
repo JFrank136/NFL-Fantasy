@@ -6,14 +6,20 @@ import { toBooneRosInput, toDsRosInput } from '../lib/useBlendedRos'
 import { buildMovers, splitSnapshots, TIMEFRAME_MIN_GAP_MS } from '../lib/movers'
 import { onlyWeek } from '../lib/freshness'
 import { useCurrentWeek } from '../lib/useCurrentWeek'
+import { computeFlexRanks, FLEX_POSITIONS } from '../lib/weeklyPool'
+import ColumnPicker, { toggleInSet } from '../components/ColumnPicker'
 
 // Weekly has no 'ALL' -- aggregateWeeklyRanks ranks within each position, so
 // an "ALL" view would just interleave separate position-scoped #1's (the
 // exact "multiple 1's" confusion this page exists to avoid), and it's the
-// only way K/DST sneak into a view nobody asked to see them in. ROS keeps
-// 'ALL' since blendRosValues computes one genuine cross-position rank.
-const WEEKLY_POSITIONS = ['QB', 'RB', 'WR', 'TE']
+// only way K/DST sneak into a view nobody asked to see them in. FLEX is the
+// cross-position view weekly does support: RB/WR/TE share one score scale
+// (see weeklyPool.ts). ROS keeps 'ALL' since blendRosValues computes one
+// genuine cross-position rank.
+const WEEKLY_POSITIONS = ['QB', 'RB', 'WR', 'TE', 'FLEX']
 const ROS_POSITIONS = ['ALL', ...WEEKLY_POSITIONS]
+const matchesPosition = (pos: string, rowPos: string) =>
+  pos === 'ALL' || (pos === 'FLEX' ? FLEX_POSITIONS.includes(rowPos) : rowPos === pos)
 const SCORINGS = ['ppr', 'half-ppr'] as const
 type Scoring = typeof SCORINGS[number]
 const SCORING_LABELS: Record<Scoring, string> = { ppr: 'PPR', 'half-ppr': 'Half-PPR' }
@@ -37,6 +43,10 @@ function ScoringToggle({ value, onChange }: { value: Scoring; onChange: (s: Scor
 }
 
 type RosTabRow = BlendedRosRow & { rosChange: number | null }
+/** Rank within the position filter currently applied (overall when ALL). */
+type RosDisplayRow = RosTabRow & { displayRank: number | null }
+/** aggregateRank is per position; displayRank is FLEX rank on the FLEX view. */
+type WeeklyDisplayRow = AggregatedWeeklyRow & { displayRank: number | null }
 
 type SortDir = 'asc' | 'desc'
 type ColumnType = 'string' | 'number'
@@ -45,6 +55,11 @@ interface ColumnDef<T> {
   key: keyof T & string
   label: string
   type: ColumnType
+  /** Right-aligned numeric columns: header aligns the same way as its values. */
+  right?: boolean
+  /** Can't be hidden from the column picker. */
+  required?: boolean
+  sticky?: boolean
 }
 
 interface SortState {
@@ -88,39 +103,41 @@ function sortRows<T>(
   })
 }
 
-function SortableHeader({ label, columnKey, sort, onSort }: { label: string; columnKey: string; sort: SortState; onSort: (key: string) => void }) {
+function SortableHeader({ label, columnKey, sort, onSort, right, sticky }: { label: string; columnKey: string; sort: SortState; onSort: (key: string) => void; right?: boolean; sticky?: boolean }) {
   const active = sort.key === columnKey
   return (
-    <th className="sortable" onClick={() => onSort(columnKey)}>
+    <th className={`sortable${right ? ' num' : ''}${sticky ? ' sticky-col' : ''}`} onClick={() => onSort(columnKey)}>
       {label}
       {active && <span className="sort-indicator">{sort.dir === 'asc' ? ' ▲' : ' ▼'}</span>}
     </th>
   )
 }
 
-const ROS_COLUMNS: ColumnDef<RosTabRow>[] = [
-  { key: 'overallRank', label: 'Rank', type: 'number' },
-  { key: 'playerName', label: 'Player', type: 'string' },
+const ROS_COLUMNS: ColumnDef<RosDisplayRow>[] = [
+  { key: 'displayRank', label: 'Rank', type: 'number', required: true },
+  { key: 'overallRank', label: 'Overall', type: 'number' },
+  { key: 'playerName', label: 'Player', type: 'string', required: true, sticky: true },
   { key: 'position', label: 'Pos', type: 'string' },
   { key: 'team', label: 'Team', type: 'string' },
-  { key: 'blendedValue', label: 'Blended', type: 'number' },
-  { key: 'dsValue', label: 'DS Value', type: 'number' },
-  { key: 'booneValue', label: 'Boone Value', type: 'number' },
-  { key: 'ceiling', label: 'DS Ceiling', type: 'number' },
-  { key: 'rosChange', label: 'ROS Δ', type: 'number' },
+  { key: 'blendedValue', label: 'Blended', type: 'number', right: true },
+  { key: 'dsValue', label: 'DS Value', type: 'number', right: true },
+  { key: 'booneValue', label: 'Boone Value', type: 'number', right: true },
+  { key: 'ceiling', label: 'DS Ceiling', type: 'number', right: true },
+  { key: 'rosChange', label: 'ROS Δ', type: 'number', right: true },
 ]
 
-const WEEKLY_COLUMNS: ColumnDef<AggregatedWeeklyRow>[] = [
-  { key: 'aggregateRank', label: 'Agg. Rank', type: 'number' },
-  { key: 'playerName', label: 'Player', type: 'string' },
+const WEEKLY_COLUMNS: ColumnDef<WeeklyDisplayRow>[] = [
+  { key: 'displayRank', label: 'Rank', type: 'number', required: true },
+  { key: 'aggregateRank', label: 'Pos Rank', type: 'number' },
+  { key: 'playerName', label: 'Player', type: 'string', required: true, sticky: true },
   { key: 'position', label: 'Pos', type: 'string' },
   { key: 'team', label: 'Team', type: 'string' },
   { key: 'opponent', label: 'Opp', type: 'string' },
-  { key: 'draftsharksRank', label: 'DS Rank', type: 'number' },
-  { key: 'booneRank', label: 'Boone Rank', type: 'number' },
-  { key: 'dsFloor', label: 'Floor', type: 'number' },
-  { key: 'dsProjection', label: 'DS Proj', type: 'number' },
-  { key: 'dsCeiling', label: 'Ceiling', type: 'number' },
+  { key: 'draftsharksRank', label: 'DS Rank', type: 'number', right: true },
+  { key: 'booneRank', label: 'Boone Rank', type: 'number', right: true },
+  { key: 'dsFloor', label: 'Floor', type: 'number', right: true },
+  { key: 'dsProjection', label: 'DS Proj', type: 'number', right: true },
+  { key: 'dsCeiling', label: 'Ceiling', type: 'number', right: true },
 ]
 
 function useRosTab(scoring: Scoring) {
@@ -166,9 +183,10 @@ export default function Rankings() {
   const [pos, setPos] = useState('QB')
   const [scoring, setScoring] = useState<Scoring>('ppr')
   const [query, setQuery] = useState('')
+  const [hiddenCols, setHiddenCols] = useState<Set<string>>(new Set())
 
-  const [rosSort, setRosSort] = useState<SortState>({ key: null, dir: 'asc' })
-  const [weeklySort, setWeeklySort] = useState<SortState>({ key: 'aggregateRank', dir: 'asc' })
+  const [rosSort, setRosSort] = useState<SortState>({ key: 'displayRank', dir: 'asc' })
+  const [weeklySort, setWeeklySort] = useState<SortState>({ key: 'displayRank', dir: 'asc' })
   const ros = useRosTab(scoring)
   const weekly = useWeeklyRows(scoring)
   const week = weekly.week
@@ -178,26 +196,82 @@ export default function Rankings() {
 
   const goToWeekly = () => {
     setTab('weekly')
-    setWeeklySort({ key: 'aggregateRank', dir: 'asc' })
+    setWeeklySort({ key: 'displayRank', dir: 'asc' })
     if (pos === 'ALL') setPos('QB')
   }
 
-  const filteredRos = useMemo(() => {
-    let list = ros.rows
-    if (pos !== 'ALL') list = list.filter(r => r.position === pos)
-    if (query) list = list.filter(r => r.playerName.toLowerCase().includes(query.toLowerCase()))
-    return list
-  }, [ros.rows, pos, query])
+  // Ranks are assigned within the position filter BEFORE the search box
+  // narrows things, so searching for one player still shows their real rank.
+  const rankedRos = useMemo<RosDisplayRow[]>(() => {
+    const scoped = ros.rows.filter(r => matchesPosition(pos, r.position))
+    if (pos === 'ALL') return scoped.map(r => ({ ...r, displayRank: r.overallRank }))
+    const ordered = [...scoped].sort((a, b) => (a.overallRank ?? Infinity) - (b.overallRank ?? Infinity))
+    return ordered.map((r, i) => ({ ...r, displayRank: r.overallRank == null ? null : i + 1 }))
+  }, [ros.rows, pos])
 
-  const filteredWeekly = useMemo(() => {
-    let list = weekly.rows
-    if (pos !== 'ALL') list = list.filter(r => r.position === pos)
-    if (query) list = list.filter(r => r.playerName.toLowerCase().includes(query.toLowerCase()))
-    return list
-  }, [weekly.rows, pos, query])
+  const rankedWeekly = useMemo<WeeklyDisplayRow[]>(() => {
+    const scoped = weekly.rows.filter(r => matchesPosition(pos, r.position))
+    if (pos !== 'FLEX') return scoped.map(r => ({ ...r, displayRank: r.aggregateRank }))
+    const flex = computeFlexRanks(scoped, week)
+    return scoped.map(r => ({ ...r, displayRank: flex.get(identityKey(r.canonicalName, r.position)) ?? null }))
+  }, [weekly.rows, pos, week])
 
-  const sortedRos = useMemo(() => sortRows(filteredRos, ROS_COLUMNS, rosSort), [filteredRos, rosSort])
-  const sortedWeekly = useMemo(() => sortRows(filteredWeekly, WEEKLY_COLUMNS, weeklySort), [filteredWeekly, weeklySort])
+  const matchesQuery = (name: string) => !query || name.toLowerCase().includes(query.toLowerCase())
+  const sortedRos = useMemo(
+    () => sortRows(rankedRos.filter(r => matchesQuery(r.playerName)), ROS_COLUMNS, rosSort),
+    [rankedRos, query, rosSort],
+  )
+  const sortedWeekly = useMemo(
+    () => sortRows(rankedWeekly.filter(r => matchesQuery(r.playerName)), WEEKLY_COLUMNS, weeklySort),
+    [rankedWeekly, query, weeklySort],
+  )
+
+  // Overall rank only adds something once the main rank is scoped to a
+  // position; Pos Rank only once weekly is showing the cross-position FLEX list.
+  const rosCols = ROS_COLUMNS.filter(c => !(c.key === 'overallRank' && pos === 'ALL') && !hiddenCols.has(c.key))
+  const weeklyCols = WEEKLY_COLUMNS.filter(c => !(c.key === 'aggregateRank' && pos !== 'FLEX') && !hiddenCols.has(c.key))
+  const rankLabel = pos === 'ALL' ? 'Rank' : `${pos} Rank`
+  const labelFor = (key: string, label: string) => (key === 'displayRank' ? rankLabel : label)
+  const pickable = (tab === 'ros' ? ROS_COLUMNS : WEEKLY_COLUMNS)
+    .filter(c => !c.required && !(c.key === 'overallRank' && pos === 'ALL') && !(c.key === 'aggregateRank' && pos !== 'FLEX'))
+    .map(c => ({ key: c.key as string, label: c.label }))
+
+  const rosCell = (r: RosDisplayRow, key: string) => {
+    switch (key) {
+      case 'displayRank': return r.displayRank ?? ''
+      case 'overallRank': return r.overallRank ?? ''
+      case 'playerName': return r.playerName
+      case 'position': return r.position
+      case 'team': return r.team ?? ''
+      case 'blendedValue': return r.blendedValue != null ? Math.round(r.blendedValue) : ''
+      case 'dsValue': return r.dsValue ?? ''
+      case 'booneValue': return r.booneValue ?? ''
+      case 'ceiling': return r.ceiling ?? ''
+      default:
+        return r.rosChange == null
+          ? <span className="subtle">New</span>
+          : <span className={r.rosChange >= 0 ? 'signal-up' : 'signal-down'}>{r.rosChange >= 0 ? '+' : ''}{Math.round(r.rosChange)}</span>
+    }
+  }
+
+  const weeklyCell = (r: WeeklyDisplayRow, key: string) => {
+    switch (key) {
+      case 'displayRank': return r.displayRank ?? ''
+      case 'aggregateRank': return r.aggregateRank ?? ''
+      case 'playerName': return r.playerName
+      case 'position': return r.position
+      case 'team': return r.team ?? ''
+      case 'opponent': return r.opponent ?? ''
+      case 'draftsharksRank': return r.draftsharksRank ?? ''
+      case 'booneRank': return r.booneRank ?? ''
+      case 'dsFloor': return r.dsFloor ?? ''
+      case 'dsProjection': return r.dsProjection ?? ''
+      default: return r.dsCeiling ?? ''
+    }
+  }
+
+  const cellClass = (c: { right?: boolean; sticky?: boolean; key: string }) =>
+    [c.right ? 'text-right' : '', c.sticky ? 'sticky-col' : '', c.key === 'blendedValue' ? 'font-semibold' : ''].filter(Boolean).join(' ') || undefined
 
   return (
     <div className="space-y-3">
@@ -206,10 +280,10 @@ export default function Rankings() {
         <button className={`btn ${tab === 'ros' ? 'btn-primary' : ''}`} onClick={() => setTab('ros')}>ROS</button>
       </div>
 
-      <div className="card p-4 space-y-3">
+      <div className="card p-3 sm:p-4 space-y-3">
         <div className="flex items-center gap-2 flex-wrap">
-          <input className="input" placeholder="Search players..." value={query} onChange={e => setQuery(e.target.value)} />
-          <div className="flex gap-1">
+          <input className="input w-full sm:w-auto" placeholder="Search players..." value={query} onChange={e => setQuery(e.target.value)} />
+          <div className="flex gap-1 flex-wrap">
             {positions.map(p => (
               <button
                 key={p}
@@ -224,11 +298,10 @@ export default function Rankings() {
           {tab === 'weekly' && (
             <span className="btn btn-primary" style={{ cursor: 'default' }}>Week {week ?? '…'}</span>
           )}
-          {tab === 'ros' && ros.currentWeek != null && (
-            <span className="btn btn-primary" style={{ cursor: 'default' }}>Week {ros.currentWeek}</span>
-          )}
-          {active.freshest && <span className="subtle ml-auto">Data as of {new Date(active.freshest).toLocaleString()}</span>}
+          {active.freshest && <span className="subtle sm:ml-auto">Data as of {new Date(active.freshest).toLocaleString()}</span>}
         </div>
+
+        <ColumnPicker columns={pickable} hidden={hiddenCols} onToggle={key => setHiddenCols(prev => toggleInSet(prev, key))} />
 
         {active.loading && <div className="subtle">Loading…</div>}
         {active.error && <div style={{ color: 'var(--signal-down)' }}>Failed to load: {active.error}</div>}
@@ -237,74 +310,61 @@ export default function Rankings() {
         )}
 
         {!active.loading && !active.error && tab === 'ros' && (
-          <table className="table">
-            <thead>
-              <tr>
-                {ROS_COLUMNS.map(col => (
-                  <SortableHeader
-                    key={col.key}
-                    label={col.label}
-                    columnKey={col.key}
-                    sort={rosSort}
-                    onSort={key => setRosSort(prev => toggleSort(prev, key))}
-                  />
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              {sortedRos.map(r => (
-                <tr key={identityKey(r.canonicalName, r.position)}>
-                  <td>{r.overallRank ?? ''}</td>
-                  <td>{r.playerName}</td>
-                  <td>{r.position}</td>
-                  <td>{r.team ?? ''}</td>
-                  <td className="text-right font-semibold">{r.blendedValue != null ? Math.round(r.blendedValue) : ''}</td>
-                  <td className="text-right">{r.dsValue ?? ''}</td>
-                  <td className="text-right">{r.booneValue ?? ''}</td>
-                  <td className="text-right">{r.ceiling ?? ''}</td>
-                  <td className="text-right">
-                    {r.rosChange == null
-                      ? <span className="subtle">New</span>
-                      : <span className={r.rosChange >= 0 ? 'signal-up' : 'signal-down'}>{r.rosChange >= 0 ? '+' : ''}{Math.round(r.rosChange)}</span>}
-                  </td>
+          <div className="table-wrap">
+            <table className="table">
+              <thead>
+                <tr>
+                  {rosCols.map(col => (
+                    <SortableHeader
+                      key={col.key}
+                      label={labelFor(col.key, col.label)}
+                      columnKey={col.key}
+                      sort={rosSort}
+                      right={col.right}
+                      sticky={col.sticky}
+                      onSort={key => setRosSort(prev => toggleSort(prev, key))}
+                    />
+                  ))}
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {sortedRos.map(r => (
+                  <tr key={identityKey(r.canonicalName, r.position)}>
+                    {rosCols.map(col => <td key={col.key} className={cellClass(col)}>{rosCell(r, col.key)}</td>)}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         )}
 
         {!active.loading && !active.error && tab === 'weekly' && (
-          <table className="table">
-            <thead>
-              <tr>
-                {WEEKLY_COLUMNS.map(col => (
-                  <SortableHeader
-                    key={col.key}
-                    label={col.label}
-                    columnKey={col.key}
-                    sort={weeklySort}
-                    onSort={key => setWeeklySort(prev => toggleSort(prev, key))}
-                  />
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              {sortedWeekly.map(r => (
-                <tr key={identityKey(r.canonicalName, r.position)}>
-                  <td>{r.aggregateRank ?? ''}</td>
-                  <td>{r.playerName}</td>
-                  <td>{r.position}</td>
-                  <td>{r.team ?? ''}</td>
-                  <td>{r.opponent ?? ''}</td>
-                  <td className="text-right">{r.draftsharksRank ?? ''}</td>
-                  <td className="text-right">{r.booneRank ?? ''}</td>
-                  <td className="text-right">{r.dsFloor ?? ''}</td>
-                  <td className="text-right">{r.dsProjection ?? ''}</td>
-                  <td className="text-right">{r.dsCeiling ?? ''}</td>
+          <div className="table-wrap">
+            <table className="table">
+              <thead>
+                <tr>
+                  {weeklyCols.map(col => (
+                    <SortableHeader
+                      key={col.key}
+                      label={labelFor(col.key, col.label)}
+                      columnKey={col.key}
+                      sort={weeklySort}
+                      right={col.right}
+                      sticky={col.sticky}
+                      onSort={key => setWeeklySort(prev => toggleSort(prev, key))}
+                    />
+                  ))}
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {sortedWeekly.map(r => (
+                  <tr key={identityKey(r.canonicalName, r.position)}>
+                    {weeklyCols.map(col => <td key={col.key} className={cellClass(col)}>{weeklyCell(r, col.key)}</td>)}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         )}
 
         {!active.loading && !active.error && (tab === 'ros' ? sortedRos : sortedWeekly).length === 0 && (
