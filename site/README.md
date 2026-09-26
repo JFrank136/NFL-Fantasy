@@ -7,7 +7,7 @@ The in-season fantasy football site: live weekly rankings, rest-of-season (ROS) 
 - **Rankings** page: two tabs.
   - **ROS** — blended Draft Sharks + Boone rest-of-season value (see `docs/DATA.md` for the blend algorithm), individual source values, Draft Sharks ceiling/upside, and week-over-week change ("ROS Δ").
   - **Weekly** — aggregate weekly rank across Draft Sharks/Boone/Smythe (weighted per `docs/DATA.md`), individual source ranks, Draft Sharks projection/floor/ceiling, opponent.
-  - Both tabs: search, position filter, scoring toggle (PPR/Half-PPR), sortable columns.
+  - Both tabs: search, position filter (incl. FLEX = RB/WR/TE), scoring toggle (PPR/Half-PPR), sortable columns, and a Columns picker to hide columns. Rank is scoped to the selected position/FLEX; ROS shows overall rank in a separate Overall column.
 - **Trade Values** page: browses `in_season_trade_values` across all 5 live trade-value sources (Boone, CBS, FantasyPros, RSJ, USA Today), plus Draft Sharks' ROS "3D value" (`ds_value`) as a sixth column. Queries that can exceed Supabase's silent 1000-row cap go through `fetchAllRows` (`src/lib/supabase.ts`).
 - Visual system: "Turf Bright" palette (see `src/index.css` CSS custom properties), sidebar nav on desktop, hamburger/drawer on mobile.
 - **Trade Analyzer** — 1–4 players per side, winner decided by total blended ROS value with a Close/Medium/High confidence badge (thresholds in `tradeAnalyzer.ts`). The Verdict panel also shows a per-source table (blended on top, then DS, Boone and every other trade-value source found in the data) with each side's total and the winning side per row; sources with no value for the chosen scoring (RSJ under Half-PPR) drop out automatically. Layout is three zones: Side A (blue), Side B (pink), Verdict (gold), with the winning side highlighted.
@@ -48,6 +48,8 @@ Deployed on Vercel, auto-deploys on push to `main`: https://nfl-fantasy-sigma.ve
 - `src/lib/disagreement.ts`, `src/lib/playerComparison.ts`, `src/lib/tradeAnalyzer.ts` — pure logic for their pages. Tunable thresholds are exported constants (`FLAT_THRESHOLD`, `RELEVANCE_RANK_CUTOFF`, `CONFIDENCE_THRESHOLDS`, `TIMEFRAME_MIN_GAP_MS`) because the roadmap says they get retuned after a full season.
 - `src/components/` — `PlayerPicker`, `ComparisonTable`, `ScoringToggle` shared across pages. Trade Analyzer, Movers & Fallers, Expert Disagreement, Rankings and Trade Values still carry their own local copies of the picker/toggle; migrate them when touched.
 - `src/lib/consensusWeights.ts` — the source-weighting used for weekly rank aggregation, hand-copied from `Draft/config/settings.yaml`'s `consensus.weights` (not read live — if that file is retuned, update this one to match).
+- **Mobile tables** — wide tables sit in `.table-wrap` (horizontal scroll, non-wrapping cells) with a `.sticky-col` Player/label column (`src/index.css`). `ColumnPicker` (`src/components/ColumnPicker.tsx`) lets Rankings, Trade Values, Movers & Fallers and Expert Disagreement hide columns. Cards use `min-w-0` so grid children can't stretch the page.
+- Trade Analyzer's Verdict also has a per-player Draft Sharks vs Boone breakdown (ranks, values on the DS scale, who is more bullish). Movers & Fallers hides players ranked 250+ (`MAX_RANK`).
 - `src/nav.ts` — single source of truth for site navigation (`NAV_ITEMS`), consumed by both `Sidebar` and `MobileNav`.
 
 See `docs/DATA.md` for the Supabase schema this app reads and the blend/aggregation algorithms in detail.
