@@ -1,4 +1,4 @@
-import { Fragment, useMemo, useState } from 'react'
+import { useMemo, useState } from 'react'
 import { useBlendedRos, type Scoring } from '../lib/useBlendedRos'
 import { identityKey, type BlendedRosRow } from '../lib/blend'
 import { evaluateTrade, buildExtraSourceValues, tradeSourceLabel, type TradeComparison } from '../lib/tradeAnalyzer'
@@ -143,90 +143,6 @@ function TradeSide({
   )
 }
 
-type RankMaps = { ds: Map<string, number>; boone: Map<string, number> }
-
-/** ROS rank per source across every player (1 = most valuable), so a traded
- * player's Draft Sharks rank and Boone rank can be read side by side. */
-function buildSourceRanks(rows: BlendedRosRow[]): RankMaps {
-  const rankBy = (pick: (r: BlendedRosRow) => number | null) => {
-    const sorted = rows.filter(r => pick(r) != null).sort((a, b) => (pick(b) as number) - (pick(a) as number))
-    return new Map(sorted.map((r, i) => [identityKey(r.canonicalName, r.position), i + 1]))
-  }
-  return { ds: rankBy(r => r.dsValue), boone: rankBy(r => r.booneValue) }
-}
-
-const r1 = (n: number | null) => (n != null ? String(Math.round(n * 10) / 10) : '—')
-
-/** Per-player Draft Sharks vs Boone view, so it's clear which player is
- * driving a source's verdict. Boone is shown on the Draft Sharks scale so the
- * two value columns (and the Gap) are directly comparable. */
-function PlayerBreakdown({ sideA, sideB, ranks }: { sideA: BlendedRosRow[]; sideB: BlendedRosRow[]; ranks: RankMaps }) {
-  const groups: { side: SideKey; players: BlendedRosRow[] }[] = [
-    { side: 'A', players: sideA },
-    { side: 'B', players: sideB },
-  ]
-  const sum = (players: BlendedRosRow[], pick: (p: BlendedRosRow) => number | null) =>
-    players.some(p => pick(p) != null) ? players.reduce((t, p) => t + (pick(p) ?? 0), 0) : null
-
-  const gapCell = (ds: number | null, boone: number | null) => {
-    if (ds == null || boone == null) return <td className="subtle">—</td>
-    const gap = boone - ds
-    if (Math.abs(gap) < 0.5) return <td className="subtle">Even</td>
-    return <td className={gap > 0 ? 'signal-up' : 'signal-down'}>{gap > 0 ? 'Boone' : 'DS'} +{r1(Math.abs(gap))}</td>
-  }
-
-  return (
-    <div className="space-y-1">
-      <div className="label">Player breakdown: Draft Sharks vs Boone</div>
-      <div className="table-wrap">
-        <table className="compare-table">
-          <thead>
-            <tr>
-              <th>Player</th>
-              <th>DS rank</th>
-              <th>Boone rank</th>
-              <th>DS value</th>
-              <th>Boone value</th>
-              <th>More bullish</th>
-            </tr>
-          </thead>
-          <tbody>
-            {groups.map(({ side, players }) => players.length > 0 && (
-              <Fragment key={side}>
-                {players.map(p => {
-                  const key = identityKey(p.canonicalName, p.position)
-                  return (
-                    <tr key={key}>
-                      <td>
-                        <span className="font-extrabold mr-1" style={{ color: sideColor(side) }}>{side}</span>
-                        {p.playerName} <span className="subtle">{p.position}</span>
-                      </td>
-                      <td>{ranks.ds.get(key) ?? '—'}</td>
-                      <td>{ranks.boone.get(key) ?? '—'}</td>
-                      <td>{r1(p.dsValue)}</td>
-                      <td>{r1(p.booneScaled)}</td>
-                      {gapCell(p.dsValue, p.booneScaled)}
-                    </tr>
-                  )
-                })}
-                <tr className="blended-row">
-                  <td style={{ color: sideColor(side) }}>{sideName(side)} total</td>
-                  <td />
-                  <td />
-                  <td>{r1(sum(players, p => p.dsValue))}</td>
-                  <td>{r1(sum(players, p => p.booneScaled))}</td>
-                  {gapCell(sum(players, p => p.dsValue), sum(players, p => p.booneScaled))}
-                </tr>
-              </Fragment>
-            ))}
-          </tbody>
-        </table>
-      </div>
-      <div className="subtle">Values are on the Draft Sharks scale. Ranks are overall ROS rank in each source. A higher Boone value than Draft Sharks means Boone likes the player more.</div>
-    </div>
-  )
-}
-
 const fmt = (n: number | null) => (n != null ? Math.round(n).toLocaleString() : '—')
 
 /** One side's cell in the comparison table. The winning cell gets a colored
@@ -252,7 +168,7 @@ function EdgeCell({ winner, pctDiff }: { winner: SideKey | null; pctDiff: number
   )
 }
 
-function Verdict({ comparison, ranks }: { comparison: TradeComparison; ranks: RankMaps }) {
+function Verdict({ comparison }: { comparison: TradeComparison }) {
   const { preferredSide, confidence, pctDiff, sources } = comparison
   const ready = comparison.diff != null
 
@@ -281,7 +197,7 @@ function Verdict({ comparison, ranks }: { comparison: TradeComparison; ranks: Ra
         <div className="p-4 space-y-3">
           <div>{comparison.summary}</div>
 
-          <div className="table-wrap">
+          <div className="overflow-x-auto">
             <table className="compare-table">
               <thead>
                 <tr>
@@ -310,8 +226,6 @@ function Verdict({ comparison, ranks }: { comparison: TradeComparison; ranks: Ra
             </table>
           </div>
 
-          <PlayerBreakdown sideA={comparison.sideA.players} sideB={comparison.sideB.players} ranks={ranks} />
-
           {decided.length > 0 && (
             <div className="subtle">
               Individual sources: <span className="edge-a font-bold">{sideName('A')} leads {winsA}</span> · <span className="edge-b font-bold">{sideName('B')} leads {winsB}</span> of {decided.length}.
@@ -339,8 +253,6 @@ export default function TradeAnalyzer() {
 
   const sideAPlayers = useMemo(() => sideAKeys.map(k => byKey.get(k)).filter((r): r is BlendedRosRow => !!r), [sideAKeys, byKey])
   const sideBPlayers = useMemo(() => sideBKeys.map(k => byKey.get(k)).filter((r): r is BlendedRosRow => !!r), [sideBKeys, byKey])
-
-  const ranks = useMemo(() => buildSourceRanks(rows), [rows])
 
   const usedKeys = useMemo(() => new Set([...sideAKeys, ...sideBKeys]), [sideAKeys, sideBKeys])
   const candidates = useMemo(() => rows.filter(r => !usedKeys.has(identityKey(r.canonicalName, r.position))), [rows, usedKeys])
@@ -371,7 +283,7 @@ export default function TradeAnalyzer() {
 
   return (
     <div className="space-y-5">
-      <div className="card p-3 sm:p-4 space-y-3">
+      <div className="card p-4 space-y-3">
         <div className="flex items-center gap-2 flex-wrap">
           <span className="subtle">Trade Analyzer -- compares total blended ROS value (50% Draft Sharks / 50% Boone), with each source's own totals below.</span>
           <ScoringToggle value={scoring} onChange={setScoring} />
@@ -413,7 +325,7 @@ export default function TradeAnalyzer() {
             />
           </div>
 
-          <Verdict comparison={comparison} ranks={ranks} />
+          <Verdict comparison={comparison} />
         </>
       )}
     </div>
