@@ -229,6 +229,29 @@ body {
   @apply flex items-center justify-between gap-2 px-3 py-2 rounded-lg;
   background: var(--bg-page);
 }
+.player-chip-values {
+  @apply flex items-center gap-3;
+}
+
+/* Phones: the two sides sit side by side so both totals are visible at once,
+   so each chip stacks name over values instead of spreading across a row. */
+@media (max-width: 639px) {
+  .trade-side { border-width: 1px; }
+  .trade-side-winner { border-width: 2px; box-shadow: 0 0 0 3px color-mix(in srgb, var(--side) 28%, transparent); }
+  .trade-side-header { @apply px-2 py-1.5; }
+  .trade-side-title { @apply text-base; }
+  .winner-badge { @apply px-2 py-0.5 text-xs; }
+  .side-total,
+  .trade-side-winner .side-total { @apply text-2xl; }
+  .player-chip { @apply flex-col items-stretch gap-1 px-2; }
+  .player-chip-values { @apply justify-between gap-1; }
+  .player-chip .btn { @apply px-2 py-1; }
+  .verdict-header { @apply px-3 py-3; }
+  .verdict-headline { @apply text-2xl; }
+  .compare-table th,
+  .compare-table td { @apply px-2; }
+  .compare-table th { @apply whitespace-nowrap; }
+}
 
 /* Search results: a light popover so it reads as a different layer than the
    green cards it floats over. */

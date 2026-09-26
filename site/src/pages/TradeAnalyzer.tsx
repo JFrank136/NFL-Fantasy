@@ -109,7 +109,7 @@ function TradeSide({
         {status === 'winner' && <span className="winner-badge">★ Winner</span>}
       </div>
 
-      <div className="p-4 space-y-3">
+      <div className="p-2 sm:p-4 space-y-3">
         <PlayerPicker candidates={candidates} disabled={players.length >= MAX_PLAYERS_PER_SIDE} onAdd={onAdd} />
 
         <div className="space-y-2">
@@ -118,14 +118,14 @@ function TradeSide({
             const key = identityKey(p.canonicalName, p.position)
             return (
               <div key={key} className="player-chip">
-                <div>
+                <div className="min-w-0">
                   <div className={key === bestPlayerKey ? 'font-bold' : 'font-semibold'}>{p.playerName}</div>
                   <div className="subtle">{p.position}{p.team ? ` · ${p.team}` : ''}</div>
                 </div>
-                <div className="flex items-center gap-3">
-                  <div className="text-right">
+                <div className="player-chip-values">
+                  <div className="sm:text-right">
                     <div className="font-bold">{p.blendedValue != null ? Math.round(p.blendedValue) : '—'}</div>
-                    <div className="subtle">DS {p.dsValue ?? '—'} · Boone {p.booneValue ?? '—'}</div>
+                    <div className="subtle">DS {p.dsValue ?? '—'}<span className="hidden sm:inline"> · </span><br className="sm:hidden" />Boone {p.booneValue ?? '—'}</div>
                   </div>
                   <button className="btn" onClick={() => onRemove(key)} aria-label={`Remove ${p.playerName}`}>✕</button>
                 </div>
@@ -134,7 +134,7 @@ function TradeSide({
           })}
         </div>
 
-        <div className="flex items-end justify-between pt-3" style={{ borderTop: '1px solid var(--bg-card-border)' }}>
+        <div className="flex items-end justify-between gap-2 pt-3" style={{ borderTop: '1px solid var(--bg-card-border)' }}>
           <span className="subtle">Total blended value</span>
           <span className="side-total">{totalValue != null ? Math.round(totalValue) : '—'}</span>
         </div>
@@ -302,7 +302,7 @@ export default function TradeAnalyzer() {
 
       {!loading && !error && (
         <>
-          <div className="grid md:grid-cols-2 gap-5">
+          <div className="grid grid-cols-2 gap-2 sm:gap-5">
             <TradeSide
               side="A"
               players={sideAPlayers}
