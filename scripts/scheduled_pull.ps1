@@ -548,6 +548,28 @@ try {
                 Log "Skipping Vampire $slot-slot refresh -- week $week draftsharks/half-ppr did not succeed this run."
             }
         }
+
+        # Vampire matchup-tool: all-weeks projections (Rosters tab weekly
+        # viewer) and latest rest-of-season numbers (Free agents tab). Both
+        # upsert into their own tables, so they're safe to rerun. Like the
+        # slot refreshes above, a failure is logged but doesn't fail the run.
+        Push-Location $VampireDir
+        try {
+            Log "Refreshing Vampire vampire_weekly_projections (all weeks)..."
+            & node "--env-file=.env" "scripts\refresh-weekly-projections-all.js" $csvPath "half-ppr" 2>&1 | ForEach-Object { Log $_ }
+            Log "refresh-weekly-projections-all.js exit code: $LASTEXITCODE"
+
+            if ($rosRankingsExit -eq 0) {
+                $rosCsvPath = Join-Path $InSeasonDir "data\processed\ros_rankings_long.csv"
+                Log "Refreshing Vampire vampire_ros_projections..."
+                & node "--env-file=.env" "scripts\refresh-ros-projections.js" $rosCsvPath "half-ppr" 2>&1 | ForEach-Object { Log $_ }
+                Log "refresh-ros-projections.js exit code: $LASTEXITCODE"
+            } else {
+                Log "Skipping Vampire ROS refresh -- pull_draftsharks_ros.py did not succeed this run."
+            }
+        } finally {
+            Pop-Location
+        }
     } else {
         Log "WARNING: $statusPath not found after pull_week.py ran -- something is badly wrong (check exit code above)."
     }
