@@ -41,11 +41,28 @@ class FFTodayScraper:
     
     def __init__(self):
         """Initialize the scraper"""
+        self._page_cache = {}
         self.session = requests.Session()
         self.session.headers.update({
             'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
         })
     
+    def _fetch_page(self, pos_id: str, params: dict) -> str:
+        """Fetch a position page once (cached), backing off on 403 rate limiting."""
+        if pos_id in self._page_cache:
+            return self._page_cache[pos_id]
+        for wait in (0, 30, 60, 120):
+            if wait:
+                print(f"(403, waiting {wait}s) ", end='', flush=True)
+                time.sleep(wait)
+            response = self.session.get(self.BASE_URL, params=params, timeout=20)
+            if response.status_code != 403:
+                response.raise_for_status()
+                self._page_cache[pos_id] = response.text
+                time.sleep(5)
+                return response.text
+        response.raise_for_status()
+
     def scrape_position_stats(self, position: str, col_idx: int) -> List[Tuple[str, float]]:
         """
         Scrape statistics for a specific position
@@ -63,7 +80,7 @@ class FFTodayScraper:
             return []
         
         params = {
-            'Season': '2025',
+            'Season': '2026',
             'GameWeek': 'Last5',  # Last 5 weeks
             'PosID': pos_id,
             'Side': 'Allowed',
@@ -73,10 +90,7 @@ class FFTodayScraper:
         print(f"Scraping {position}... ", end='', flush=True)
         
         try:
-            response = self.session.get(self.BASE_URL, params=params, timeout=20)
-            response.raise_for_status()
-            
-            soup = BeautifulSoup(response.text, 'html.parser')
+            soup = BeautifulSoup(self._fetch_page(pos_id, params), 'html.parser')
             
             # Find all tables and look for the one with team data
             # The stats table contains links with "vs. RB" pattern

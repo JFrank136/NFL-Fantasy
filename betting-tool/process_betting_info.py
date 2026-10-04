@@ -1,3 +1,4 @@
+import os
 import pandas as pd
 import re
 from difflib import get_close_matches
@@ -13,8 +14,12 @@ from difflib import get_close_matches
 # - Early season (Weeks 1-6): Use 40/60 or 30/70 (favor full season data)
 # - Mid season (Weeks 7-12): Use 50/50 or 55/45
 # - Late season (Weeks 13+): Use 65/35 or 70/30 (favor recent trends)
-LAST5_WEIGHT = 0.65  # Weight for recent 5-week data
-CBS_WEIGHT = 0.35    # Weight for full season data
+LAST5_WEIGHT = 0.40  # Weight for recent 5-week data
+CBS_WEIGHT = 0.60    # Weight for full season data
+
+# Yardage-only mode: skip picks/roster, export just the weighted yardage rankings
+YARDAGE_ONLY = True
+WEEK = int(os.environ.get('BETTING_WEEK', 4))  # run_all.py --week N overrides; Week label for output (used when YARDAGE_ONLY)
 
 # Verify weights sum to 1.0
 assert abs((LAST5_WEIGHT + CBS_WEIGHT) - 1.0) < 0.01, "Weights must sum to 1.0"
@@ -33,13 +38,16 @@ TEAM_NAMES = {
 }
 
 # Read the files
-betting_info = pd.read_csv('data/betting_info.csv')
+if YARDAGE_ONLY:
+    betting_info = pd.DataFrame({'Bet': [], 'Source': [], 'Week': []})
+else:
+    betting_info = pd.read_csv('data/betting_info.csv')
 cbs_stats = pd.read_csv('data/cbs_yards.csv')  # Now has headers: Stat_Category, Team, Value, Source
 last5_stats = pd.read_csv('data/last5_yds.csv')  # Has headers: Stat_Category, Team, Value, Source
-roster = pd.read_csv('data/roster_latest.csv')
+roster = pd.DataFrame({'player': pd.Series([], dtype=str), 'team': pd.Series([], dtype=str)}) if YARDAGE_ONLY else pd.read_csv('data/roster_latest.csv')
 
 # Filter betting_info to only the latest week
-latest_week = betting_info['Week'].max()
+latest_week = WEEK if YARDAGE_ONLY else betting_info['Week'].max()
 betting_info = betting_info[betting_info['Week'] == latest_week]
 
 print("="*60)

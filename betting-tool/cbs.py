@@ -11,6 +11,20 @@ import random
 from datetime import datetime
 from pathlib import Path
 
+def installed_chrome_major():
+    """Major version of installed Chrome (Windows registry), or None to let uc guess.
+
+    uc's auto-detect can pick a newer driver than the installed browser,
+    which fails with SessionNotCreatedException.
+    """
+    try:
+        import winreg
+        with winreg.OpenKey(winreg.HKEY_CURRENT_USER, r"Software\Google\Chrome\BLBeacon") as key:
+            return int(winreg.QueryValueEx(key, "version")[0].split('.')[0])
+    except Exception:
+        return None
+
+
 class CBSSportsScraper:
     """Scraper for CBS Sports Fantasy Football Position vs Defense stats"""
     
@@ -35,7 +49,7 @@ class CBSSportsScraper:
         options.add_argument('--window-size=1920,1080')
         options.add_argument('--headless=new')
         
-        self.driver = uc.Chrome(options=options, version_main=None)
+        self.driver = uc.Chrome(options=options, version_main=installed_chrome_major())
         print("Browser initialized\n")
     
     def scrape_position_stats(self, position, stat_column_index):
