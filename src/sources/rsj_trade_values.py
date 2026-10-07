@@ -27,25 +27,8 @@ from dataclasses import dataclass
 import requests
 from bs4 import BeautifulSoup
 
-TAG_ARCHIVE_URL = "https://www.rotostreetjournal.com/tag/trade-value-chart/"
 USER_AGENT = "Mozilla/5.0 (compatible; in-season-tools/1.0)"
 POSITIONS = ["QB", "RB", "WR", "TE"]
-
-# Matches all 4 URL shapes: QB has no suffix, RB/WR use "chart-<slug>", TE
-# uses "charts-tight-ends" (plural, confirmed live -- an RSJ inconsistency,
-# not a bug here).
-_LINK_RE = re.compile(
-    r'href="(https://www\.rotostreetjournal\.com/\d{4}/\d{2}/\d{2}/'
-    r'\d{4}-fantasy-football-week-(\d+)-trade-value-charts?'
-    r'(-running-backs|-wide-receivers|-tight-ends)?/)"'
-)
-_SUFFIX_TO_POSITION = {
-    None: "QB",
-    "-running-backs": "RB",
-    "-wide-receivers": "WR",
-    "-tight-ends": "TE",
-}
-
 
 class RsjTradeValueFetchError(RuntimeError):
     pass
@@ -62,41 +45,67 @@ class TradeValueTableRow:
     value_col2: float | None
 
 
+# Cloudflare 403s every rotostreetjournal.com HTML page (tag archive and
+# articles alike) for non-browser clients as of 2026-10-07, but the WordPress
+# REST API stays open and returns the same rendered post HTML, TablePress
+# table included. So discovery AND the table fetch both go through it.
+API_URL = "https://www.rotostreetjournal.com/wp-json/wp/v2/posts"
+TAG_ID = 2998  # "trade-value-chart" tag
+_TITLE_RE = re.compile(
+    r"week\s+(\d+)\s+trade value charts?(?::\s*(quarterbacks?|running backs?|wide receivers?|tight ends?))?",
+    re.I,
+)
+_TITLE_POSITION = {"quarterback": "QB", "running back": "RB", "wide receiver": "WR", "tight end": "TE"}
+
+# url -> rendered post HTML, filled by discover_position_urls so the table
+# fetch doesn't need a second request.
+_content_cache: dict[str, str] = {}
+
+
 def discover_position_urls(
     week: int, session: requests.Session | None = None
 ) -> dict[str, str]:
-    """Finds this week's trade-value-chart URL for each position by
-    scanning RSJ's tag archive page. A position whose link isn't present
-    for `week` is simply absent from the result -- mirrors
-    boone_trade_values.py's "not yet available" handling."""
+    """Finds this week's trade-value-chart URL for each position from the
+    WordPress REST API, classifying each post by its title ("... Week 5
+    Trade Value Chart: Running Backs"; the QB post has no position suffix)
+    because URL slugs are inconsistent (this week's RB slug omits the week
+    number). A position with no post for `week` is simply absent --
+    mirrors boone_trade_values.py's "not yet available" handling."""
     sess = session or requests.Session()
     try:
-        response = sess.get(TAG_ARCHIVE_URL, headers={"User-Agent": USER_AGENT}, timeout=30)
+        response = sess.get(
+            API_URL,
+            params={"tags": TAG_ID, "per_page": 30, "_fields": "link,title,content"},
+            headers={"User-Agent": USER_AGENT},
+            timeout=30,
+        )
         response.raise_for_status()
-        html = response.text
-    except requests.RequestException as exc:
-        raise RsjTradeValueFetchError(f"Failed to fetch {TAG_ARCHIVE_URL}: {exc}") from exc
+        posts = response.json()
+    except (requests.RequestException, ValueError) as exc:
+        raise RsjTradeValueFetchError(f"Failed to fetch {API_URL}: {exc}") from exc
 
     urls: dict[str, str] = {}
-    for match in _LINK_RE.finditer(html):
-        url, url_week, suffix = match.group(1), match.group(2), match.group(3)
-        if int(url_week) != week:
+    for post in posts:
+        match = _TITLE_RE.search(post["title"]["rendered"])
+        if match is None or int(match.group(1)) != week:
             continue
-        position = _SUFFIX_TO_POSITION[suffix]
-        urls[position] = url
+        slug = (match.group(2) or "quarterback").lower().rstrip("s")
+        position = _TITLE_POSITION.get(slug)
+        if position is None:
+            continue
+        urls[position] = post["link"]
+        _content_cache[post["link"]] = post["content"]["rendered"]
     return urls
 
 
 def fetch_position_trade_values(
     position: str, url: str, session: requests.Session | None = None
 ) -> list[TradeValueTableRow]:
-    sess = session or requests.Session()
-    try:
-        response = sess.get(url, headers={"User-Agent": USER_AGENT}, timeout=30)
-        response.raise_for_status()
-        html = response.text
-    except requests.RequestException as exc:
-        raise RsjTradeValueFetchError(f"Failed to fetch {url}: {exc}") from exc
+    html = _content_cache.get(url)
+    if html is None:
+        raise RsjTradeValueFetchError(
+            f"No cached post content for {url} -- call discover_position_urls first."
+        )
 
     soup = BeautifulSoup(html, "html.parser")
     table = soup.find("table", class_=lambda c: bool(c) and "tablepress" in c)
