@@ -7,7 +7,7 @@
 // per page, per the roadmap's "reuse shared comparison logic" principle.
 
 import { useEffect, useState } from 'react'
-import { supabase, type RosRankingRow, type TradeValueLatestRow } from './supabase'
+import { supabase, fetchAllRows, type RosRankingRow, type TradeValueLatestRow } from './supabase'
 import { blendRosValues, type BlendedRosRow, type RosSourceRow, type BooneRosRow } from './blend'
 import { dropStaleStragglers, onlyWeek } from './freshness'
 import { useCurrentWeek } from './useCurrentWeek'
@@ -60,8 +60,15 @@ export function useBlendedRos(scoring: Scoring): BlendedRosResult {
     setError(null)
 
     Promise.all([
-      supabase.from('in_season_ros_rankings_latest').select('*').eq('scoring', scoring),
-      supabase.from('in_season_trade_values_latest').select('*').eq('source', 'boone'),
+      // Paginated: Boone's "_latest" rows span every week (each player's own
+      // latest), so they exceed PostgREST's 1000-row cap -- a plain select
+      // truncated away the current week's rows and left Boone "pending".
+      fetchAllRows<RosRankingRow>((from, to) =>
+        supabase.from('in_season_ros_rankings_latest').select('*').eq('scoring', scoring).order('id').range(from, to),
+      ),
+      fetchAllRows<TradeValueLatestRow>((from, to) =>
+        supabase.from('in_season_trade_values_latest').select('*').eq('source', 'boone').order('id').range(from, to),
+      ),
     ]).then(([dsRes, booneRes]) => {
       if (cancelled) return
       if (dsRes.error) { setError(dsRes.error.message); setLoading(false); return }
