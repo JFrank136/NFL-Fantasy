@@ -219,6 +219,12 @@ explicitly **full-PPR/1QB only** per the article text — no half-PPR variant
 exists. URLs are unpredictable date-stamped paths
 (`/YYYY/MM/DD/YYYY-fantasy-football-week-N-trade-value-chart[-position]/`),
 discovered from RSJ's tag archive, `rotostreetjournal.com/tag/trade-value-chart/`.
+
+> **Update 2026-10-07:** Cloudflare now 403s all rotostreetjournal.com HTML
+> pages for scripts. Discovery and table fetch go through the WordPress REST
+> API instead (`/wp-json/wp/v2/posts?tags=2998`, tag id for
+> `trade-value-chart`); week/position come from the post *title*, since URL
+> slugs are inconsistent (the week-5 RB slug has no week number).
 **Slug quirk confirmed live**: the QB page has **no position suffix at
 all**; RB/WR use singular `-chart-running-backs` / `-chart-wide-receivers`;
 TE uses **plural** `-charts-tight-ends` (RSJ's own inconsistency, not a bug
@@ -229,6 +235,10 @@ prefix, not the full class) with an explicit `[Rank, Player Name, Team,
 Value]` header — rank comes straight from the source, no derivation needed.
 Single value column, stored under label `PPR`; `value_col2` is always
 `None`, label `N/A`.
+
+> **RETIRED 2026-10-07:** usatoday.com now requires a TollBit token for
+> automated access (402). Code archived in `legacy/usatoday/`; the description
+> below is historical.
 
 **USA Today** (`src/sources/usatoday_trade_values.py`) — one combined article
 per week covering QB/RB/WR/TE. The current week's URL is discovered from
