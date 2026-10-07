@@ -1,0 +1,10 @@
+{
+  "run_at": "2026-10-07T15:17:56+00:00",
+  "ok": false,
+  "positions": {
+    "QB": "failed: could not discover article URL: Failed to fetch https://www.usatoday.com/sports/fantasy/football/: 402 Client Error: Payment Required for url: https://www.usatoday.com/sports/fantasy/football/",
+    "RB": "failed: could not discover article URL: Failed to fetch https://www.usatoday.com/sports/fantasy/football/: 402 Client Error: Payment Required for url: https://www.usatoday.com/sports/fantasy/football/",
+    "WR": "failed: could not discover article URL: Failed to fetch https://www.usatoday.com/sports/fantasy/football/: 402 Client Error: Payment Required for url: https://www.usatoday.com/sports/fantasy/football/",
+    "TE": "failed: could not discover article URL: Failed to fetch https://www.usatoday.com/sports/fantasy/football/: 402 Client Error: Payment Required for url: https://www.usatoday.com/sports/fantasy/football/"
+  }
+}

@@ -72,23 +72,10 @@ and Jared wants the history preserved, not just the latest snapshot.
   `rsj_trade_values.py`) discovers the current week's URL(s) from a stable
   hub/archive page first, the same pattern Boone's module established — see
   `docs/DATA.md` for each hub URL and exact table shape.
-- **USA Today trade values** — one combined weekly article covering
-  QB/RB/WR/TE, discovered automatically from USA Today's fantasy-football hub
-  (`usatoday.com/sports/fantasy/football/`). The source module
-  (`src/sources/usatoday_trade_values.py`) finds the current week's
-  `fantasy-football-trade-value-chart-week-N` article, fetches the
-  server-rendered HTML, and parses all four position tables.
-
-  USA Today's column names differ slightly by position: QB uses its `1QB`
-  value for both stored scoring columns; RB uses `Half` + `PPR`; WR/TE use
-  `Half` + `Full`. The parser handles those mappings explicitly and fails
-  loudly if a requested table is missing, its expected headers change, or a
-  numeric value cannot be parsed.
-
-  `scripts/pull_usatoday_trade_values.py` follows the same combined-article
-  flow as CBS/FantasyPros and appends `source="usatoday"` rows to the shared
-  `trade_values_long.csv` / `in_season_trade_values` table. Confirmed live
-  2026-09-17 for Week 2: 36 QB, 75 RB, 90 WR, and 37 TE rows.
+- **USA Today trade values** — retired 2026-10-07: usatoday.com now requires a
+  TollBit token for automated access (402 "Access Restricted"). The code is
+  archived in `legacy/usatoday/` and no longer runs in the scheduled pull;
+  historical `source="usatoday"` rows remain in the data.
 
 ## Storage
 

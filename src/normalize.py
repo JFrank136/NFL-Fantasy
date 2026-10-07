@@ -10,9 +10,6 @@ from src.sources.fantasypros_trade_values import (
     TradeValueTableRow as FantasyProsTradeValueTableRow,
 )
 from src.sources.rsj_trade_values import TradeValueTableRow as RsjTradeValueTableRow
-from src.sources.usatoday_trade_values import (
-    TradeValueTableRow as UsaTodayTradeValueTableRow,
-)
 from src.sources.yahoo_weekly_consensus import ExpertWeeklyRow
 
 
@@ -114,23 +111,6 @@ def rsj_trade_values_to_rows(
             pulled_at=pulled_at, source_url=source_url, rank=r.rank,
             player_name=r.player_name, canonical_name=canonical_name_for(r.player_name),
             team=r.team,
-            value_col1_label=r.value_col1_label, value_col1=r.value_col1,
-            value_col2_label=r.value_col2_label, value_col2=r.value_col2,
-        )
-        for r in table_rows
-    ]
-
-
-def usatoday_trade_values_to_rows(
-    position: str, source_path: str, table_rows: list[UsaTodayTradeValueTableRow],
-    season: int, week: int, pulled_at: str,
-) -> list[TradeValueRow]:
-    return [
-        TradeValueRow(
-            season=season, week=week, source="usatoday", position=position,
-            pulled_at=pulled_at, source_url=source_path, rank=r.rank,
-            player_name=r.player_name, canonical_name=canonical_name_for(r.player_name),
-            team=None,
             value_col1_label=r.value_col1_label, value_col1=r.value_col1,
             value_col2_label=r.value_col2_label, value_col2=r.value_col2,
         )

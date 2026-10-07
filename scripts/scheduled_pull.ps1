@@ -122,7 +122,6 @@ function Get-StatusData($CurrentWeek) {
         "cbs"              = "CBS Trade Values"
         "fantasypros"      = "FantasyPros Trade Values"
         "rsj"              = "RSJ Trade Values"
-        "usatoday"         = "USA Today Trade Values"
     }
 
     # Trade-value sources are discovered from data\last_*_trade_values_status.json
@@ -490,14 +489,6 @@ try {
     $rsjTradeValuesExit = $LASTEXITCODE
     Log "pull_rsj_trade_values.py exit code: $rsjTradeValuesExit"
 
-    # Pulls USA Today's current-week trade-value chart. The source module
-    # discovers the article from USA Today's fantasy-football hub, parses all
-    # four position tables, and writes the usual status file picked up below.
-    Log "Running pull_usatoday_trade_values.py..."
-    & $PythonExe "scripts\pull_usatoday_trade_values.py" 2>&1 | ForEach-Object { Log $_ }
-    $usatodayTradeValuesExit = $LASTEXITCODE
-    Log "pull_usatoday_trade_values.py exit code: $usatodayTradeValuesExit"
-
     Log "Running pull_draftsharks_ros.py..."
     & $PythonExe "scripts\pull_draftsharks_ros.py" 2>&1 | ForEach-Object { Log $_ }
     $rosRankingsExit = $LASTEXITCODE
@@ -575,8 +566,7 @@ try {
     }
 
     $anyFailure = ($pullExit -ne 0) -or ($tradeValuesExit -ne 0) -or ($rosRankingsExit -ne 0) `
-        -or ($cbsTradeValuesExit -ne 0) -or ($fantasyProsTradeValuesExit -ne 0) -or ($rsjTradeValuesExit -ne 0) `
-        -or ($usatodayTradeValuesExit -ne 0)
+        -or ($cbsTradeValuesExit -ne 0) -or ($fantasyProsTradeValuesExit -ne 0) -or ($rsjTradeValuesExit -ne 0)
     if ($anyFailure) {
         Log "=== FINISHED WITH FAILURES -- see above / status JSON files ==="
         $failedParts = @()
@@ -585,7 +575,6 @@ try {
         if ($cbsTradeValuesExit -ne 0) { $failedParts += "pull_cbs_trade_values.py exited $cbsTradeValuesExit" }
         if ($fantasyProsTradeValuesExit -ne 0) { $failedParts += "pull_fantasypros_trade_values.py exited $fantasyProsTradeValuesExit" }
         if ($rsjTradeValuesExit -ne 0) { $failedParts += "pull_rsj_trade_values.py exited $rsjTradeValuesExit" }
-        if ($usatodayTradeValuesExit -ne 0) { $failedParts += "pull_usatoday_trade_values.py exited $usatodayTradeValuesExit" }
         if ($rosRankingsExit -ne 0) { $failedParts += "pull_draftsharks_ros.py exited $rosRankingsExit" }
         $summaryHtml = Build-StatusSummaryHtml -CurrentWeek $currentWeek
         $logTail = (Get-Content $LogFile -Tail 40 | Out-String) -replace '&', '&amp;' -replace '<', '&lt;' -replace '>', '&gt;'
@@ -614,5 +603,4 @@ if ($tradeValuesExit -ne 0) { exit $tradeValuesExit }
 if ($cbsTradeValuesExit -ne 0) { exit $cbsTradeValuesExit }
 if ($fantasyProsTradeValuesExit -ne 0) { exit $fantasyProsTradeValuesExit }
 if ($rsjTradeValuesExit -ne 0) { exit $rsjTradeValuesExit }
-if ($usatodayTradeValuesExit -ne 0) { exit $usatodayTradeValuesExit }
 exit $rosRankingsExit
