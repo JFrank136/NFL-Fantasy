@@ -1,7 +1,8 @@
 """Refresh the yards-allowed rankings in one go.
 
 Usage: python run_all.py --week 5
-Runs cbs.py, last5_yds.py, then process_betting_info.py (output: exports/betting_info.csv).
+Runs cbs.py, last5_yds.py, then process_betting_info.py (output: exports/betting_info.csv),
+then props_lines.py -> ds_projections.py -> prop_value.py (output: exports/prop_value.csv).
 """
 import argparse
 import os
@@ -17,8 +18,13 @@ if args.week:
     env['BETTING_WEEK'] = str(args.week)
 
 here = os.path.dirname(os.path.abspath(__file__))
-for script in ('cbs.py', 'last5_yds.py', 'process_betting_info.py'):
+# Prop-value steps are best-effort: they depend on Action Network having the slate posted.
+OPTIONAL = {'props_lines.py', 'ds_projections.py', 'prop_value.py'}
+for script in ('cbs.py', 'last5_yds.py', 'process_betting_info.py', 'props_lines.py', 'ds_projections.py', 'prop_value.py'):
     print(f"\n>>> {script}")
     if subprocess.run([sys.executable, script], cwd=here, env=env).returncode != 0:
+        if script in OPTIONAL:
+            print(f"{script} failed; skipping the rest of the prop-value steps.")
+            break
         sys.exit(f"{script} failed; stopping.")
 print("\nDone. Open exports/betting_info.csv")

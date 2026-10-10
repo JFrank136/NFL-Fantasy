@@ -50,6 +50,7 @@ class CBSSportsScraper:
         options.add_argument('--headless=new')
         
         self.driver = uc.Chrome(options=options, version_main=installed_chrome_major())
+        self.driver.set_page_load_timeout(45)
         print("Browser initialized\n")
     
     def scrape_position_stats(self, position, stat_column_index):
@@ -58,7 +59,21 @@ class CBSSportsScraper:
         print(f"Scraping {position}... ", end='', flush=True)
         
         try:
-            self.driver.get(url)
+            # Retry the page load: CBS occasionally hangs, which otherwise
+            # surfaces as a 120s driver read timeout and kills the position.
+            for attempt in range(3):
+                try:
+                    self.driver.get(url)
+                    break
+                except Exception as e:
+                    if attempt == 2:
+                        raise
+                    print(f"(load failed, retry {attempt + 1}) ", end='', flush=True)
+                    try:
+                        self.driver.execute_script("window.stop();")
+                    except Exception:
+                        pass
+                    time.sleep(3)
             time.sleep(random.uniform(4, 6))
             
             table = self.driver.find_element(By.CSS_SELECTOR, "table.data")
@@ -104,7 +119,7 @@ class CBSSportsScraper:
             return data
             
         except Exception as e:
-            print(f"âœ— Error: {e}")
+            print(f"✗ Error: {e}")
             return []
     
     def format_output_rows(self, position, stat_name, label_suffix, data):
@@ -142,7 +157,7 @@ class CBSSportsScraper:
                     print(f"  MOST: {data[0][0]} = {data[0][1]}")
                     print(f"  LEAST: {data[-1][0]} = {data[-1][1]}")
             else:
-                print(f"  âœ— Failed to get data")
+                print(f"  ✗ Failed to get data")
             
             # Random delay between requests
             time.sleep(random.uniform(2, 4))
@@ -167,7 +182,7 @@ class CBSSportsScraper:
             for row in all_rows[:10]:
                 print(f"  {row[0]}, {row[1]}, {row[2]}, {row[3]}")
         else:
-            print(f"\nâœ— No data collected")
+            print(f"\n✗ No data collected")
         
         self.close()
     
@@ -185,10 +200,10 @@ def main():
     try:
         scraper.scrape_all('data/cbs_yards.csv')
     except KeyboardInterrupt:
-        print("\n\nâœ— Interrupted by user")
+        print("\n\n✗ Interrupted by user")
         scraper.close()
     except Exception as e:
-        print(f"\nâœ— Error: {e}")
+        print(f"\n✗ Error: {e}")
         scraper.close()
 
 if __name__ == "__main__":
