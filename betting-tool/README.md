@@ -13,7 +13,7 @@ CBS_WEIGHT at the top of process_betting_info.py; --week only sets the week labe
 ## Prop value (projection vs. book lines)
 
 `run_all.py` also runs `props_lines.py` (Action Network pass/rush/rec yard lines across
-DK, FanDuel, BetMGM, Caesars, BetRivers -> `data/prop_lines.csv`), `ds_projections.py`
+DraftKings, FanDuel, BetMGM, Caesars, Fanatics, Hard Rock -> `data/prop_lines.csv`), `ds_projections.py`
 (Draft Sharks per-stat weekly projections via `researchDepth=projections` ->
 `data/ds_projections.csv`), and `prop_value.py` -> `exports/prop_value.csv`.
 

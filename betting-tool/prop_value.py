@@ -6,7 +6,8 @@ For every player/stat, find the best line a bettor could actually take:
   - Over : the LOWEST line among books whose over odds are >= MIN_ODDS (ties -> better odds)
   - Under: the HIGHEST line among books whose under odds are >= MIN_ODDS
 then measure how far the projection sits from it. Output: exports/prop_value.csv
-sorted by edge %. Config at the top.
+sorted by Raw_Gap (projection minus line, in the pick's direction; Edge_* is the
+calibrated version, Book_Spread is the gap between books' lines). Config at the top.
 """
 import re
 import unicodedata
@@ -21,11 +22,17 @@ STAT_COL = {'Pass Yds': 'pass_yds', 'Rush Yds': 'rush_yds', 'Rec Yds': 'rec_yds'
 TEAM_ALIAS = {'WAS': 'WSH', 'JAC': 'JAX', 'LA': 'LAR', 'ARZ': 'ARI', 'BLT': 'BAL', 'CLV': 'CLE', 'HST': 'HOU'}
 
 
+NICKNAMES = {'cam': 'cameron', 'josh': 'joshua', 'mike': 'michael', 'chris': 'christopher', 'matt': 'matthew',
+             'zach': 'zachary', 'nick': 'nicholas', 'tim': 'timothy', 'dj': 'dj', 'ken': 'kenneth', 'will': 'william'}
+
+
 def norm_name(s):
     s = unicodedata.normalize('NFKD', str(s)).encode('ascii', 'ignore').decode().lower()
     s = re.sub(r"[.'`-]", '', s)
     s = re.sub(r'\b(jr|sr|ii|iii|iv|v)\b', '', s)
-    return re.sub(r'\s+', ' ', s).strip()
+    s = re.sub(r'\s+', ' ', s).strip()
+    first, _, rest = s.partition(' ')
+    return f"{NICKNAMES.get(first, first)} {rest}".strip()
 
 
 def norm_team(t):
@@ -88,17 +95,21 @@ def main():
         if not cands:
             continue
         pct, edge, side, b = max(cands, key=lambda c: c[0])
+        # spread between books on the pick's side (over: lowest vs highest line posted)
+        side_lines = grp[grp['Side'] == side]
+        spread = side_lines['Line'].max() - side_lines['Line'].min()
+        raw_gap = (raw - b['Line']) if side == 'over' else (b['Line'] - raw)
         consensus = grp[grp['Side'] == 'over']['Line'].median()
         first = grp.iloc[0]
         rows.append({
             'Player': first['Player'], 'Pos': first['Pos'], 'Team': first['Team'], 'Opp': first['Opp'],
             'Stat': stat, 'Pick': f"{'O' if side == 'over' else 'U'} {b['Line']}",
             'Odds': int(b['Odds']), 'Book': b['Book'], 'DS_Proj': round(raw, 1), 'Fair_Line': round(projection, 1),
-            'Edge_Yds': round(edge, 1), 'Edge_Pct': round(pct, 1),
-            'Median_Line': consensus, 'Books': n_books, 'Week': int(first['Week']),
+            'Raw_Gap': round(raw_gap, 1), 'Edge_Yds': round(edge, 1), 'Edge_Pct': round(pct, 1),
+            'Median_Line': consensus, 'Book_Spread': spread, 'Books': n_books, 'Week': int(first['Week']),
         })
 
-    out = pd.DataFrame(rows).sort_values('Edge_Pct', ascending=False)
+    out = pd.DataFrame(rows).sort_values('Raw_Gap', ascending=False)
     import os
     os.makedirs('exports', exist_ok=True)
     out.to_csv('exports/prop_value.csv', index=False)
@@ -106,7 +117,7 @@ def main():
     if unmatched:
         print(f"  {len(unmatched)} prop players had no Draft Sharks projection (e.g. {sorted(unmatched)[:5]})")
     print("\nTop edges:")
-    print(out.head(12)[['Player', 'Team', 'Stat', 'Pick', 'Odds', 'Book', 'DS_Proj', 'Fair_Line', 'Edge_Yds', 'Edge_Pct']].to_string(index=False))
+    print(out.head(12)[['Player', 'Team', 'Stat', 'Pick', 'Odds', 'Book', 'DS_Proj', 'Fair_Line', 'Raw_Gap', 'Edge_Yds', 'Book_Spread']].to_string(index=False))
 
 
 if __name__ == "__main__":
