@@ -206,8 +206,19 @@ def main():
             continue
 
         snapshot_path = storage.raw_snapshot_path(RAW_DIR, source, args.season, week, scoring, pulled_at)
-        storage.write_raw_snapshot(snapshot_path, raw)
-        storage.append_processed(PROCESSED_PATH, rows)
+        try:
+            storage.write_raw_snapshot(snapshot_path, raw)
+            storage.append_processed(PROCESSED_PATH, rows)
+        except OSError as e:
+            # A file the pull can't write (e.g. a OneDrive-stuck CSV) used to crash
+            # before the status file was updated, leaving a stale "ok" from the
+            # last good run. Record it so the report shows the real state.
+            print(f"\n❌ Could not write output for {label}")
+            print(f"   Reason: {e}")
+            traceback.print_exc()
+            run_status[status_key] = f"failed: could not write output: {e}"
+            _write_status(run_status)
+            sys.exit(1)
         results[(week, source, scoring)] = rows
         run_status[status_key] = "ok"
         success_count += 1
