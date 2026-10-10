@@ -42,8 +42,9 @@ from src.sources.fantasypros_trade_values import (
 )
 
 BASE_DIR = Path(__file__).resolve().parent.parent
-RAW_DIR = BASE_DIR / "data" / "raw"
-PROCESSED_PATH = BASE_DIR / "data" / "processed" / "trade_values_long.csv"
+from src import paths
+RAW_DIR = paths.RAW_DIR
+PROCESSED_PATH = paths.PROCESSED_DIR / "trade_values_long.csv"
 STATUS_PATH = BASE_DIR / "data" / "last_fantasypros_trade_values_status.json"
 
 
@@ -124,7 +125,7 @@ def main():
         storage.append_trade_values_processed(PROCESSED_PATH, rows)
         run_status[position] = "ok"
         success_count += 1
-        print(f"   {len(rows)} rows -> {snapshot_path.relative_to(BASE_DIR)}")
+        print(f"   {len(rows)} rows -> {snapshot_path}")
 
     elapsed = datetime.now() - start
     mins, secs = elapsed.seconds // 60, elapsed.seconds % 60

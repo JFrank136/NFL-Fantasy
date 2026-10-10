@@ -11,6 +11,8 @@ $ErrorActionPreference = "Continue"
 
 $PythonExe = "C:\Program Files\Python311\python.exe"
 $InSeasonDir = Split-Path -Parent $PSScriptRoot
+# Big append-only outputs live outside OneDrive; src/paths.py is the single source of truth.
+$ProcessedDir = (& $PythonExe -c "import sys; sys.path.insert(0, r'$InSeasonDir'); from src.paths import PROCESSED_DIR; print(PROCESSED_DIR)").Trim()
 $VampireDir = Join-Path (Split-Path -Parent $InSeasonDir) "Vampire\matchup-tool"
 $LogDir = Join-Path $InSeasonDir "data\scheduled_run_logs"
 New-Item -ItemType Directory -Force -Path $LogDir | Out-Null
@@ -505,7 +507,7 @@ try {
     $statusPath = "data\last_run_status.json"
     if (Test-Path $statusPath) {
         $status = Get-Content $statusPath -Raw | ConvertFrom-Json
-        $csvPath = Join-Path $InSeasonDir "data\processed\rankings_long.csv"
+        $csvPath = Join-Path $ProcessedDir "rankings_long.csv"
 
         # Keep two rolling slots pushed to Vampire -- current week and next
         # week -- so a player's projection stays visible right up until that
@@ -551,7 +553,7 @@ try {
             Log "refresh-weekly-projections-all.js exit code: $LASTEXITCODE"
 
             if ($rosRankingsExit -eq 0) {
-                $rosCsvPath = Join-Path $InSeasonDir "data\processed\ros_rankings_long.csv"
+                $rosCsvPath = Join-Path $ProcessedDir "ros_rankings_long.csv"
                 Log "Refreshing Vampire vampire_ros_projections..."
                 & node "--env-file=.env" "scripts\refresh-ros-projections.js" $rosCsvPath "half-ppr" 2>&1 | ForEach-Object { Log $_ }
                 Log "refresh-ros-projections.js exit code: $LASTEXITCODE"

@@ -27,9 +27,10 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 import requests
 
 BASE_DIR = Path(__file__).resolve().parent.parent
-RANKINGS_CSV = BASE_DIR / "data" / "processed" / "rankings_long.csv"
-TRADE_VALUES_CSV = BASE_DIR / "data" / "processed" / "trade_values_long.csv"
-ROS_RANKINGS_CSV = BASE_DIR / "data" / "processed" / "ros_rankings_long.csv"
+from src import paths
+RANKINGS_CSV = paths.PROCESSED_DIR / "rankings_long.csv"
+TRADE_VALUES_CSV = paths.PROCESSED_DIR / "trade_values_long.csv"
+ROS_RANKINGS_CSV = paths.PROCESSED_DIR / "ros_rankings_long.csv"
 RUN_STATUS_PATH = BASE_DIR / "data" / "last_run_status.json"
 TRADE_STATUS_PATH = BASE_DIR / "data" / "last_trade_values_status.json"
 ROS_STATUS_PATH = BASE_DIR / "data" / "last_draftsharks_ros_status.json"

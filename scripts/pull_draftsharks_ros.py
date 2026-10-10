@@ -32,8 +32,9 @@ from src import normalize, season_config, storage, validate
 from src.sources.draftsharks_ros import DraftSharksRosFetchError, fetch_draftsharks_ros
 
 BASE_DIR = Path(__file__).resolve().parent.parent
-RAW_DIR = BASE_DIR / "data" / "raw"
-PROCESSED_PATH = BASE_DIR / "data" / "processed" / "ros_rankings_long.csv"
+from src import paths
+RAW_DIR = paths.RAW_DIR
+PROCESSED_PATH = paths.PROCESSED_DIR / "ros_rankings_long.csv"
 STATUS_PATH = BASE_DIR / "data" / "last_draftsharks_ros_status.json"
 
 
@@ -97,7 +98,7 @@ def main():
         storage.append_ros_rankings_processed(PROCESSED_PATH, rows)
         run_status[status_key] = "ok"
         success_count += 1
-        print(f"   {len(rows)} rows -> {snapshot_path.relative_to(BASE_DIR)}")
+        print(f"   {len(rows)} rows -> {snapshot_path}")
 
     elapsed = datetime.now() - start
     mins, secs = elapsed.seconds // 60, elapsed.seconds % 60

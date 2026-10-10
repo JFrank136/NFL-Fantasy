@@ -18,8 +18,9 @@ from src.player_identity import canonical_name_for
 from src.schema import LONG_FORMAT_COLUMNS, TRADE_VALUE_COLUMNS
 
 BASE_DIR = Path(__file__).resolve().parent.parent
-RANKINGS_CSV = BASE_DIR / "data" / "processed" / "rankings_long.csv"
-TRADE_VALUES_CSV = BASE_DIR / "data" / "processed" / "trade_values_long.csv"
+from src import paths
+RANKINGS_CSV = paths.PROCESSED_DIR / "rankings_long.csv"
+TRADE_VALUES_CSV = paths.PROCESSED_DIR / "trade_values_long.csv"
 
 
 def migrate(path: Path, columns: list[str]) -> None:
