@@ -22,3 +22,12 @@ are means and lines are ~medians, so `prop_value.py` calibrates each stat with a
 of line on projection; `Fair_Line` is what the market "should" be for that projection and
 `Edge_Yds/Edge_Pct` measure the distance from the best available line. Config (`MIN_ODDS`,
 `MIN_BOOKS`, `MIN_LINE`) is at the top of `prop_value.py`.
+
+
+## Snapshots and grading
+
+`snapshot.py` (last step of `run_all.py`) saves an immutable copy of `prop_lines.csv`, `ds_projections.csv` and
+`prop_value.csv` to `snapshots/<capture time>/` (skipped if unchanged). `python grade.py` grades the latest
+pre-kickoff pick per week/player/stat against nflverse (`nflreadpy`) and writes `grades/graded_picks.csv` and
+`grades/report.csv`. Results: win/loss/push/void/pending/unverified. Snap counts decide DNP (void) vs played-with-no-stats (graded on 0); a missing player is never silently a loss. `python snapshot.py --import-picks FILE` loads a past export (kickoff from the nflverse schedule, pregame assumed).
+Units are hypothetical flat 1u at listed odds. Tests: `python -m pytest tests`. Needs `pip install nflreadpy`.

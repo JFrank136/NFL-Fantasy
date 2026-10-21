@@ -57,7 +57,8 @@ def parse(resp):
                     team = teams.get(player['team_id'])
                     opp = game['away_team']['abbr'] if team == game['home_team']['abbr'] else game['home_team']['abbr']
                     rows.append([game['week'], player['full_name'], player['position'], team, opp, stat,
-                                 BOOKS[int(book_id)], ln['side'], ln['value'], ln['odds'], game['start_time']])
+                                 BOOKS[int(book_id)], ln['side'], ln['value'], ln['odds'], game['start_time'],
+                                 ln['event_id'], ln['player_id']])
     return rows
 
 
@@ -69,7 +70,7 @@ def main():
     Path(OUT_FILE).parent.mkdir(parents=True, exist_ok=True)
     with open(OUT_FILE, 'w', newline='', encoding='utf-8') as f:
         w = csv.writer(f)
-        w.writerow(['Week', 'Player', 'Pos', 'Team', 'Opp', 'Stat', 'Book', 'Side', 'Line', 'Odds', 'Start'])
+        w.writerow(['Week', 'Player', 'Pos', 'Team', 'Opp', 'Stat', 'Book', 'Side', 'Line', 'Odds', 'Start', 'GameId', 'PlayerId'])
         w.writerows(all_rows)
     books = sorted({r[6] for r in all_rows})
     print(f"{len(all_rows)} lines from {', '.join(books)} -> {OUT_FILE}")
