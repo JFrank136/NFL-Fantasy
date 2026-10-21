@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Action Network player prop lines (pass/rush/receiving yards) across sportsbooks.
+Action Network player prop lines (pass/rush/receiving yards, receptions) across sportsbooks.
 
 Uses the same JSON endpoint the site's props tables call (/web/v2/scoreboard/nfl/markets),
 so plain requests work -- no browser needed. The bookIds param picks the sportsbooks. Output: data/prop_lines.csv, one row per
@@ -19,6 +19,7 @@ MARKETS = {
     'core_bet_type_9_passing_yards': 'Pass Yds',
     'core_bet_type_12_rushing_yards': 'Rush Yds',
     'core_bet_type_16_receiving_yards': 'Rec Yds',
+    'core_bet_type_15_receptions': 'Receptions',
 }
 API = "https://api.actionnetwork.com/web/v2/scoreboard/nfl/markets"
 OUT_FILE = 'data/prop_lines.csv'
@@ -63,7 +64,7 @@ def parse(resp):
 
 
 def main():
-    print("Fetching Pass/Rush/Rec Yds lines... ", end='', flush=True)
+    print("Fetching Pass/Rush/Rec Yds and Receptions lines... ", end='', flush=True)
     all_rows = parse(fetch_markets())
     if not all_rows:
         raise SystemExit("No prop lines found (slate may not be posted yet).")

@@ -6,7 +6,7 @@ For every player/stat, find the best line a bettor could actually take:
   - Over : the LOWEST line among books whose over odds are >= MIN_ODDS (ties -> better odds)
   - Under: the HIGHEST line among books whose under odds are >= MIN_ODDS
 then measure how far the projection sits from it. Output: exports/prop_value.csv
-sorted by Raw_Gap (projection minus line, in the pick's direction; Edge_* is the
+sorted by Raw_Gap as a % of the line (Raw_Gap = projection minus line, in the pick's direction; Edge_* is the
 calibrated version, Book_Spread is the gap between books' lines). Config at the top.
 """
 import re
@@ -17,8 +17,8 @@ import pandas as pd
 
 MIN_ODDS = -130        # ignore juice worse than this (e.g. -145)
 MIN_BOOKS = 2          # need at least this many books posting the player/stat
-MIN_LINE = {'Pass Yds': 100, 'Rush Yds': 25, 'Rec Yds': 25}  # skip tiny lines (noisy % edges)
-STAT_COL = {'Pass Yds': 'pass_yds', 'Rush Yds': 'rush_yds', 'Rec Yds': 'rec_yds'}
+MIN_LINE = {'Pass Yds': 100, 'Rush Yds': 25, 'Rec Yds': 25, 'Receptions': 2.5}  # skip tiny lines (noisy % edges)
+STAT_COL = {'Pass Yds': 'pass_yds', 'Rush Yds': 'rush_yds', 'Rec Yds': 'rec_yds', 'Receptions': 'rec_catch'}
 TEAM_ALIAS = {'WAS': 'WSH', 'JAC': 'JAX', 'LA': 'LAR', 'ARZ': 'ARI', 'BLT': 'BAL', 'CLV': 'CLE', 'HST': 'HOU'}
 
 
@@ -109,7 +109,10 @@ def main():
             'Median_Line': consensus, 'Book_Spread': spread, 'Books': n_books, 'Week': int(first['Week']),
         })
 
-    out = pd.DataFrame(rows).sort_values('Raw_Gap', ascending=False)
+    out = pd.DataFrame(rows)
+    # Rank by raw gap as a share of the line so counts (receptions) sit alongside yardage props
+    line = out['Pick'].str.split().str[1].astype(float)
+    out = out.assign(_rank=out['Raw_Gap'] / line).sort_values('_rank', ascending=False).drop(columns='_rank')
     import os
     os.makedirs('exports', exist_ok=True)
     out.to_csv('exports/prop_value.csv', index=False)

@@ -29,7 +29,7 @@ HERE = Path(__file__).resolve().parent
 SNAP_DIR = HERE / 'snapshots'
 OUT_DIR = HERE / 'grades'
 PENDING_HOURS = 5
-ACTUAL_COL = {'Pass Yds': 'passing_yards', 'Rush Yds': 'rushing_yards', 'Rec Yds': 'receiving_yards'}
+ACTUAL_COL = {'Pass Yds': 'passing_yards', 'Rush Yds': 'rushing_yards', 'Rec Yds': 'receiving_yards', 'Receptions': 'receptions'}
 
 
 def settle(direction, line, actual):

@@ -45,6 +45,13 @@ def take(root=HERE, snap_dir=SNAP_DIR):
             return None
     captured = datetime.fromtimestamp((root / FILES[0]).stat().st_mtime, tz=timezone.utc)
     dest = snap_dir / captured.strftime('%Y%m%dT%H%M%SZ')
+    if dest.exists():
+        # Same quotes (same capture time) re-run through prop_value.py: nothing new to preserve
+        # if the inputs match; otherwise refuse rather than overwrite an immutable snapshot.
+        same = all((dest / Path(f).name).read_bytes() == (root / f).read_bytes() for f in FILES[:2])
+        if same:
+            return None
+        raise SystemExit(f"{dest.name} already exists with different quotes; refusing to overwrite.")
     dest.mkdir()
     for f in FILES:
         shutil.copy2(root / f, dest / Path(f).name)
