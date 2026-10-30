@@ -1,0 +1,10 @@
+Sample,Model,Set,N,W,L,Hit%,CI95,BE%,Units,ROI%
+in-sample,original,all picks,394,208,186,52.8,48-58,51.6,7.4,1.9
+in-sample,original,top 20/week,40,17,23,42.5,29-58,53.6,-8.1,-20.2
+in-sample,market_only,EV >= 1.5%,15,10,5,66.7,42-85,48.6,5.3,35.4
+in-sample,market_only,all picks,394,215,179,54.6,50-59,51.5,21.8,5.5
+in-sample,market_only,top 20/week,40,26,14,65.0,50-78,50.7,11.8,29.5
+in-sample,v1,Lean only,51,36,15,70.6,57-81,52.7,17.3,33.9
+in-sample,v1,Lean+Watch,148,93,55,62.8,55-70,52.0,30.6,20.7
+in-sample,v1,all picks,394,214,180,54.3,49-59,51.6,19.2,4.9
+in-sample,v1,top 20/week,38,26,12,68.4,53-81,51.3,12.4,32.7

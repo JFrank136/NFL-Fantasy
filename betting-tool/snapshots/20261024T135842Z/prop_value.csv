@@ -1,0 +1,242 @@
+Player,Pos,Team,Opp,Stat,Pick,Odds,Book,DS_Proj,Fair_Line,Raw_Gap,Edge_Yds,Edge_Pct,Median_Line,Book_Spread,Books,Week
+Omar Cooper,WR,NYJ,MIA,Rec Yds,O 25.5,-125,Fanatics,42.4,40.5,16.9,15.0,58.7,27.5,2.0,4,7
+Tyler Allgeier,RB,ARI,DEN,Rush Yds,O 29.5,-108,DraftKings,43.9,40.9,14.4,11.4,38.7,30.5,1.0,6,7
+Adonai Mitchell,WR,NYJ,MIA,Rec Yds,O 25.5,-111,DraftKings,35.3,33.4,9.8,7.9,30.8,26.5,1.0,6,7
+Jahan Dotson,WR,ATL,SF,Rec Yds,O 25.5,-125,Fanatics,35.0,33.1,9.5,7.6,29.7,28.0,4.0,6,7
+Chase Brown,RB,CIN,BAL,Rush Yds,O 39.5,-115,Hard Rock,53.7,50.4,14.2,10.9,27.5,40.5,2.0,6,7
+Jaylin Noel,WR,HOU,NYG,Rec Yds,O 26.5,-115,BetMGM,36.0,34.1,9.5,7.6,28.5,27.5,2.0,5,7
+Aaron Jones,RB,MIN,IND,Rush Yds,O 38.5,-114,FanDuel,51.0,47.8,12.5,9.3,24.1,39.0,7.0,6,7
+Malik Washington,WR,MIA,NYJ,Rec Yds,O 38.5,-115,BetMGM,49.3,47.4,10.8,8.9,23.0,40.5,2.0,6,7
+Omar Cooper,WR,NYJ,MIA,Receptions,O 2.5,100,Fanatics,3.2,3.2,0.7,0.7,29.4,2.5,0.0,3,7
+Kendrick Bourne,WR,ARI,DEN,Rec Yds,O 32.5,-120,BetMGM,41.4,39.5,8.9,7.0,21.4,35.5,4.0,6,7
+Courtland Sutton,WR,DEN,ARI,Rec Yds,O 33.5,-111,DraftKings,42.3,40.4,8.8,6.9,20.5,33.5,5.0,6,7
+Tez Johnson,WR,TB,CAR,Rec Yds,O 27.5,-115,Hard Rock,34.2,32.3,6.7,4.8,17.3,28.5,1.0,5,7
+Christian Kirk,WR,SF,ATL,Receptions,U 2.5,-130,FanDuel,1.9,1.9,0.6,0.6,25.4,2.5,0.0,4,7
+Aaron Jones,RB,MIN,IND,Receptions,U 2.5,-110,BetMGM,1.9,1.9,0.6,0.6,25.4,2.5,0.0,5,7
+Chase Brown,RB,CIN,BAL,Receptions,O 3.5,-102,DraftKings,4.3,4.4,0.8,0.9,25.5,3.5,0.0,5,7
+Cam Skattebo,RB,NYG,HOU,Rush Yds,U 29.5,-120,Hard Rock,22.9,20.7,6.6,8.8,29.9,28.5,2.0,5,7
+Juwan Johnson,TE,NO,PIT,Rec Yds,O 32.5,-113,FanDuel,39.7,37.8,7.2,5.3,16.2,32.5,3.0,6,7
+Kendre Miller,RB,NO,PIT,Rush Yds,O 34.5,-120,Hard Rock,41.8,38.9,7.3,4.4,12.7,37.5,4.0,6,7
+Quinshon Judkins,RB,CLE,TEN,Rush Yds,O 46.5,-113,DraftKings,56.3,52.9,9.8,6.4,13.7,46.5,0.0,4,7
+Jordan Addison,WR,MIN,IND,Rec Yds,O 37.5,-115,Hard Rock,45.3,43.4,7.8,5.9,15.6,38.5,4.0,6,7
+Savion Williams,WR,GB,DET,Receptions,O 2.5,117,DraftKings,3.0,3.0,0.5,0.5,21.0,2.5,0.0,4,7
+Ryan Flournoy,WR,DAL,PHI,Rec Yds,O 32.5,-115,DraftKings,39.0,37.1,6.5,4.6,14.0,33.0,3.0,6,7
+Ashton Jeanty,RB,LV,LA,Rec Yds,O 25.5,-108,DraftKings,30.5,28.6,5.0,3.1,12.0,25.5,2.0,5,7
+Samaje Perine,RB,CIN,BAL,Rush Yds,U 27.5,-112,Caesars,22.3,20.1,5.2,7.4,26.9,26.5,2.0,5,7
+Puka Nacua,WR,LA,LV,Receptions,U 8.5,-120,DraftKings,6.9,7.1,1.6,1.4,16.1,8.5,0.0,2,7
+Tre Tucker,WR,LV,LA,Rec Yds,O 38.5,-115,BetMGM,45.7,43.8,7.2,5.3,13.7,40.5,3.0,6,7
+Malik Willis,QB,MIA,NYJ,Rush Yds,O 29.5,-115,BetMGM,34.8,32.2,5.3,2.7,9.0,30.5,1.0,6,7
+Kyle Pitts,TE,ATL,SF,Rec Yds,O 33.5,-120,BetMGM,39.5,37.6,6.0,4.1,12.1,34.5,4.0,6,7
+Christian McCaffrey,RB,SF,ATL,Rec Yds,U 46.5,-115,BetMGM,38.4,36.5,8.1,10.0,21.6,45.0,2.0,6,7
+Ashton Jeanty,RB,LV,LA,Receptions,O 3.5,-120,BetMGM,4.1,4.2,0.6,0.7,19.5,3.5,0.0,4,7
+Brandin Cooks,WR,SF,ATL,Receptions,O 2.5,150,Fanatics,2.9,2.9,0.4,0.4,16.8,2.5,0.0,4,7
+Jalen Royals,WR,KC,SEA,Receptions,O 2.5,141,DraftKings,2.9,2.9,0.4,0.4,16.8,2.5,0.0,4,7
+Devaughn Vele,WR,NO,PIT,Rec Yds,O 41.5,-111,BetMGM,48.0,46.1,6.5,4.6,11.0,43.5,3.0,6,7
+Christian Watson,WR,GB,DET,Receptions,O 4.5,-117,DraftKings,5.2,5.3,0.7,0.8,18.7,4.5,0.0,4,7
+Garrett Wilson,WR,NYJ,MIA,Rec Yds,O 60.5,-120,Fanatics,69.9,68.0,9.4,7.5,12.3,62.5,4.0,6,7
+DeVonta Smith,WR,PHI,DAL,Receptions,U 6.5,-129,DraftKings,5.5,5.7,1.0,0.8,13.0,6.5,0.0,2,7
+Nico Collins,WR,HOU,NYG,Rec Yds,O 65.5,-120,Fanatics,75.2,73.3,9.7,7.8,11.9,68.0,4.0,6,7
+Christian Kirk,WR,SF,ATL,Rec Yds,U 28.5,-120,Hard Rock,24.4,22.5,4.1,6.0,21.2,27.5,3.0,5,7
+Kendrick Bourne,WR,ARI,DEN,Receptions,O 3.5,110,BetMGM,4.0,4.1,0.5,0.6,16.5,3.5,0.0,5,7
+Brock Bowers,TE,LV,LA,Rec Yds,O 69.5,-113,DraftKings,79.4,77.5,9.9,8.0,11.5,70.5,3.0,6,7
+Jordan Mason,RB,MIN,IND,Rush Yds,O 47.5,-115,BetMGM,54.2,50.8,6.7,3.3,7.1,49.5,3.0,6,7
+Rico Dowdle,RB,PIT,NO,Rush Yds,O 28.5,-115,Hard Rock,32.5,29.9,4.0,1.4,5.0,29.5,2.0,6,7
+Pat Freiermuth,TE,PIT,NO,Rec Yds,O 30.5,-113,FanDuel,34.7,32.8,4.2,2.3,7.4,31.5,2.0,5,7
+Tanner McKee,QB,PHI,DAL,Pass Yds,O 205.5,-110,Fanatics,232.8,230.2,27.3,24.7,12.0,205.5,1.0,6,7
+Blake Corum,RB,LA,LV,Rush Yds,O 36.5,-113,DraftKings,41.2,38.3,4.7,1.8,5.0,37.5,3.0,6,7
+Jake Ferguson,TE,DAL,PHI,Receptions,O 2.5,100,DraftKings,2.8,2.8,0.3,0.3,12.6,2.5,0.0,5,7
+Colby Parkinson,TE,LA,LV,Receptions,O 2.5,-120,Fanatics,2.8,2.8,0.3,0.3,12.6,2.5,0.0,2,7
+Josh Jacobs,RB,GB,DET,Rush Yds,U 52.5,-118,BetMGM,46.4,43.3,6.1,9.2,17.5,51.0,3.0,6,7
+Keenan Allen,WR,IND,MIN,Rec Yds,O 40.5,-114,FanDuel,45.2,43.3,4.7,2.8,6.8,41.5,3.0,6,7
+Marvin Harrison,WR,HOU,NYG,Rec Yds,O 29.5,-110,DraftKings,32.9,31.0,3.4,1.5,5.0,29.5,4.0,5,7
+Tucker Kraft,TE,GB,DET,Rec Yds,U 50.5,-109,DraftKings,44.7,42.8,5.8,7.7,15.3,50.5,1.0,6,7
+Malik Nabers,WR,NYG,HOU,Rec Yds,O 65.5,-125,Fanatics,73.0,71.1,7.5,5.6,8.5,68.5,5.0,6,7
+Juwan Johnson,TE,NO,PIT,Receptions,O 3.5,-115,Fanatics,3.9,4.0,0.4,0.5,13.5,3.5,0.0,5,7
+Jalen Coker,WR,CAR,TB,Rec Yds,O 64.5,-115,BetMGM,71.7,69.8,7.2,5.3,8.2,66.5,4.0,6,7
+J.K. Dobbins,RB,DEN,ARI,Rush Yds,O 47.5,-107,Caesars,52.8,49.5,5.3,2.0,4.2,47.5,4.0,6,7
+Michael Wilson,WR,ARI,DEN,Receptions,O 4.5,104,FanDuel,5.0,5.1,0.5,0.6,14.0,4.5,0.0,5,7
+Josh Downs,WR,IND,MIN,Receptions,U 4.5,-111,Caesars,4.0,4.1,0.5,0.4,9.4,4.5,0.0,5,7
+Cade Otton,TE,TB,CAR,Rec Yds,U 40.5,-114,FanDuel,36.0,34.1,4.5,6.4,15.9,40.5,1.0,6,7
+Drake London,WR,ATL,SF,Receptions,O 5.5,-129,DraftKings,6.1,6.3,0.6,0.8,14.4,5.5,1.0,5,7
+Woody Marks,RB,HOU,NYG,Rush Yds,O 62.5,-110,BetMGM,69.1,65.2,6.6,2.7,4.3,63.5,1.0,5,7
+Jaylen Warren,RB,PIT,NO,Rush Yds,O 63.5,-115,BetMGM,70.1,66.2,6.6,2.7,4.2,65.0,2.0,6,7
+Harold Fannin,TE,CLE,TEN,Rec Yds,O 28.5,-114,FanDuel,31.4,29.5,2.9,1.0,3.4,28.5,1.0,4,7
+Ollie Gordon,RB,MIA,NYJ,Rush Yds,O 53.5,-115,DraftKings,58.8,55.3,5.3,1.8,3.3,53.5,4.0,6,7
+Daniel Jones,QB,IND,MIN,Pass Yds,O 185.5,-115,Fanatics,203.5,201.4,18.0,15.9,8.6,188.0,4.0,6,7
+Sam LaPorta,TE,DET,GB,Rec Yds,O 49.5,-111,Caesars,54.3,52.4,4.8,2.9,5.8,49.5,1.0,6,7
+Aaron Rodgers,QB,PIT,NO,Pass Yds,O 229.5,-113,FanDuel,251.7,248.7,22.2,19.2,8.4,231.5,7.0,6,7
+Chris Olave,WR,NO,PIT,Rec Yds,O 74.5,-115,BetMGM,81.7,79.8,7.2,5.3,7.1,75.5,1.0,6,7
+Puka Nacua,WR,LA,LV,Rec Yds,U 96.5,-114,DraftKings,87.6,85.7,8.9,10.8,11.2,96.0,1.0,2,7
+Bijan Robinson,RB,ATL,SF,Rec Yds,U 30.5,-125,Fanatics,27.7,25.8,2.8,4.7,15.5,29.5,2.0,6,7
+J.J. McCarthy,QB,NYG,HOU,Pass Yds,O 200.5,-120,Fanatics,218.5,216.1,18.0,15.6,7.8,202.5,4.0,6,7
+Ted Hurst,WR,TB,CAR,Rec Yds,U 39.5,-115,BetMGM,36.0,34.1,3.5,5.4,13.8,36.5,4.0,6,7
+DK Metcalf,WR,PIT,NO,Rec Yds,U 58.5,-112,Caesars,53.4,51.5,5.1,7.0,12.0,58.0,3.0,6,7
+Jahmyr Gibbs,RB,DET,GB,Rec Yds,U 40.5,-114,DraftKings,37.0,35.1,3.5,5.4,13.4,40.0,1.0,6,7
+Kyle Pitts,TE,ATL,SF,Receptions,O 3.5,106,FanDuel,3.8,3.9,0.3,0.4,10.5,3.5,0.0,5,7
+DeVonta Smith,WR,PHI,DAL,Rec Yds,O 65.5,-125,Fanatics,71.1,69.2,5.6,3.7,5.6,66.5,2.0,2,7
+Trey McBride,TE,ARI,DEN,Rec Yds,U 65.5,-120,BetMGM,59.9,58.0,5.6,7.5,11.5,63.0,5.0,6,7
+KC Concepcion,WR,CLE,TEN,Rec Yds,U 42.5,-118,BetMGM,38.9,37.0,3.6,5.5,13.0,38.5,7.0,6,7
+Travis Kelce,TE,KC,SEA,Rec Yds,U 46.5,-111,DraftKings,42.6,40.7,3.9,5.8,12.5,46.5,1.0,6,7
+Tommy Tremble,TE,CAR,TB,Receptions,O 2.5,151,Caesars,2.7,2.7,0.2,0.2,8.4,1.5,1.0,5,7
+Greg Dulcich,TE,MIA,NYJ,Receptions,O 2.5,130,Fanatics,2.7,2.7,0.2,0.2,8.4,2.5,0.0,5,7
+Marvin Harrison,WR,HOU,NYG,Receptions,U 2.5,-108,DraftKings,2.3,2.3,0.2,0.2,8.5,2.5,0.0,4,7
+Darren Waller,TE,CAR,TB,Receptions,O 2.5,126,DraftKings,2.7,2.7,0.2,0.2,8.4,2.5,0.0,5,7
+Evan Engram,TE,DEN,ARI,Receptions,O 2.5,-114,FanDuel,2.7,2.7,0.2,0.2,8.4,2.5,0.0,5,7
+Quinshon Judkins,RB,CLE,TEN,Receptions,O 2.5,127,Caesars,2.7,2.7,0.2,0.2,8.4,2.5,0.0,3,7
+Tetairoa McMillan,WR,CAR,TB,Rec Yds,O 69.5,-114,FanDuel,74.8,72.9,5.3,3.4,4.8,70.5,2.0,5,7
+Jaxon Smith-Njigba,WR,SEA,KC,Rec Yds,O 91.5,-115,BetMGM,98.4,96.5,6.9,5.0,5.4,92.5,3.0,6,7
+Jaylen Waddle,WR,DEN,ARI,Rec Yds,U 53.5,-115,BetMGM,49.5,47.6,4.0,5.9,11.1,51.5,3.0,6,7
+Ashton Jeanty,RB,LV,LA,Rush Yds,U 54.5,-110,DraftKings,50.5,47.3,4.0,7.2,13.2,54.5,2.0,5,7
+Josh Downs,WR,IND,MIN,Rec Yds,U 50.5,-115,Hard Rock,46.8,44.9,3.7,5.6,11.2,49.5,3.0,6,7
+Isaiah Likely,TE,NYG,HOU,Receptions,U 5.5,-111,Caesars,5.1,5.2,0.4,0.3,4.8,5.5,0.0,5,7
+Michael Wilson,WR,ARI,DEN,Rec Yds,O 48.5,-114,FanDuel,52.0,50.1,3.5,1.6,3.2,49.5,2.0,6,7
+Geno Smith,QB,NYJ,MIA,Pass Yds,O 218.5,-113,DraftKings,234.2,231.6,15.7,13.1,6.0,221.0,5.0,6,7
+Carnell Tate,WR,TEN,CLE,Rec Yds,O 51.5,-115,BetMGM,55.2,53.3,3.7,1.8,3.4,52.5,1.0,5,7
+Dallas Goedert,TE,PHI,DAL,Rec Yds,O 39.5,-115,DraftKings,42.3,40.4,2.8,0.9,2.2,40.0,1.0,2,7
+Chris Godwin,WR,TB,CAR,Receptions,O 4.5,-106,FanDuel,4.8,4.9,0.3,0.4,9.4,4.5,0.0,5,7
+KC Concepcion,WR,CLE,TEN,Receptions,U 4.5,-110,Fanatics,4.2,4.3,0.3,0.2,4.7,4.5,0.0,5,7
+DK Metcalf,WR,PIT,NO,Receptions,O 4.5,-120,BetMGM,4.8,4.9,0.3,0.4,9.4,4.5,0.0,5,7
+Kaelon Black,RB,SF,ATL,Rush Yds,U 29.5,-116,DraftKings,27.6,25.2,1.9,4.3,14.5,28.5,1.0,5,7
+Jacoby Brissett,QB,ARI,DEN,Pass Yds,U 227.5,-112,DraftKings,212.9,210.6,14.6,16.9,7.4,225.5,7.0,6,7
+Sam Darnold,QB,SEA,KC,Pass Yds,U 227.5,-115,BetMGM,213.2,210.9,14.3,16.6,7.3,224.0,7.0,6,7
+Brock Purdy,QB,SF,ATL,Pass Yds,O 240.5,-110,Fanatics,254.4,251.4,13.9,10.9,4.5,241.5,6.0,6,7
+Mike Washington,RB,LV,LA,Rush Yds,U 25.5,-114,DraftKings,24.1,21.8,1.4,3.7,14.4,24.5,2.0,5,7
+Christian McCaffrey,RB,SF,ATL,Receptions,U 5.5,-115,BetMGM,5.2,5.3,0.3,0.2,2.9,5.5,0.0,5,7
+Bryce Young,QB,CAR,TB,Pass Yds,O 250.5,-120,Fanatics,264.0,260.8,13.5,10.3,4.1,253.5,7.0,6,7
+Amon-Ra St. Brown,WR,DET,GB,Receptions,U 7.5,-120,BetMGM,7.1,7.3,0.4,0.2,2.1,7.5,0.0,5,7
+Kyren Williams,RB,LA,LV,Rec Yds,U 28.5,-114,FanDuel,27.0,25.1,1.5,3.4,12.1,27.5,3.0,5,7
+Tee Higgins,WR,CIN,BAL,Rec Yds,U 66.5,-112,DraftKings,63.1,61.2,3.4,5.3,8.0,65.5,2.0,6,7
+Deshaun Watson,QB,CLE,TEN,Pass Yds,U 208.5,-112,DraftKings,198.0,196.0,10.5,12.5,6.0,208.0,3.0,6,7
+Dak Prescott,QB,DAL,PHI,Pass Yds,U 268.5,-114,FanDuel,255.4,252.4,13.1,16.1,6.0,266.0,5.0,6,7
+Kirk Cousins,QB,LV,LA,Pass Yds,O 230.5,-120,Fanatics,241.3,238.5,10.8,8.0,3.5,237.5,13.0,6,7
+Patrick Mahomes,QB,KC,SEA,Pass Yds,O 215.5,-120,Fanatics,225.5,223.0,10.0,7.5,3.5,218.0,5.0,6,7
+Jaylen Waddle,WR,DEN,ARI,Receptions,U 4.5,104,DraftKings,4.3,4.4,0.2,0.1,2.4,4.5,0.0,5,7
+Xavier Worthy,WR,KC,SEA,Receptions,O 4.5,-114,DraftKings,4.7,4.8,0.2,0.3,7.0,4.5,0.0,5,7
+Carnell Tate,WR,TEN,CLE,Receptions,O 4.5,105,BetMGM,4.7,4.8,0.2,0.3,7.0,4.5,0.0,4,7
+Kyler Murray,QB,MIN,IND,Pass Yds,O 205.5,-114,FanDuel,214.6,212.3,9.1,6.8,3.3,207.5,4.0,6,7
+Christian Watson,WR,GB,DET,Rec Yds,U 77.5,-112,DraftKings,74.3,72.4,3.2,5.1,6.6,75.5,3.0,6,7
+Caleb Douglas,WR,MIA,NYJ,Receptions,O 2.5,-114,FanDuel,2.6,2.6,0.1,0.1,4.1,2.5,0.0,4,7
+Mike Gesicki,TE,CIN,BAL,Receptions,U 2.5,-114,FanDuel,2.4,2.4,0.1,0.1,4.3,2.5,0.0,5,7
+Jonathan Taylor,RB,IND,MIN,Receptions,U 2.5,-120,BetMGM,2.4,2.4,0.1,0.1,4.3,2.5,0.0,5,7
+Jaylin Noel,WR,HOU,NYG,Receptions,O 2.5,116,DraftKings,2.6,2.6,0.1,0.1,4.1,2.5,0.0,4,7
+Javonte Williams,RB,DAL,PHI,Receptions,O 2.5,110,Fanatics,2.6,2.6,0.1,0.1,4.1,2.5,0.0,5,7
+Woody Marks,RB,HOU,NYG,Receptions,O 2.5,136,DraftKings,2.6,2.6,0.1,0.1,4.1,2.5,1.0,3,7
+Adonai Mitchell,WR,NYJ,MIA,Receptions,O 2.5,140,Fanatics,2.6,2.6,0.1,0.1,4.1,2.5,1.0,5,7
+Jared Goff,QB,DET,GB,Pass Yds,U 281.5,-115,BetMGM,270.3,267.0,11.2,14.5,5.2,279.0,6.0,6,7
+Germie Bernard,WR,PIT,NO,Rec Yds,U 55.5,-113,DraftKings,53.3,51.4,2.2,4.1,7.4,54.5,3.0,5,7
+C.J. Stroud,QB,HOU,NYG,Pass Yds,U 260.5,-115,BetMGM,250.4,247.5,10.1,13.0,5.0,255.5,5.0,6,7
+RJ Harvey,RB,DEN,ARI,Rec Yds,U 25.5,-116,DraftKings,24.6,22.7,0.9,2.8,11.1,24.5,3.0,5,7
+Tony Pollard,RB,TEN,CLE,Rush Yds,U 68.5,-115,DraftKings,66.2,62.4,2.3,6.1,8.9,66.5,3.0,6,7
+Bo Nix,QB,DEN,ARI,Pass Yds,O 217.5,-115,BetMGM,224.3,221.8,6.8,4.3,2.0,220.0,3.0,6,7
+Malik Willis,QB,MIA,NYJ,Pass Yds,U 183.5,-112,DraftKings,177.9,176.3,5.6,7.2,3.9,182.5,5.0,6,7
+Matthew Stafford,QB,LA,LV,Pass Yds,U 258.5,-111,DraftKings,250.9,247.9,7.6,10.6,4.1,256.0,8.0,6,7
+Harold Fannin,TE,CLE,TEN,Receptions,U 3.5,-128,DraftKings,3.4,3.4,0.1,0.1,1.5,3.5,0.0,3,7
+Michael Mayer,TE,LV,LA,Receptions,U 3.5,104,FanDuel,3.4,3.4,0.1,0.1,1.5,3.5,0.0,5,7
+RJ Harvey,RB,DEN,ARI,Receptions,U 3.5,-106,FanDuel,3.4,3.4,0.1,0.1,1.5,3.5,0.0,4,7
+Pat Freiermuth,TE,PIT,NO,Receptions,O 3.5,117,Caesars,3.6,3.7,0.1,0.2,4.5,3.5,0.0,4,7
+Bijan Robinson,RB,ATL,SF,Receptions,U 3.5,128,FanDuel,3.4,3.4,0.1,0.1,1.5,4.5,1.0,5,7
+Matthew Golden,WR,GB,DET,Rec Yds,U 74.5,-111,DraftKings,72.5,70.6,2.0,3.9,5.3,74.5,1.0,5,7
+George Pickens,WR,DAL,PHI,Rec Yds,U 66.5,-115,BetMGM,64.8,62.9,1.7,3.6,5.5,64.5,6.0,6,7
+Kenneth Walker,RB,KC,SEA,Rush Yds,U 85.5,-110,DraftKings,83.5,79.1,2.0,6.4,7.5,81.5,5.0,6,7
+Michael Penix,QB,ATL,SF,Pass Yds,U 230.5,-113,DraftKings,225.3,222.8,5.2,7.7,3.3,230.0,5.0,6,7
+Dallas Goedert,TE,PHI,DAL,Receptions,U 4.5,-104,DraftKings,4.4,4.5,0.1,0.0,0.0,4.5,0.0,2,7
+Tucker Kraft,TE,GB,DET,Receptions,O 4.5,-102,FanDuel,4.6,4.7,0.1,0.2,4.7,4.5,0.0,4,7
+George Kittle,TE,SF,ATL,Rec Yds,U 71.5,-115,BetMGM,70.0,68.1,1.5,3.4,4.8,70.0,2.0,6,7
+Garrett Wilson,WR,NYJ,MIA,Receptions,O 5.5,-110,FanDuel,5.6,5.8,0.1,0.3,4.8,5.5,0.0,5,7
+Denzel Boston,WR,CLE,TEN,Rec Yds,U 51.5,-114,FanDuel,50.6,48.7,0.9,2.8,5.5,50.5,2.0,5,7
+Chris Godwin,WR,TB,CAR,Rec Yds,U 46.5,-113,DraftKings,45.7,43.8,0.8,2.7,5.9,45.5,2.0,6,7
+Cam Ward,QB,TEN,CLE,Pass Yds,O 180.5,-108,Caesars,183.5,181.8,3.0,1.3,0.7,180.5,2.0,5,7
+T.J. Hockenson,TE,MIN,IND,Rec Yds,U 36.5,-114,FanDuel,35.9,34.0,0.6,2.5,6.9,36.5,1.0,6,7
+Michael Mayer,TE,LV,LA,Rec Yds,U 32.5,-114,DraftKings,32.0,30.1,0.5,2.4,7.5,30.5,2.0,6,7
+Tyler Shough,QB,NO,PIT,Pass Yds,U 231.5,-113,DraftKings,228.2,225.7,3.3,5.8,2.5,228.5,6.0,5,7
+Jordan Love,QB,GB,DET,Pass Yds,U 283.5,-113,DraftKings,279.5,276.0,4.0,7.5,2.6,282.0,8.0,6,7
+Jahmyr Gibbs,RB,DET,GB,Rush Yds,U 96.5,-112,DraftKings,95.2,90.4,1.3,6.1,6.4,94.5,6.0,6,7
+Dalton Schultz,TE,HOU,NYG,Rec Yds,U 27.5,-110,DraftKings,27.2,25.3,0.3,2.2,8.1,26.5,2.0,5,7
+Wan'Dale Robinson,WR,TEN,CLE,Rec Yds,U 37.5,-115,BetMGM,37.1,35.2,0.4,2.3,6.2,35.5,3.0,6,7
+Drake London,WR,ATL,SF,Rec Yds,U 83.5,-112,DraftKings,82.7,80.8,0.8,2.7,3.3,83.0,3.0,6,7
+Joe Burrow,QB,CIN,BAL,Pass Yds,U 262.5,-112,DraftKings,260.5,257.4,2.0,5.1,2.0,260.5,3.0,6,7
+Baker Mayfield,QB,TB,CAR,Pass Yds,U 217.5,-115,BetMGM,216.1,213.8,1.4,3.7,1.7,216.5,2.0,6,7
+Ja'Marr Chase,WR,CIN,BAL,Rec Yds,U 83.5,-111,DraftKings,83.0,81.1,0.5,2.4,2.9,81.5,3.0,6,7
+Amon-Ra St. Brown,WR,DET,GB,Rec Yds,U 80.5,-115,BetMGM,80.1,78.2,0.4,2.3,2.9,78.5,2.0,6,7
+CeeDee Lamb,WR,DAL,PHI,Rec Yds,U 82.5,-114,DraftKings,82.2,80.3,0.3,2.2,2.7,80.5,4.0,6,7
+Xavier Worthy,WR,KC,SEA,Rec Yds,U 50.5,-111,DraftKings,50.4,48.5,0.1,2.0,4.0,50.0,2.0,6,7
+Isaiah Likely,TE,NYG,HOU,Rec Yds,U 52.5,-111,DraftKings,52.4,50.5,0.1,2.0,3.9,51.5,2.0,6,7
+Tyjae Spears,RB,TEN,CLE,Receptions,O 2.5,115,BetMGM,2.5,2.5,0.0,-0.0,-0.1,2.5,0.0,5,7
+Tetairoa McMillan,WR,CAR,TB,Receptions,O 5.5,110,DraftKings,5.5,5.7,0.0,0.2,2.9,5.5,0.0,4,7
+Alvin Kamara,RB,NO,PIT,Receptions,U 2.5,-102,FanDuel,2.5,2.5,0.0,0.0,0.1,2.5,0.0,5,7
+Cooper Kupp,WR,SEA,KC,Receptions,U 2.5,-120,Fanatics,2.5,2.5,0.0,0.0,0.1,2.5,0.0,5,7
+Mason Taylor,TE,NYJ,MIA,Receptions,U 2.5,118,FanDuel,2.5,2.5,0.0,0.0,0.1,2.5,0.0,4,7
+Jahmyr Gibbs,RB,DET,GB,Receptions,U 4.5,114,DraftKings,4.5,4.6,0.0,-0.1,-2.3,4.5,1.0,5,7
+Rashid Shaheed,WR,SEA,KC,Receptions,O 2.5,130,BetMGM,2.5,2.5,0.0,-0.0,-0.1,2.5,0.0,5,7
+Darnell Washington,TE,PIT,NO,Receptions,U 2.5,-115,BetMGM,2.5,2.5,0.0,0.0,0.1,2.5,0.0,5,7
+Jalen Coker,WR,CAR,TB,Receptions,O 5.5,106,FanDuel,5.5,5.7,0.0,0.2,2.9,5.5,0.0,5,7
+Ryan Flournoy,WR,DAL,PHI,Receptions,O 3.5,103,Caesars,3.5,3.6,0.0,0.1,1.5,3.5,0.0,5,7
+Deshaun Watson,QB,CLE,TEN,Rush Yds,U 30.5,-113,DraftKings,30.5,28.0,0.0,2.5,8.2,29.5,1.0,6,7
+Tez Johnson,WR,TB,CAR,Receptions,O 2.5,134,FanDuel,2.5,2.5,0.0,-0.0,-0.1,2.5,0.0,4,7
+Tee Higgins,WR,CIN,BAL,Receptions,U 4.5,121,DraftKings,4.5,4.6,0.0,-0.1,-2.3,5.5,1.0,5,7
+George Kittle,TE,SF,ATL,Receptions,O 5.5,-112,FanDuel,5.5,5.7,0.0,0.2,2.9,5.5,0.0,5,7
+Bijan Robinson,RB,ATL,SF,Rush Yds,U 90.5,-115,Fanatics,90.7,86.0,-0.2,4.5,4.9,88.5,2.0,6,7
+Jonathan Taylor,RB,IND,MIN,Rush Yds,U 71.5,-112,DraftKings,71.7,67.7,-0.2,3.8,5.3,70.5,4.0,6,7
+Jaylen Warren,RB,PIT,NO,Rec Yds,U 26.5,-115,DraftKings,26.6,24.7,-0.1,1.8,6.9,25.5,1.0,6,7
+Saquon Barkley,RB,PHI,DAL,Rush Yds,U 75.5,-120,Fanatics,75.9,71.8,-0.4,3.7,4.9,74.0,2.0,6,7
+Justin Jefferson,WR,MIN,IND,Rec Yds,U 74.5,-113,DraftKings,75.0,73.1,-0.5,1.4,1.9,73.5,4.0,6,7
+Javonte Williams,RB,DAL,PHI,Rush Yds,U 67.5,-118,BetMGM,68.3,64.4,-0.8,3.1,4.5,64.0,7.0,6,7
+Ja'Marr Chase,WR,CIN,BAL,Receptions,O 7.5,110,Fanatics,7.4,7.7,-0.1,0.2,2.1,7.5,1.0,5,7
+Kyren Williams,RB,LA,LV,Rush Yds,U 69.5,-115,BetMGM,70.7,66.8,-1.2,2.7,4.0,68.0,4.0,6,7
+Justin Jefferson,WR,MIN,IND,Receptions,O 5.5,-122,FanDuel,5.4,5.6,-0.1,0.1,1.0,5.5,1.0,5,7
+Malik Nabers,WR,NYG,HOU,Receptions,O 5.5,-119,DraftKings,5.4,5.6,-0.1,0.1,1.0,5.5,0.0,5,7
+Tyler Higbee,TE,LA,LV,Rec Yds,U 38.5,-113,DraftKings,39.3,37.4,-0.8,1.1,2.9,37.0,3.0,2,7
+Derrick Henry,RB,BAL,CIN,Rush Yds,U 88.5,-115,BetMGM,90.4,85.7,-1.9,2.8,3.1,85.5,4.0,6,7
+Devaughn Vele,WR,NO,PIT,Receptions,O 4.5,135,Fanatics,4.4,4.5,-0.1,-0.0,-0.0,4.5,1.0,5,7
+Wan'Dale Robinson,WR,TEN,CLE,Receptions,O 4.5,124,FanDuel,4.4,4.5,-0.1,-0.0,-0.0,4.5,0.0,5,7
+Jameson Williams,WR,DET,GB,Rec Yds,U 54.5,-114,FanDuel,55.8,53.9,-1.3,0.6,1.2,53.5,4.0,6,7
+Emanuel Wilson,RB,SEA,KC,Rush Yds,U 52.5,-110,DraftKings,54.0,50.7,-1.5,1.8,3.5,51.5,3.0,6,7
+Tre Tucker,WR,LV,LA,Receptions,O 3.5,115,BetMGM,3.4,3.4,-0.1,-0.1,-1.5,3.5,0.0,5,7
+Jameson Williams,WR,DET,GB,Receptions,U 3.5,115,BetMGM,3.6,3.7,-0.1,-0.2,-4.5,3.5,1.0,5,7
+Caleb Douglas,WR,MIA,NYJ,Rec Yds,U 33.5,-113,DraftKings,34.6,32.7,-1.1,0.8,2.5,33.5,1.0,5,7
+Chuba Hubbard,RB,CAR,TB,Rush Yds,U 67.5,-112,DraftKings,69.8,65.9,-2.3,1.6,2.4,66.0,3.0,6,7
+Nico Collins,WR,HOU,NYG,Receptions,O 5.5,150,Fanatics,5.3,5.4,-0.2,-0.1,-1.0,4.5,1.0,5,7
+Kyler Murray,QB,MIN,IND,Rush Yds,U 26.5,-115,DraftKings,27.5,25.1,-1.0,1.4,5.2,25.5,2.0,6,7
+Bucky Irving,RB,TB,CAR,Rush Yds,U 66.5,-113,Caesars,69.1,65.2,-2.6,1.3,1.9,65.5,1.0,6,7
+Jerry Jeudy,WR,CLE,TEN,Receptions,O 2.5,170,Caesars,2.4,2.4,-0.1,-0.1,-4.3,1.5,1.0,5,7
+Laquon Treadwell,WR,IND,MIN,Receptions,O 2.5,155,Caesars,2.4,2.4,-0.1,-0.1,-4.3,1.5,1.0,4,7
+Ted Hurst,WR,TB,CAR,Receptions,U 2.5,128,FanDuel,2.6,2.6,-0.1,-0.1,-4.1,2.5,1.0,5,7
+Chuba Hubbard,RB,CAR,TB,Receptions,O 2.5,112,FanDuel,2.4,2.4,-0.1,-0.1,-4.3,2.5,0.0,5,7
+Jahan Dotson,WR,ATL,SF,Receptions,O 2.5,151,Caesars,2.4,2.4,-0.1,-0.1,-4.3,2.5,1.0,5,7
+Colby Parkinson,TE,LA,LV,Rec Yds,U 25.5,-120,Fanatics,26.6,24.7,-1.1,0.8,3.3,25.0,1.0,2,7
+Sam LaPorta,TE,DET,GB,Receptions,U 4.5,120,BetMGM,4.7,4.8,-0.2,-0.3,-7.0,5.5,1.0,5,7
+Malik Washington,WR,MIA,NYJ,Receptions,O 4.5,130,Caesars,4.3,4.4,-0.2,-0.1,-2.4,4.5,1.0,5,7
+Brock Bowers,TE,LV,LA,Receptions,O 6.5,117,Caesars,6.2,6.4,-0.3,-0.1,-1.6,6.5,0.0,5,7
+Darnell Washington,TE,PIT,NO,Rec Yds,U 25.5,-110,DraftKings,26.7,24.8,-1.2,0.7,2.9,25.0,3.0,6,7
+Christian McCaffrey,RB,SF,ATL,Rush Yds,U 60.5,-110,Fanatics,63.4,59.7,-2.9,0.8,1.3,60.5,0.0,6,7
+Trey McBride,TE,ARI,DEN,Receptions,O 7.5,124,FanDuel,7.1,7.3,-0.4,-0.2,-2.1,7.5,1.0,5,7
+Germie Bernard,WR,PIT,NO,Receptions,O 5.5,127,Caesars,5.2,5.3,-0.3,-0.2,-2.9,4.5,1.0,4,7
+Tyler Higbee,TE,LA,LV,Receptions,U 3.5,125,Fanatics,3.7,3.8,-0.2,-0.3,-7.5,4.0,1.0,2,7
+Jaylen Warren,RB,PIT,NO,Receptions,O 3.5,137,Caesars,3.3,3.3,-0.2,-0.2,-4.5,3.5,0.0,5,7
+Denzel Boston,WR,CLE,TEN,Receptions,O 3.5,115,DraftKings,3.3,3.3,-0.2,-0.2,-4.5,3.5,0.0,4,7
+Courtland Sutton,WR,DEN,ARI,Receptions,O 3.5,130,BetMGM,3.3,3.3,-0.2,-0.2,-4.5,3.5,1.0,5,7
+Jordan Addison,WR,MIN,IND,Receptions,O 3.5,124,FanDuel,3.3,3.3,-0.2,-0.2,-4.5,3.5,0.0,5,7
+Chris Olave,WR,NO,PIT,Receptions,O 6.5,125,Caesars,6.1,6.3,-0.4,-0.2,-3.2,6.5,1.0,5,7
+George Pickens,WR,DAL,PHI,Receptions,U 4.5,118,DraftKings,4.8,4.9,-0.3,-0.4,-9.4,5.5,1.0,5,7
+Jaxon Smith-Njigba,WR,SEA,KC,Receptions,O 7.5,121,Caesars,7.0,7.2,-0.5,-0.3,-3.5,7.5,1.0,5,7
+Travis Kelce,TE,KC,SEA,Receptions,O 4.5,120,Fanatics,4.2,4.3,-0.3,-0.2,-4.7,4.5,0.0,5,7
+Will Mallory,TE,IND,MIN,Receptions,O 2.5,163,Caesars,2.3,2.3,-0.2,-0.2,-8.5,1.5,1.0,5,7
+Kenyon Sadiq,TE,NYJ,MIA,Receptions,O 2.5,140,BetMGM,2.3,2.3,-0.2,-0.2,-8.5,2.5,0.0,4,7
+Kyren Williams,RB,LA,LV,Receptions,U 3.5,116,FanDuel,3.8,3.9,-0.3,-0.4,-10.5,3.5,0.0,4,7
+Cade Otton,TE,TB,CAR,Receptions,U 3.5,128,DraftKings,3.8,3.9,-0.3,-0.4,-10.5,3.5,1.0,5,7
+AJ Barner,TE,SEA,KC,Receptions,O 3.5,160,Fanatics,3.2,3.2,-0.3,-0.3,-7.6,2.5,1.0,5,7
+T.J. Hockenson,TE,MIN,IND,Receptions,O 4.5,113,DraftKings,4.1,4.2,-0.4,-0.3,-7.0,4.5,0.0,5,7
+Matthew Golden,WR,GB,DET,Receptions,O 5.5,128,Caesars,5.0,5.1,-0.5,-0.4,-6.7,5.5,1.0,3,7
+Keenan Allen,WR,IND,MIN,Receptions,O 5.5,121,Caesars,4.9,5.0,-0.6,-0.5,-8.6,5.5,1.0,5,7
+Bucky Irving,RB,TB,CAR,Receptions,O 3.5,144,Caesars,3.1,3.1,-0.4,-0.4,-10.6,2.5,1.0,5,7
+Cooper Kupp,WR,SEA,KC,Rec Yds,U 25.5,-120,Fanatics,28.8,26.9,-3.3,-1.4,-5.3,24.5,1.0,6,7
+Rashid Shaheed,WR,SEA,KC,Rec Yds,U 25.5,-115,Fanatics,29.3,27.4,-3.8,-1.9,-7.3,24.5,3.0,6,7
+CeeDee Lamb,WR,DAL,PHI,Receptions,O 7.5,122,Caesars,6.3,6.5,-1.2,-1.0,-13.3,7.5,0.0,5,7
+Kenneth Gainwell,RB,TB,CAR,Receptions,O 2.5,111,DraftKings,2.1,2.1,-0.4,-0.4,-16.9,2.5,0.0,5,7
+Kenneth Walker,RB,KC,SEA,Receptions,O 3.5,129,DraftKings,2.9,2.9,-0.6,-0.6,-16.6,3.5,0.0,5,7
+Dalton Schultz,TE,HOU,NYG,Receptions,O 3.5,134,FanDuel,2.8,2.8,-0.7,-0.7,-19.6,3.5,0.0,4,7
+Tyler Allgeier,RB,ARI,DEN,Receptions,O 2.5,118,DraftKings,2.0,2.0,-0.5,-0.5,-21.1,2.5,0.0,4,7
+AJ Barner,TE,SEA,KC,Rec Yds,U 25.5,-120,Fanatics,31.6,29.7,-6.1,-4.2,-16.3,24.5,1.0,6,7
+Gunnar Helm,TE,TEN,CLE,Receptions,O 2.5,155,Caesars,1.9,1.9,-0.6,-0.6,-25.4,2.5,1.0,4,7
+Brandin Cooks,WR,SF,ATL,Rec Yds,U 25.5,-120,Fanatics,33.0,31.1,-7.5,-5.6,-21.8,23.5,2.0,5,7
+Noah Gray,TE,KC,SEA,Receptions,O 2.5,170,Caesars,1.7,1.7,-0.8,-0.8,-33.8,1.5,1.0,5,7

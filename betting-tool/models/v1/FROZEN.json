@@ -1,0 +1,7 @@
+{
+  "version": "v1",
+  "frozen_at_utc": "2026-10-30T20:39:35.054152+00:00",
+  "params_sha256": "d89c68d2b3251430767f34ed970aa73d253669773271ab270f83e676f9288cb8",
+  "code_commit": "e27c0a8878e1d701cbc9f512b7e8d2e9ff423e89",
+  "note": "fitted by calibrate.py on leave-one-book-out features"
+}

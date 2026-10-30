@@ -1,0 +1,45 @@
+{
+  "w": 0.5,
+  "b": 1.2,
+  "shrink": 0.5,
+  "ridge": 30.0,
+  "intercept": {
+    "Pass Yds": 0.092,
+    "Rec Yds": -0.201,
+    "Receptions": -0.166,
+    "Rush Yds": -0.053
+  },
+  "scale": {
+    "Pass Yds": [
+      38.445,
+      0.0282
+    ],
+    "Rec Yds": [
+      17.41,
+      0.1467
+    ],
+    "Receptions": [
+      1.231,
+      0.0772
+    ],
+    "Rush Yds": [
+      13.314,
+      0.2034
+    ]
+  },
+  "tiers": {
+    "lean_ev": 3.0,
+    "watch_ev": 1.5,
+    "lean_min_books": 5
+  },
+  "selection": {
+    "top_n": 20
+  },
+  "source_min_pts": 1.0,
+  "trained_weeks": [
+    6,
+    7
+  ],
+  "oos_from_week": 8,
+  "version": "v1"
+}
