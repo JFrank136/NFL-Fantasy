@@ -21,6 +21,12 @@ if args.week:
 here = os.path.dirname(os.path.abspath(__file__))
 # Prop-value steps are best-effort: they depend on Action Network having the slate posted.
 OPTIONAL = {'props_lines.py', 'ds_projections.py', 'prop_value.py', 'snapshot.py'}
+# Best-effort and independent of the pull: grade finished games and refresh the all-lines universe so the
+# history (grades/) is current before this week's picks are generated. Failures never block the pull.
+for script in ('grade.py', 'universe.py'):
+    print(f"\n>>> {script} (history refresh)")
+    if subprocess.run([sys.executable, script], cwd=here, env=env).returncode != 0:
+        print(f"{script} failed; continuing without refreshed history.")
 for script in ('cbs.py', 'last5_yds.py', 'process_betting_info.py', 'props_lines.py', 'ds_projections.py', 'prop_value.py', 'snapshot.py'):
     print(f"\n>>> {script}")
     if subprocess.run([sys.executable, script], cwd=here, env=env).returncode != 0:

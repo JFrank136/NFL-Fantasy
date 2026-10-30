@@ -1,0 +1,33 @@
+{
+  "w": 0.5,
+  "b": 1.2,
+  "shrink": 0.5,
+  "intercept": {
+    "Pass Yds": 0.092,
+    "Rec Yds": -0.201,
+    "Receptions": -0.165,
+    "Rush Yds": -0.053
+  },
+  "scale": {
+    "Pass Yds": [
+      38.445,
+      0.0282
+    ],
+    "Rec Yds": [
+      17.41,
+      0.1467
+    ],
+    "Receptions": [
+      1.231,
+      0.0772
+    ],
+    "Rush Yds": [
+      13.314,
+      0.2034
+    ]
+  },
+  "weeks": [
+    6,
+    7
+  ]
+}
