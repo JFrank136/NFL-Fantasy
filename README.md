@@ -150,7 +150,7 @@ Supabase as of 2026-09-18:
 
 - **Rankings** (`site/src/pages/Rankings.tsx`) — Weekly (default tab,
   auto-sorted by a DS/Boone/Smyth blended "Agg. Rank", QB/RB/WR/TE position
-  filter only — no K/DST) and ROS (Draft Sharks + Boone blended value,
+  filter plus DST, ranked among defenses only — no K) and ROS (Draft Sharks + Boone blended value,
   cross-position overall rank, `ALL` position option retained since that
   rank genuinely is cross-position). Pure blending logic lives in
   `site/src/lib/blend.ts`, tested in `blend.test.ts`.
