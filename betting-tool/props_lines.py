@@ -23,6 +23,7 @@ MARKETS = {
 }
 API = "https://api.actionnetwork.com/web/v2/scoreboard/nfl/markets"
 OUT_FILE = 'data/prop_lines.csv'
+COLUMNS = ['Week', 'Player', 'Pos', 'Team', 'Opp', 'Stat', 'Book', 'Side', 'Line', 'Odds', 'Start', 'GameId', 'PlayerId']
 
 
 def fetch_markets():
@@ -71,7 +72,7 @@ def main():
     Path(OUT_FILE).parent.mkdir(parents=True, exist_ok=True)
     with open(OUT_FILE, 'w', newline='', encoding='utf-8') as f:
         w = csv.writer(f)
-        w.writerow(['Week', 'Player', 'Pos', 'Team', 'Opp', 'Stat', 'Book', 'Side', 'Line', 'Odds', 'Start', 'GameId', 'PlayerId'])
+        w.writerow(COLUMNS)
         w.writerows(all_rows)
     books = sorted({r[6] for r in all_rows})
     print(f"{len(all_rows)} lines from {', '.join(books)} -> {OUT_FILE}")

@@ -22,6 +22,7 @@ import pandas as pd
 HERE = Path(__file__).resolve().parent
 SNAP_DIR = HERE / 'snapshots'
 FILES = ['data/prop_lines.csv', 'data/ds_projections.csv', 'exports/prop_value.csv']
+OPTIONAL_FILES = ['exports/prop_predictions.csv']   # original/market-only/active model picks side by side (scorecard.py)
 
 
 def _digest(root):
@@ -53,7 +54,7 @@ def take(root=HERE, snap_dir=SNAP_DIR):
             return None
         raise SystemExit(f"{dest.name} already exists with different quotes; refusing to overwrite.")
     dest.mkdir()
-    for f in FILES:
+    for f in FILES + [f for f in OPTIONAL_FILES if (root / f).exists()]:
         shutil.copy2(root / f, dest / Path(f).name)
     lines = pd.read_csv(dest / 'prop_lines.csv')
     meta = {'captured_at_utc': captured.isoformat(), 'taken_at_utc': datetime.now(timezone.utc).isoformat(),

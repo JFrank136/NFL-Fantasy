@@ -16,16 +16,19 @@ import pandas as pd
 from scipy.optimize import minimize
 
 import prop_model
-from prop_model import DEFAULT_PARAMS, PARAMS_FILE
 from universe import OUT_FILE
 
 MIN_LINE = {'Pass Yds': 100, 'Rush Yds': 15, 'Rec Yds': 15, 'Receptions': 1.5}  # calibrate on non-trivial lines
 GRID_W = (0.0, 0.25, 0.5, 0.75, 1.0)
+# Fixed (not tuned further) hyperparameters of a new model version; only the intercepts and scale are fitted.
+B_LINE, SHRINK = 1.2, 0.5
+TIERS = {'lean_ev': 3.0, 'watch_ev': 1.5, 'lean_min_books': 5}
+SELECTION = {'top_n': 20}   # scorecard.py compares models on each one's top-N per week and on its Lean/Watch set
 PS_KEY = ['Week', 'Player', 'Team', 'Stat']
 
 
 def prepare(u, b_line):
-    """Book-level rows with market median, market log-odds, projection->market 'fair', typical-miss scale and outcome."""
+    """Book-level rows with leave-this-book-out market median/log-odds, projection->market 'fair', scale, outcome."""
     u = u[u['Actual'].notna() & u['proj'].notna() & (u['proj'] > 0)].copy()
     u = u[[m >= MIN_LINE[s] for s, m in zip(u['Stat'], u['Median_Line'])]]
     ps = u.drop_duplicates(PS_KEY)
@@ -35,24 +38,26 @@ def prepare(u, b_line):
         c1, c0 = np.polyfit(d['Median_Line'], (d['Actual'] - d['Median_Line']).abs(), 1)
         scale[s] = [round(max(c0, 0.2), 3), round(max(c1, 0.0), 4)]
     params = {'b': b_line, 'scale': scale}
-    # one row per book/line with both sides' prices -> de-vigged log-odds of that line, moved to the median line
-    wide = u.pivot_table(index=PS_KEY + ['Book', 'Line'], columns='Side', values='Odds', aggfunc='first').dropna().reset_index()
-    wide = wide.merge(ps[PS_KEY + ['Median_Line']], on=PS_KEY)
-    z0 = {k: prop_model.market_logit(list(zip(g['Line'], g['over'], g['under'])), k[3], g['Median_Line'].iloc[0], params)
-          for k, g in wide.groupby(PS_KEY)}
-    u['Z0'] = [z0.get(tuple(r), 0.0) for r in u[PS_KEY].itertuples(index=False)]
+    rows = []
+    for key, g in u.groupby(PS_KEY):
+        quotes = prop_model.quotes_from_rows(zip(g['Book'], g['Side'], g['Line'], g['Odds']))
+        stat = key[3]
+        for book, line in g[['Book', 'Line']].drop_duplicates().itertuples(index=False):
+            m, z0, _, _ = prop_model.market_state(quotes, book, stat, params)  # the book being scored is left out
+            rows.append(key + (book, line, m, z0))
+    loo = pd.DataFrame(rows, columns=PS_KEY + ['Book', 'Line', 'M', 'Z0'])
+    u = u.drop_duplicates(PS_KEY + ['Book', 'Line']).merge(loo, on=PS_KEY + ['Book', 'Line'])  # one event per line
     u['Fair'] = [np.polyval(fit[s], p) for s, p in zip(u['Stat'], u['proj'])]
-    u['S'] = [scale[s][0] + scale[s][1] * m for s, m in zip(u['Stat'], u['Median_Line'])]
-    u = u.drop_duplicates(PS_KEY + ['Book', 'Line'])  # over/under quote of one line = one event
+    u['S'] = [scale[s][0] + scale[s][1] * m for s, m in zip(u['Stat'], u['M'])]
     u = u[u['Line'] != u['Actual']].copy()
     u['over'] = (u['Actual'] > u['Line']).astype(int)
     u['wt'] = 1 / u.groupby(PS_KEY)['Line'].transform('size')  # each player-stat counts once
-    u['base'] = u['Z0'] + b_line * (u['Median_Line'] - u['Line']) / u['S']  # market-only log-odds of this line
+    u['base'] = u['Z0'] + b_line * (u['M'] - u['Line']) / u['S']  # market-only log-odds of this line
     return u, scale
 
 
 def _tilt(d, w, b_line):
-    return (b_line * w * (d['Fair'] - d['Median_Line']) / d['S']).values
+    return (b_line * w * (d['Fair'] - d['M']) / d['S']).values
 
 
 def fit_intercepts(d, w, lam, stats, b_line):
@@ -90,10 +95,11 @@ def cv(d, w, lam, stats, b_line, shrink=1.0):
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument('--w', type=float, default=0.5, help='weight on the projection tilt (0 = market only)')
-    ap.add_argument('--lam', type=float, default=10.0, help='ridge strength on per-stat intercepts')
-    ap.add_argument('--write', action='store_true', help=f'save fitted params to {PARAMS_FILE.name}')
+    ap.add_argument('--lam', type=float, default=30.0, help='ridge strength on per-stat intercepts')
+    ap.add_argument('--version', help='with --write: save as a NEW frozen model version under models/<version>/')
+    ap.add_argument('--write', action='store_true', help='freeze the fitted params as --version (never overwrites)')
     args = ap.parse_args()
-    b_line = DEFAULT_PARAMS['b']
+    b_line = B_LINE
     d, scale = prepare(pd.read_csv(OUT_FILE, parse_dates=['Start', 'captured_at']), b_line)
     stats = sorted(d['Stat'].unique())
     weeks = sorted(d['Week'].unique())
@@ -105,7 +111,7 @@ def main():
     print(f"  market + projection tilt, no intercept:       " + ', '.join(
         f"w={w}: {logloss(d, predict(d, w, stats, zero, b_line)):.4f}" for w in GRID_W[1:]) + "  (no fitting)")
     for lam in (30.0, 10.0):
-        for sh in (1.0, DEFAULT_PARAMS['shrink']):
+        for sh in (1.0, SHRINK):
             print(f"  + skew intercepts (ridge {lam:g}, shrink {sh}):  " + ', '.join(
                 f"w={w}: {cv(d, w, lam, stats, b_line, sh):.4f}" for w in GRID_W))
     a = fit_intercepts(d, args.w, args.lam, stats, b_line)
@@ -118,10 +124,15 @@ def main():
         print(f"  {s:<11} n={len(g):>3}  r={r:+.3f} (noise +-{1 / np.sqrt(len(g)):.2f})  "
               f"MAE line={res.abs().mean():.2f}  MAE proj={(g['Actual'] - g['proj']).abs().mean():.2f}")
     if args.write:
-        PARAMS_FILE.write_text(json.dumps({'w': args.w, 'b': b_line, 'shrink': DEFAULT_PARAMS['shrink'],
-                                           'intercept': {s: round(float(v), 3) for s, v in zip(stats, a)},
-                                           'scale': scale, 'weeks': [int(w) for w in weeks]}, indent=2))
-        print(f"\nWrote {PARAMS_FILE}")
+        if not args.version:
+            raise SystemExit("--write needs --version (e.g. v2); frozen versions are never overwritten.")
+        d = prop_model.save_version(args.version, {
+            'w': args.w, 'b': b_line, 'shrink': SHRINK, 'ridge': args.lam,
+            'intercept': {s: round(float(v), 3) for s, v in zip(stats, a)}, 'scale': scale,
+            'tiers': TIERS, 'selection': SELECTION, 'source_min_pts': 1.0,
+            'trained_weeks': [int(w) for w in weeks], 'oos_from_week': int(max(weeks)) + 1},
+            note='fitted by calibrate.py on leave-one-book-out features')
+        print(f"\nFroze {d}  (out-of-sample from week {int(max(weeks)) + 1})")
 
 
 if __name__ == '__main__':
