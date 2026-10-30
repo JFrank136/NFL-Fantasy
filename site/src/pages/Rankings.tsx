@@ -16,8 +16,12 @@ import ColumnPicker, { toggleInSet } from '../components/ColumnPicker'
 // cross-position view weekly does support: RB/WR/TE share one score scale
 // (see weeklyPool.ts). ROS keeps 'ALL' since blendRosValues computes one
 // genuine cross-position rank.
-const WEEKLY_POSITIONS = ['QB', 'RB', 'WR', 'TE', 'FLEX']
-const ROS_POSITIONS = ['ALL', ...WEEKLY_POSITIONS]
+const OFFENSE_POSITIONS = ['QB', 'RB', 'WR', 'TE', 'FLEX']
+// DST is ranked against other defenses only (aggregateWeeklyRanks groups by
+// position), so it stands alone rather than joining FLEX. ROS has none: the
+// Draft Sharks ROS pull drops DEF on purpose (see draftsharks_ros.py).
+const WEEKLY_POSITIONS = [...OFFENSE_POSITIONS, 'DST']
+const ROS_POSITIONS = ['ALL', ...OFFENSE_POSITIONS]
 const matchesPosition = (pos: string, rowPos: string) =>
   pos === 'ALL' || (pos === 'FLEX' ? FLEX_POSITIONS.includes(rowPos) : rowPos === pos)
 const SCORINGS = ['ppr', 'half-ppr'] as const
@@ -277,7 +281,7 @@ export default function Rankings() {
     <div className="space-y-3">
       <div className="flex gap-2">
         <button className={`btn ${tab === 'weekly' ? 'btn-primary' : ''}`} onClick={goToWeekly}>Weekly</button>
-        <button className={`btn ${tab === 'ros' ? 'btn-primary' : ''}`} onClick={() => setTab('ros')}>ROS</button>
+        <button className={`btn ${tab === 'ros' ? 'btn-primary' : ''}`} onClick={() => { setTab('ros'); if (pos === 'DST') setPos('QB') }}>ROS</button>
       </div>
 
       <div className="card p-3 sm:p-4 space-y-3">
