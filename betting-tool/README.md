@@ -9,7 +9,6 @@ scrapers' checkmark prints don't crash on Windows). Output: exports/betting_info
 (not data/betting_info.csv, which is the old pick log). Weights are LAST5_WEIGHT /
 CBS_WEIGHT at the top of process_betting_info.py; --week only sets the week label.
 
-
 ## Prop value (projection vs. book lines)
 
 `run_all.py` also runs `props_lines.py` (Action Network pass/rush/rec yard and reception lines across
@@ -61,17 +60,30 @@ listed odds, labels weeks in-sample vs OUT-OF-SAMPLE, and reports Brier scores a
 on results; if a change is warranted, fit a new version and compare both going forward.
 
 ### Weekly routine
-    python run_all.py --week N      # also grades finished games and refreshes grades/universe.csv first
-    python closing.py               # shortly before kickoffs (see below)
-    python scorecard.py             # after the week's games
-    python calibrate.py             # diagnostics (leave-one-week-out log loss); --version v2 --write freezes a NEW version
+    python run_all.py --week N      # grades finished games, refreshes grades/universe.csv, pulls, snapshots, scores
+    python scorecard.py             # after the week's games: ROI / hit rate / avg odds / N per model, by market and direction
+    python calibrate.py             # diagnostics only (leave-one-week-out log loss); --version v2 --write freezes a NEW version
+Closing lines are captured automatically (below). Outputs per week: `exports/prop_weekly_top.csv` is the concise list
+(Lean picks only, best EV first, at most 20, never padded -- empty on a quiet week; `Mkt_Agrees` says whether the
+market-only baseline makes the same bet); `prop_shortlist.csv` is Lean + Watch; `prop_value.csv` keeps every candidate.
 
-### Closing lines
-`python closing.py` saves `closing/<time>/prop_lines.csv` for games starting within `--within-hours` (default 6). It
-must run shortly before kickoff to be a real closing line, e.g. Thu ~7:45pm, Sun ~12:45pm / ~4:00pm / ~7:50pm, Mon
-~7:50pm local. It is not scheduled automatically. `scorecard.py` uses the latest capture before each game:
-`Line_CLV` (closing median minus the pick's line, in the pick's favour) and `Close_EV_Pct` (the pick's EV at its odds
-under the closing no-vig probability).
+### Keeping the test clean (weeks 8+)
+Do not edit `models/v1/` (hash-checked), the tier cutoffs, the flags or the scoring functions in `prop_model.py` /
+`prop_value.py` while v1 is being tested. `scorecard.py` prints a frozen-code check against the freeze commit and says
+when the scoring code has changed. In-sample (weeks 6-7) v1 did NOT beat the market-only baseline: on the bets where
+they differ v1 was 49.6% / -4.8% ROI vs 50.4% / -2.7% (121 bets; paired difference -0.02 units/bet, 95% CI -0.34..+0.30).
+The out-of-sample weeks decide whether the skew and projection terms earn their place; if not, fall back to market-only.
+
+### Closing lines (automatic)
+Windows task `PropClosingLines` runs `pythonw closing.py --within-minutes 45` every 15 minutes, 6:00am-midnight daily, as
+the logged-in user (no console window, no wake-from-sleep, runs on battery, needs network, 5-minute limit). Each run makes
+one request and is idle unless a game kicks off within 45 minutes, so every game gets captures at roughly T-45/-30/-15;
+`scorecard.py` uses the latest one before kickoff. Captures go to `closing/<time>/` (identical consecutive captures are
+skipped); every run rewrites `closing/last_run.json`, and saves/errors append to `closing/closing.log`; transient network
+failures are retried 3x. `scorecard.py` reports the heartbeat age and logged errors, and flags it STALE after 24h. The
+task only runs while Jared is logged in and the laptop is awake (lid-closed Modern Standby can skip ticks); check
+`Get-ScheduledTaskInfo PropClosingLines`. Reported per pick: `Line_CLV` (closing median minus the pick's line, in the
+pick's favour) and `Close_EV_Pct` (the pick's EV at its odds under the closing no-vig probability).
 
 ### Status (weeks 6-7, in-sample)
 Leave-one-week-out log loss: de-vigged market alone 0.690, with skew + tilt ~0.687 (coin flip 0.693). The projection's

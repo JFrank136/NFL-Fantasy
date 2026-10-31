@@ -209,6 +209,17 @@ def explain(row, params):
     return '\n'.join(out)
 
 
+def weekly_top(out, picks, params):
+    """The concise weekly list: Lean picks only (EV >= lean cutoff, enough books, no flags), best EV first, capped at
+    selection.top_n. Never padded: a quiet week gives a short or empty list. Display only -- the model's scoring and
+    the full candidate set (prop_value.csv) are untouched."""
+    top = out[out['Tier'] == 'Lean'].sort_values('EV_Pct', ascending=False).head(params['selection']['top_n']).copy()
+    mkt = picks[picks['Model'] == 'market_only'].set_index(['Player', 'Stat'])[['Pick', 'Book']]
+    same = [(p, s) in mkt.index and tuple(mkt.loc[(p, s)]) == (pick, book)
+            for p, s, pick, book in zip(top['Player'], top['Stat'], top['Pick'], top['Book'])]
+    return top.assign(Mkt_Agrees=same)
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument('--explain', metavar='PLAYER', help="print the arithmetic behind a player's pick(s); writes nothing")
@@ -236,15 +247,18 @@ def main():
     short = out[out['Tier'].isin(['Lean', 'Watch'])]
     short = short.assign(_t=short['Tier'].ne('Lean')).sort_values(['_t', 'EV_Pct'], ascending=[True, False]).drop(columns='_t')
     short.to_csv('exports/prop_shortlist.csv', index=False)
-    print(f"Wrote {len(out)} rows to exports/prop_value.csv (model {version}, odds >= {MIN_ODDS}, >= {MIN_BOOKS} books); "
-          f"{len(short)} on exports/prop_shortlist.csv ({(out['Tier'] == 'Lean').sum()} Lean, {(out['Tier'] == 'Watch').sum()} Watch)")
+    top = weekly_top(out, picks, params)
+    top.to_csv('exports/prop_weekly_top.csv', index=False)
+    print(f"Wrote {len(out)} candidates to exports/prop_value.csv (model {version}, odds >= {MIN_ODDS}, >= {MIN_BOOKS} books), "
+          f"{len(short)} Lean+Watch to exports/prop_shortlist.csv, {len(top)} to exports/prop_weekly_top.csv")
     if unmatched:
         print(f"  {len(unmatched)} prop players had no Draft Sharks projection (e.g. {sorted(unmatched)[:5]})")
     print(f"\nNOTE: model {version} is frozen; out-of-sample results start with week {params.get('oos_from_week')} "
-          "(python scorecard.py). Earlier weeks are in-sample. Check flags before betting.")
-    print("Shortlist (Lean first, then by model EV; Lean = EV >= 3%, >= 5 books, no flags):")
-    cols = ['Tier', 'Player', 'Team', 'Stat', 'Pick', 'Odds', 'Book', 'P_Win', 'BreakEven', 'EV_Pct', 'Source', 'Flags']
-    print(short[cols].head(25).to_string(index=False) if len(short) else "  (none -- no pick clears the EV bar this week)")
+          "(python scorecard.py). In the in-sample weeks v1 did not beat the market-only baseline, so treat this as a "
+          "list to check by hand, not a signal. Mkt_Agrees = the market-only baseline picks the same bet.")
+    print(f"Weekly top (Lean only, by EV, at most {params['selection']['top_n']}; fewer or none when little qualifies):")
+    cols = ['Player', 'Team', 'Stat', 'Pick', 'Odds', 'Book', 'P_Win', 'BreakEven', 'EV_Pct', 'Source', 'Mkt_Agrees']
+    print(top[cols].to_string(index=False) if len(top) else "  (none -- no pick clears the Lean bar this week)")
 
 
 if __name__ == "__main__":
