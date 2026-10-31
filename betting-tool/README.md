@@ -63,6 +63,11 @@ on results; if a change is warranted, fit a new version and compare both going f
     python run_all.py --week N      # grades finished games, refreshes grades/universe.csv, pulls, snapshots, scores
     python scorecard.py             # after the week's games: ROI / hit rate / avg odds / N per model, by market and direction
     python calibrate.py             # diagnostics only (leave-one-week-out log loss); --version v2 --write freezes a NEW version
+`scorecard.py` opens with an **Operational health** block (`health.py`): every finished selection graded; closing captures
+present for each out-of-sample kickoff (and the scheduler heartbeat/errors); each snapshot's prices and 3-model predictions
+intact (hash, row counts, valid odds/lines, two-sided quotes, captured pre-kickoff) and a snapshot for every week already
+underway; working data files fresh and consistent. Read it first each week: any FAIL/WARN means the evidence for that
+week is incomplete (e.g. the weekly pull was not run before kickoff -- the pull is still manual, `run_all.py --week N`).
 Closing lines are captured automatically (below). Outputs per week: `exports/prop_weekly_top.csv` is the concise list
 (Lean picks only, best EV first, at most 20, never padded -- empty on a quiet week; `Mkt_Agrees` says whether the
 market-only baseline makes the same bet); `prop_shortlist.csv` is Lean + Watch; `prop_value.csv` keeps every candidate.

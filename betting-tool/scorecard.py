@@ -21,6 +21,7 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 
+import health
 import prop_model
 from grade import SNAP_DIR, grade, load_actuals, season_of, wilson
 from prop_value import score_slate
@@ -196,14 +197,14 @@ def main():
     params = prop_model.load_params()
     version, oos = params['version'], params['oos_from_week']
     print(f"Model {version} (frozen); trained on weeks {params['trained_weeks']}; out-of-sample = week >= {oos}.")
-    print("Frozen-code check:", frozen_code_status(version))
-    print(closing_health(), "\n")
     picks = replay(params).reset_index(drop=True)
     sel = selections(picks, params)
     stats, snaps = load_actuals({season_of(s) for s in picks['Start']})
     graded = grade(picks.assign(DS_Proj=np.nan, Fair_Line=np.nan), stats, snaps)
     graded['Sample'] = np.where(graded['Week'] >= oos, 'OUT-OF-SAMPLE', 'in-sample')
     graded['Units'] = graded['Units'].astype(float)
+    print("Frozen-code check:", frozen_code_status(version))
+    print(health.render(health.run_checks(graded, picks, params, pd.Timestamp.now(tz='UTC'), HERE, SNAP_DIR, CLOSING_DIR, OUT_FILE.parent)) + "\n")
     allg = pd.concat([graded[mask].assign(Model=model, Set=label) for (model, label), mask in sel.items()])
     order = {'original': 0, 'market_only': 1, version: 2}
 
