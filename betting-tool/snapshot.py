@@ -22,7 +22,7 @@ import pandas as pd
 HERE = Path(__file__).resolve().parent
 SNAP_DIR = HERE / 'snapshots'
 FILES = ['data/prop_lines.csv', 'data/ds_projections.csv', 'exports/prop_value.csv']
-OPTIONAL_FILES = ['exports/prop_predictions.csv']   # original/market-only/active model picks side by side (scorecard.py)
+OPTIONAL_FILES = ['data/prop_predictions.csv']   # original/market-only/active model picks side by side (scorecard.py)
 
 
 def _digest(root):

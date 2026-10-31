@@ -115,3 +115,19 @@ def test_games_that_kicked_off_before_the_first_snapshot_are_flagged(tmp_path):
     warn = [m for _, s, m in res if s == 'WARN']
     assert len(warn) == 1 and '1 kickoff time(s) passed before the first snapshot' in warn[0] and 'Thu 11/05' in warn[0]
     assert not [m for _, s, m in health.check_snapshots(tmp_path, PARAMS, NOW, [8], {8: [later]}) if s == 'WARN']
+
+
+def test_pull_log_failures_and_due_pull(tmp_path):
+    log = tmp_path / 'weekly_pull.log'
+    assert health.check_pull(log, NOW)[0][1] == 'OK'
+    recent = (NOW - timedelta(days=1)).isoformat(timespec='seconds')
+    log.write_text(f"{recent}  ERROR    projections are for week(s) [7] but lines are week 8; not snapshotting\n")
+    res = health.check_pull(log, NOW)
+    assert res[0][1] == 'WARN' and 'week(s) [7]' in res[0][2] and 'no successful pull' in res[0][2]
+    log.write_text(log.read_text() + f"{NOW.isoformat(timespec='seconds')}  OK       week 8 pulled\n")
+    assert 'last success' in health.check_pull(log, NOW)[0][2]
+    make_snapshot(tmp_path / 'snaps')
+    soon, far = NOW + timedelta(hours=20), NOW + timedelta(hours=100)
+    res = health.check_snapshots(tmp_path / 'snaps', PARAMS, NOW, [8], {8: [NOW - timedelta(days=9)], 9: [soon], 10: [far]})
+    due = [m for _, s, m in res if s == 'WARN' and 'pull is due' in m]
+    assert len(due) == 1 and 'week 9' in due[0]

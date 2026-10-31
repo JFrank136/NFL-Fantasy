@@ -1,0 +1,751 @@
+Week,Model,Player,Pos,Team,Opp,Stat,Pick,Odds,Book,Score,P_Win,EV_Pct
+8,original,Aaron Jones,RB,MIN,DET,Rush Yds,U 30.5,-125,Fanatics,0.33,,
+8,market_only,Aaron Jones,RB,MIN,DET,Rush Yds,O 29.5,-108,DraftKings,-3.88,0.499,-3.9
+8,v1,Aaron Jones,RB,MIN,DET,Rush Yds,U 30.5,-125,Fanatics,-5.4,0.526,-5.4
+8,original,Aaron Rodgers,QB,PIT,CLE,Pass Yds,O 215.5,-110,Fanatics,7.98,,
+8,market_only,Aaron Rodgers,QB,PIT,CLE,Pass Yds,O 215.5,-110,Fanatics,-0.28,0.522,-0.3
+8,v1,Aaron Rodgers,QB,PIT,CLE,Pass Yds,O 215.5,-110,Fanatics,5.97,0.555,6.0
+8,original,Adonai Mitchell,WR,NYJ,LV,Rec Yds,U 25.5,-120,Fanatics,-27.84,,
+8,market_only,Adonai Mitchell,WR,NYJ,LV,Rec Yds,U 25.5,-120,Fanatics,-5.68,0.514,-5.7
+8,v1,Adonai Mitchell,WR,NYJ,LV,Rec Yds,U 25.5,-120,Fanatics,-5.0,0.518,-5.0
+8,original,Adonai Mitchell,WR,NYJ,LV,Receptions,O 2.5,176,Caesars,-8.0,,
+8,market_only,Adonai Mitchell,WR,NYJ,LV,Receptions,O 2.5,176,Caesars,2.04,0.37,2.0
+8,v1,Adonai Mitchell,WR,NYJ,LV,Receptions,O 2.5,176,Caesars,10.52,0.4,10.5
+8,original,AJ Barner,TE,SEA,CHI,Rec Yds,O 28.5,-114,FanDuel,13.68,,
+8,market_only,AJ Barner,TE,SEA,CHI,Rec Yds,U 29.5,-113,DraftKings,-3.78,0.51,-3.8
+8,v1,AJ Barner,TE,SEA,CHI,Rec Yds,U 29.5,-113,DraftKings,0.45,0.533,0.5
+8,original,AJ Barner,TE,SEA,CHI,Receptions,O 3.5,126,FanDuel,-2.86,,
+8,market_only,AJ Barner,TE,SEA,CHI,Receptions,O 3.5,126,FanDuel,-2.61,0.431,-2.6
+8,v1,AJ Barner,TE,SEA,CHI,Receptions,O 3.5,126,FanDuel,-7.37,0.41,-7.4
+8,original,A.J. Brown,WR,NE,MIA,Rec Yds,O 48.5,-114,DraftKings,15.46,,
+8,market_only,A.J. Brown,WR,NE,MIA,Rec Yds,O 48.5,-114,DraftKings,-3.46,0.514,-3.5
+8,v1,A.J. Brown,WR,NE,MIA,Rec Yds,U 50.5,-115,Fanatics,-2.12,0.524,-2.1
+8,original,A.J. Brown,WR,NE,MIA,Receptions,O 4.5,119,DraftKings,-2.22,,
+8,market_only,A.J. Brown,WR,NE,MIA,Receptions,O 4.5,119,DraftKings,-4.37,0.437,-4.4
+8,v1,A.J. Brown,WR,NE,MIA,Receptions,O 4.5,119,DraftKings,-9.66,0.413,-9.7
+8,original,Amon-Ra St. Brown,WR,DET,MIN,Rec Yds,U 79.5,-114,DraftKings,7.17,,
+8,market_only,Amon-Ra St. Brown,WR,DET,MIN,Rec Yds,U 79.5,-114,DraftKings,-3.23,0.515,-3.2
+8,v1,Amon-Ra St. Brown,WR,DET,MIN,Rec Yds,U 79.5,-114,DraftKings,4.38,0.556,4.4
+8,original,Amon-Ra St. Brown,WR,DET,MIN,Receptions,U 6.5,120,Fanatics,-3.08,,
+8,market_only,Amon-Ra St. Brown,WR,DET,MIN,Receptions,O 7.5,115,BetMGM,-9.01,0.423,-9.0
+8,v1,Amon-Ra St. Brown,WR,DET,MIN,Receptions,U 6.5,120,Fanatics,2.16,0.464,2.2
+8,original,Antonio Williams,WR,WAS,PHI,Rec Yds,U 37.5,-114,FanDuel,-2.93,,
+8,market_only,Antonio Williams,WR,WAS,PHI,Rec Yds,O 34.5,-115,BetMGM,0.27,0.536,0.3
+8,v1,Antonio Williams,WR,WAS,PHI,Rec Yds,U 37.5,-114,FanDuel,1.57,0.541,1.6
+8,original,Antonio Williams,WR,WAS,PHI,Receptions,O 3.5,120,FanDuel,-5.71,,
+8,market_only,Antonio Williams,WR,WAS,PHI,Receptions,O 3.5,120,FanDuel,-5.49,0.43,-5.5
+8,v1,Antonio Williams,WR,WAS,PHI,Receptions,O 3.5,120,FanDuel,-11.11,0.404,-11.1
+8,original,Ashton Jeanty,RB,LV,NYJ,Rec Yds,O 27.5,-114,FanDuel,19.64,,
+8,market_only,Ashton Jeanty,RB,LV,NYJ,Rec Yds,U 28.5,-111,BetMGM,-2.51,0.513,-2.5
+8,v1,Ashton Jeanty,RB,LV,NYJ,Rec Yds,U 28.5,-111,BetMGM,0.75,0.53,0.8
+8,original,Ashton Jeanty,RB,LV,NYJ,Receptions,O 3.5,-122,DraftKings,22.86,,
+8,market_only,Ashton Jeanty,RB,LV,NYJ,Receptions,O 3.5,-122,DraftKings,-5.21,0.521,-5.2
+8,v1,Ashton Jeanty,RB,LV,NYJ,Receptions,O 3.5,-122,DraftKings,-1.52,0.541,-1.5
+8,original,Ashton Jeanty,RB,LV,NYJ,Rush Yds,U 49.5,-114,FanDuel,3.23,,
+8,market_only,Ashton Jeanty,RB,LV,NYJ,Rush Yds,U 49.5,-114,FanDuel,-3.9,0.512,-3.9
+8,v1,Ashton Jeanty,RB,LV,NYJ,Rush Yds,U 49.5,-114,FanDuel,-0.05,0.532,-0.0
+8,original,Baker Mayfield,QB,TB,ATL,Pass Yds,U 215.5,-114,FanDuel,4.27,,
+8,market_only,Baker Mayfield,QB,TB,ATL,Pass Yds,U 215.5,-114,FanDuel,-3.87,0.512,-3.9
+8,v1,Baker Mayfield,QB,TB,ATL,Pass Yds,U 215.5,-114,FanDuel,-3.85,0.512,-3.9
+8,original,Bhayshul Tuten,RB,JAC,IND,Receptions,O 2.5,122,Caesars,-20.0,,
+8,market_only,Bhayshul Tuten,RB,JAC,IND,Receptions,O 2.5,122,Caesars,-5.24,0.427,-5.2
+8,v1,Bhayshul Tuten,RB,JAC,IND,Receptions,O 2.5,122,Caesars,-13.36,0.39,-13.4
+8,original,Bhayshul Tuten,RB,JAC,IND,Rush Yds,O 64.5,-111,DraftKings,22.48,,
+8,market_only,Bhayshul Tuten,RB,JAC,IND,Rush Yds,O 64.5,-111,DraftKings,-0.36,0.524,-0.4
+8,v1,Bhayshul Tuten,RB,JAC,IND,Rush Yds,O 64.5,-111,DraftKings,2.03,0.537,2.0
+8,original,Bijan Robinson,RB,ATL,TB,Rec Yds,U 31.5,-112,Caesars,6.03,,
+8,market_only,Bijan Robinson,RB,ATL,TB,Rec Yds,O 30.5,-113,DraftKings,-2.94,0.515,-2.9
+8,v1,Bijan Robinson,RB,ATL,TB,Rec Yds,U 31.5,-112,Caesars,2.48,0.541,2.5
+8,original,Bijan Robinson,RB,ATL,TB,Receptions,U 3.5,112,FanDuel,-5.71,,
+8,market_only,Bijan Robinson,RB,ATL,TB,Receptions,U 3.5,112,FanDuel,-5.46,0.446,-5.5
+8,v1,Bijan Robinson,RB,ATL,TB,Receptions,U 3.5,112,FanDuel,-3.86,0.453,-3.9
+8,original,Bijan Robinson,RB,ATL,TB,Rush Yds,O 79.5,-114,DraftKings,12.96,,
+8,market_only,Bijan Robinson,RB,ATL,TB,Rush Yds,O 79.5,-114,DraftKings,-4.21,0.51,-4.2
+8,v1,Bijan Robinson,RB,ATL,TB,Rush Yds,O 79.5,-114,DraftKings,-4.77,0.507,-4.8
+8,original,Blake Corum,RB,LA,LAC,Rush Yds,O 45.5,-115,Fanatics,27.91,,
+8,market_only,Blake Corum,RB,LA,LAC,Rush Yds,O 45.5,-115,Fanatics,-1.99,0.524,-2.0
+8,v1,Blake Corum,RB,LA,LAC,Rush Yds,O 45.5,-115,Fanatics,0.62,0.538,0.6
+8,original,Bo Nix,QB,DEN,KC,Pass Yds,U 208.5,-114,FanDuel,4.75,,
+8,market_only,Bo Nix,QB,DEN,KC,Pass Yds,O 203.5,-113,DraftKings,-1.37,0.523,-1.4
+8,v1,Bo Nix,QB,DEN,KC,Pass Yds,O 203.5,-113,DraftKings,-1.46,0.523,-1.5
+8,original,Breece Hall,RB,NYJ,LV,Receptions,U 2.5,-113,DraftKings,12.0,,
+8,market_only,Breece Hall,RB,NYJ,LV,Receptions,U 2.5,-113,DraftKings,-2.48,0.517,-2.5
+8,v1,Breece Hall,RB,NYJ,LV,Receptions,U 2.5,-113,DraftKings,2.78,0.545,2.8
+8,original,Breece Hall,RB,NYJ,LV,Rush Yds,O 55.5,-115,Fanatics,13.15,,
+8,market_only,Breece Hall,RB,NYJ,LV,Rush Yds,U 56.5,-115,DraftKings,-4.8,0.509,-4.8
+8,v1,Breece Hall,RB,NYJ,LV,Rush Yds,U 56.5,-115,DraftKings,-4.65,0.51,-4.6
+8,original,Brenton Strange,TE,JAC,IND,Rec Yds,O 37.5,-115,BetMGM,12.27,,
+8,market_only,Brenton Strange,TE,JAC,IND,Rec Yds,O 37.5,-115,BetMGM,-1.92,0.525,-1.9
+8,v1,Brenton Strange,TE,JAC,IND,Rec Yds,U 40.5,-125,Fanatics,-2.08,0.544,-2.1
+8,original,Brenton Strange,TE,JAC,IND,Receptions,U 3.5,119,DraftKings,-11.43,,
+8,market_only,Brenton Strange,TE,JAC,IND,Receptions,U 3.5,119,DraftKings,-1.09,0.452,-1.1
+8,v1,Brenton Strange,TE,JAC,IND,Receptions,U 3.5,119,DraftKings,-1.46,0.45,-1.5
+8,original,Brock Bowers,TE,LV,NYJ,Rec Yds,O 68.5,-114,FanDuel,10.36,,
+8,market_only,Brock Bowers,TE,LV,NYJ,Rec Yds,U 70.5,-115,Fanatics,-3.78,0.515,-3.8
+8,v1,Brock Bowers,TE,LV,NYJ,Rec Yds,U 70.5,-115,Fanatics,-1.55,0.527,-1.6
+8,original,Brock Bowers,TE,LV,NYJ,Receptions,U 5.5,120,Fanatics,-7.27,,
+8,market_only,Brock Bowers,TE,LV,NYJ,Receptions,U 5.5,120,Fanatics,-7.63,0.42,-7.6
+8,v1,Brock Bowers,TE,LV,NYJ,Receptions,U 5.5,120,Fanatics,-1.4,0.448,-1.4
+8,original,Bucky Irving,RB,TB,ATL,Receptions,O 3.5,148,Caesars,-11.43,,
+8,market_only,Bucky Irving,RB,TB,ATL,Receptions,O 3.5,148,Caesars,-4.84,0.384,-4.8
+8,v1,Bucky Irving,RB,TB,ATL,Receptions,O 3.5,148,Caesars,-1.0,0.399,-1.0
+8,original,Bucky Irving,RB,TB,ATL,Rush Yds,U 70.5,-114,FanDuel,-4.11,,
+8,market_only,Bucky Irving,RB,TB,ATL,Rush Yds,O 69.5,-111,BetMGM,-3.44,0.508,-3.4
+8,v1,Bucky Irving,RB,TB,ATL,Rush Yds,U 70.5,-114,FanDuel,-2.56,0.519,-2.6
+8,original,Cade Otton,TE,TB,ATL,Rec Yds,U 36.5,-115,BetMGM,13.7,,
+8,market_only,Cade Otton,TE,TB,ATL,Rec Yds,U 36.5,-115,BetMGM,1.14,0.541,1.1
+8,v1,Cade Otton,TE,TB,ATL,Rec Yds,U 36.5,-115,BetMGM,8.95,0.583,9.0
+8,original,Cade Otton,TE,TB,ATL,Receptions,U 3.5,-110,BetMGM,8.57,,
+8,market_only,Cade Otton,TE,TB,ATL,Receptions,O 3.5,-110,Fanatics,-3.77,0.504,-3.8
+8,v1,Cade Otton,TE,TB,ATL,Receptions,U 3.5,-110,BetMGM,1.54,0.532,1.5
+8,original,Caleb Douglas,WR,MIA,NE,Rec Yds,U 39.5,-114,FanDuel,-4.81,,
+8,market_only,Caleb Douglas,WR,MIA,NE,Rec Yds,O 37.5,-113,DraftKings,-1.99,0.52,-2.0
+8,v1,Caleb Douglas,WR,MIA,NE,Rec Yds,U 39.5,-114,FanDuel,0.85,0.537,0.9
+8,original,Caleb Douglas,WR,MIA,NE,Receptions,O 3.5,145,Caesars,-11.43,,
+8,market_only,Caleb Douglas,WR,MIA,NE,Receptions,O 3.5,145,Caesars,-3.24,0.395,-3.2
+8,v1,Caleb Douglas,WR,MIA,NE,Receptions,U 2.5,132,DraftKings,3.84,0.448,3.8
+8,original,Caleb Williams,QB,CHI,SEA,Pass Yds,U 231.5,-112,DraftKings,7.82,,
+8,market_only,Caleb Williams,QB,CHI,SEA,Pass Yds,U 231.5,-112,DraftKings,1.01,0.534,1.0
+8,v1,Caleb Williams,QB,CHI,SEA,Pass Yds,U 231.5,-112,DraftKings,3.33,0.546,3.3
+8,original,Calvin Ridley,WR,TEN,CIN,Receptions,O 2.5,167,Caesars,16.0,,
+8,market_only,Calvin Ridley,WR,TEN,CIN,Receptions,O 2.5,167,Caesars,0.93,0.378,0.9
+8,v1,Calvin Ridley,WR,TEN,CIN,Receptions,O 2.5,167,Caesars,17.34,0.439,17.3
+8,original,Cam Ward,QB,TEN,CIN,Pass Yds,O 188.5,-115,BetMGM,5.52,,
+8,market_only,Cam Ward,QB,TEN,CIN,Pass Yds,O 188.5,-115,BetMGM,-2.56,0.521,-2.6
+8,v1,Cam Ward,QB,TEN,CIN,Pass Yds,O 188.5,-115,BetMGM,2.2,0.547,2.2
+8,original,CeeDee Lamb,WR,DAL,ARI,Rec Yds,O 80.5,-114,FanDuel,8.45,,
+8,market_only,CeeDee Lamb,WR,DAL,ARI,Rec Yds,U 84.5,-113,DraftKings,0.86,0.535,0.9
+8,v1,CeeDee Lamb,WR,DAL,ARI,Rec Yds,U 84.5,-113,DraftKings,3.76,0.55,3.8
+8,original,CeeDee Lamb,WR,DAL,ARI,Receptions,U 6.5,-106,DraftKings,1.54,,
+8,market_only,CeeDee Lamb,WR,DAL,ARI,Receptions,U 6.5,-106,DraftKings,-1.56,0.507,-1.6
+8,v1,CeeDee Lamb,WR,DAL,ARI,Receptions,U 6.5,-106,DraftKings,4.27,0.537,4.3
+8,original,Charlie Kolar,TE,LAC,LA,Receptions,O 2.5,135,BetMGM,-12.0,,
+8,market_only,Charlie Kolar,TE,LAC,LA,Receptions,O 2.5,135,BetMGM,1.47,0.432,1.5
+8,v1,Charlie Kolar,TE,LAC,LA,Receptions,O 2.5,135,BetMGM,-4.94,0.405,-4.9
+8,original,Chase Brown,RB,CIN,TEN,Receptions,O 3.5,-102,FanDuel,11.43,,
+8,market_only,Chase Brown,RB,CIN,TEN,Receptions,O 3.5,-102,FanDuel,-2.39,0.493,-2.4
+8,v1,Chase Brown,RB,CIN,TEN,Receptions,O 3.5,-102,FanDuel,-2.05,0.495,-2.1
+8,original,Chase Brown,RB,CIN,TEN,Rush Yds,U 59.5,-115,BetMGM,1.18,,
+8,market_only,Chase Brown,RB,CIN,TEN,Rush Yds,O 57.5,-113,DraftKings,-3.1,0.514,-3.1
+8,v1,Chase Brown,RB,CIN,TEN,Rush Yds,U 59.5,-115,BetMGM,-0.36,0.533,-0.4
+8,original,Chris Godwin,WR,TB,ATL,Rec Yds,U 41.5,-115,BetMGM,-1.45,,
+8,market_only,Chris Godwin,WR,TB,ATL,Rec Yds,O 39.5,-114,FanDuel,-2.94,0.517,-2.9
+8,v1,Chris Godwin,WR,TB,ATL,Rec Yds,U 41.5,-115,BetMGM,1.54,0.543,1.5
+8,original,Chris Godwin,WR,TB,ATL,Receptions,O 4.5,100,BetMGM,2.22,,
+8,market_only,Chris Godwin,WR,TB,ATL,Receptions,U 4.5,-122,DraftKings,-3.29,0.531,-3.3
+8,v1,Chris Godwin,WR,TB,ATL,Receptions,U 4.5,-122,DraftKings,-0.42,0.547,-0.4
+8,original,Chris Rodriguez,RB,JAC,IND,Rush Yds,O 30.5,-120,Fanatics,24.92,,
+8,market_only,Chris Rodriguez,RB,JAC,IND,Rush Yds,U 31.5,-110,Caesars,-4.43,0.501,-4.4
+8,v1,Chris Rodriguez,RB,JAC,IND,Rush Yds,O 30.5,-120,Fanatics,-3.18,0.528,-3.2
+8,original,Colston Loveland,TE,CHI,SEA,Rec Yds,U 43.5,-115,BetMGM,7.36,,
+8,market_only,Colston Loveland,TE,CHI,SEA,Rec Yds,U 43.5,-115,BetMGM,-4.16,0.513,-4.2
+8,v1,Colston Loveland,TE,CHI,SEA,Rec Yds,U 43.5,-115,BetMGM,3.58,0.554,3.6
+8,original,Colston Loveland,TE,CHI,SEA,Receptions,O 4.5,116,FanDuel,-4.44,,
+8,market_only,Colston Loveland,TE,CHI,SEA,Receptions,O 4.5,116,FanDuel,-5.03,0.44,-5.0
+8,v1,Colston Loveland,TE,CHI,SEA,Receptions,O 4.5,116,FanDuel,-11.18,0.411,-11.2
+8,original,Dak Prescott,QB,DAL,ARI,Pass Yds,O 265.5,-120,Fanatics,3.62,,
+8,market_only,Dak Prescott,QB,DAL,ARI,Pass Yds,U 271.5,-114,FanDuel,-2.97,0.517,-3.0
+8,v1,Dak Prescott,QB,DAL,ARI,Pass Yds,O 265.5,-120,Fanatics,-1.0,0.54,-1.0
+8,original,Dallas Goedert,TE,PHI,WAS,Rec Yds,U 45.5,-115,BetMGM,1.54,,
+8,market_only,Dallas Goedert,TE,PHI,WAS,Rec Yds,U 45.5,-115,BetMGM,-1.85,0.525,-1.9
+8,v1,Dallas Goedert,TE,PHI,WAS,Rec Yds,U 45.5,-115,BetMGM,3.75,0.555,3.7
+8,original,Dallas Goedert,TE,PHI,WAS,Receptions,O 4.5,-130,BetMGM,6.67,,
+8,market_only,Dallas Goedert,TE,PHI,WAS,Receptions,O 4.5,-130,BetMGM,1.02,0.571,1.0
+8,v1,Dallas Goedert,TE,PHI,WAS,Receptions,O 4.5,-130,BetMGM,-0.19,0.564,-0.2
+8,original,Dalton Kincaid,TE,BUF,BAL,Rec Yds,O 44.5,-115,BetMGM,9.89,,
+8,market_only,Dalton Kincaid,TE,BUF,BAL,Rec Yds,U 46.5,-114,FanDuel,-2.8,0.518,-2.8
+8,v1,Dalton Kincaid,TE,BUF,BAL,Rec Yds,U 46.5,-114,FanDuel,1.56,0.541,1.6
+8,original,Dalton Kincaid,TE,BUF,BAL,Receptions,O 3.5,-120,Fanatics,11.43,,
+8,market_only,Dalton Kincaid,TE,BUF,BAL,Receptions,O 3.5,-120,Fanatics,-1.37,0.538,-1.4
+8,v1,Dalton Kincaid,TE,BUF,BAL,Receptions,O 3.5,-120,Fanatics,-1.06,0.54,-1.1
+8,original,D'Andre Swift,RB,CHI,SEA,Rush Yds,U 65.5,-120,Fanatics,1.68,,
+8,market_only,D'Andre Swift,RB,CHI,SEA,Rush Yds,O 62.5,-115,BetMGM,-2.12,0.524,-2.1
+8,v1,D'Andre Swift,RB,CHI,SEA,Rush Yds,U 65.5,-120,Fanatics,-1.65,0.536,-1.6
+8,original,Daniel Jones,QB,IND,JAC,Pass Yds,O 185.5,-115,Fanatics,14.23,,
+8,market_only,Daniel Jones,QB,IND,JAC,Pass Yds,U 190.5,-115,BetMGM,-2.2,0.523,-2.2
+8,v1,Daniel Jones,QB,IND,JAC,Pass Yds,O 185.5,-115,Fanatics,6.72,0.571,6.7
+8,original,Darius Cooper,WR,PHI,WAS,Rec Yds,O 25.5,-114,FanDuel,51.76,,
+8,market_only,Darius Cooper,WR,PHI,WAS,Rec Yds,U 27.5,-118,BetMGM,-2.78,0.526,-2.8
+8,v1,Darius Cooper,WR,PHI,WAS,Rec Yds,O 25.5,-114,FanDuel,-2.69,0.518,-2.7
+8,original,Darius Cooper,WR,PHI,WAS,Receptions,O 2.5,-103,Caesars,12.0,,
+8,market_only,Darius Cooper,WR,PHI,WAS,Receptions,U 2.5,-123,DraftKings,-5.19,0.523,-5.2
+8,v1,Darius Cooper,WR,PHI,WAS,Receptions,O 2.5,-103,Caesars,-5.37,0.48,-5.4
+8,original,Darnell Washington,TE,PIT,CLE,Receptions,O 2.5,123,DraftKings,-4.0,,
+8,market_only,Darnell Washington,TE,PIT,CLE,Receptions,O 2.5,123,DraftKings,0.44,0.45,0.4
+8,v1,Darnell Washington,TE,PIT,CLE,Receptions,O 2.5,123,DraftKings,-3.56,0.432,-3.6
+8,original,DeMario Douglas,WR,NE,MIA,Rec Yds,U 41.5,-115,BetMGM,-4.1,,
+8,market_only,DeMario Douglas,WR,NE,MIA,Rec Yds,U 41.5,-115,BetMGM,-4.89,0.509,-4.9
+8,v1,DeMario Douglas,WR,NE,MIA,Rec Yds,U 41.5,-115,BetMGM,-0.06,0.535,-0.1
+8,original,DeMario Douglas,WR,NE,MIA,Receptions,O 3.5,-108,FanDuel,0.0,,
+8,market_only,DeMario Douglas,WR,NE,MIA,Receptions,O 3.5,-108,FanDuel,-4.49,0.496,-4.5
+8,v1,DeMario Douglas,WR,NE,MIA,Receptions,U 3.5,-114,DraftKings,-1.67,0.524,-1.7
+8,original,Denzel Boston,WR,CLE,PIT,Rec Yds,U 50.5,-113,Caesars,-2.77,,
+8,market_only,Denzel Boston,WR,CLE,PIT,Rec Yds,O 48.5,-115,BetMGM,-2.01,0.524,-2.0
+8,v1,Denzel Boston,WR,CLE,PIT,Rec Yds,U 50.5,-113,Caesars,1.08,0.536,1.1
+8,original,Denzel Boston,WR,CLE,PIT,Receptions,U 3.5,-125,BetMGM,2.86,,
+8,market_only,Denzel Boston,WR,CLE,PIT,Receptions,O 3.5,104,FanDuel,-3.21,0.474,-3.2
+8,v1,Denzel Boston,WR,CLE,PIT,Receptions,U 3.5,-125,BetMGM,-0.25,0.554,-0.3
+8,original,Derrick Henry,RB,BAL,BUF,Rush Yds,U 80.5,-113,DraftKings,-4.72,,
+8,market_only,Derrick Henry,RB,BAL,BUF,Rush Yds,O 76.5,-115,BetMGM,-1.57,0.526,-1.6
+8,v1,Derrick Henry,RB,BAL,BUF,Rush Yds,U 80.5,-113,DraftKings,0.35,0.532,0.3
+8,original,Deshaun Watson,QB,CLE,PIT,Pass Yds,O 207.5,-115,BetMGM,1.69,,
+8,market_only,Deshaun Watson,QB,CLE,PIT,Pass Yds,U 210.5,-111,DraftKings,-3.36,0.508,-3.4
+8,v1,Deshaun Watson,QB,CLE,PIT,Pass Yds,O 207.5,-115,BetMGM,-1.15,0.529,-1.2
+8,original,Deshaun Watson,QB,CLE,PIT,Rush Yds,O 25.5,-110,Fanatics,8.24,,
+8,market_only,Deshaun Watson,QB,CLE,PIT,Rush Yds,U 26.5,-110,DraftKings,-1.84,0.514,-1.8
+8,v1,Deshaun Watson,QB,CLE,PIT,Rush Yds,U 26.5,-110,DraftKings,-1.44,0.516,-1.4
+8,original,D.J. Moore,WR,BUF,BAL,Rec Yds,O 53.5,-114,FanDuel,10.47,,
+8,market_only,D.J. Moore,WR,BUF,BAL,Rec Yds,U 55.5,-111,DraftKings,-2.16,0.515,-2.2
+8,v1,D.J. Moore,WR,BUF,BAL,Rec Yds,U 55.5,-111,DraftKings,1.49,0.534,1.5
+8,original,D.J. Moore,WR,BUF,BAL,Receptions,O 4.5,130,FanDuel,-6.67,,
+8,market_only,D.J. Moore,WR,BUF,BAL,Receptions,O 4.5,130,FanDuel,-0.81,0.431,-0.8
+8,v1,D.J. Moore,WR,BUF,BAL,Receptions,O 4.5,130,FanDuel,-8.31,0.399,-8.3
+8,original,DK Metcalf,WR,PIT,CLE,Rec Yds,U 54.5,-115,BetMGM,2.57,,
+8,market_only,DK Metcalf,WR,PIT,CLE,Rec Yds,U 54.5,-115,BetMGM,-3.37,0.517,-3.4
+8,v1,DK Metcalf,WR,PIT,CLE,Rec Yds,U 54.5,-115,BetMGM,3.04,0.551,3.0
+8,original,DK Metcalf,WR,PIT,CLE,Receptions,O 4.5,124,FanDuel,-2.22,,
+8,market_only,DK Metcalf,WR,PIT,CLE,Receptions,O 4.5,124,FanDuel,-4.19,0.428,-4.2
+8,v1,DK Metcalf,WR,PIT,CLE,Receptions,O 4.5,124,FanDuel,-9.56,0.404,-9.6
+8,original,Drake London,WR,ATL,TB,Rec Yds,O 77.5,-115,BetMGM,5.03,,
+8,market_only,Drake London,WR,ATL,TB,Rec Yds,O 77.5,-115,BetMGM,-3.91,0.514,-3.9
+8,v1,Drake London,WR,ATL,TB,Rec Yds,U 79.5,-114,FanDuel,0.25,0.534,0.2
+8,original,Drake London,WR,ATL,TB,Receptions,O 6.5,120,BetMGM,-4.62,,
+8,market_only,Drake London,WR,ATL,TB,Receptions,O 6.5,120,BetMGM,-1.11,0.449,-1.1
+8,v1,Drake London,WR,ATL,TB,Receptions,O 6.5,120,BetMGM,-9.34,0.412,-9.3
+8,original,Drake Maye,QB,NE,MIA,Pass Yds,O 233.5,-111,DraftKings,6.0,,
+8,market_only,Drake Maye,QB,NE,MIA,Pass Yds,O 233.5,-111,DraftKings,-2.29,0.514,-2.3
+8,v1,Drake Maye,QB,NE,MIA,Pass Yds,O 233.5,-111,DraftKings,2.91,0.541,2.9
+8,original,Dylan Sampson,RB,CLE,PIT,Receptions,O 2.5,104,DraftKings,-4.0,,
+8,market_only,Dylan Sampson,RB,CLE,PIT,Receptions,O 2.5,104,DraftKings,-3.66,0.472,-3.7
+8,v1,Dylan Sampson,RB,CLE,PIT,Receptions,U 2.5,-125,BetMGM,-0.7,0.552,-0.7
+8,original,Efton Chism,WR,NE,MIA,Receptions,O 2.5,147,DraftKings,-32.0,,
+8,market_only,Efton Chism,WR,NE,MIA,Receptions,O 2.5,147,DraftKings,-2.46,0.395,-2.5
+8,v1,Efton Chism,WR,NE,MIA,Receptions,O 2.5,147,DraftKings,-2.17,0.396,-2.2
+8,original,Eli Raridon,TE,NE,MIA,Receptions,U 2.5,-130,BetMGM,16.0,,
+8,market_only,Eli Raridon,TE,NE,MIA,Receptions,U 2.5,-130,BetMGM,-3.59,0.545,-3.6
+8,v1,Eli Raridon,TE,NE,MIA,Receptions,U 2.5,-130,BetMGM,2.15,0.577,2.2
+8,original,Elic Ayomanor,WR,TEN,CIN,Rec Yds,O 32.5,-113,Caesars,16.62,,
+8,market_only,Elic Ayomanor,WR,TEN,CIN,Rec Yds,U 33.5,-120,Hard Rock,-4.53,0.521,-4.5
+8,v1,Elic Ayomanor,WR,TEN,CIN,Rec Yds,U 33.5,-120,Hard Rock,-1.39,0.538,-1.4
+8,original,Elic Ayomanor,WR,TEN,CIN,Receptions,U 2.5,126,DraftKings,-12.0,,
+8,market_only,Elic Ayomanor,WR,TEN,CIN,Receptions,U 2.5,126,DraftKings,1.0,0.447,1.0
+8,v1,Elic Ayomanor,WR,TEN,CIN,Receptions,U 2.5,126,DraftKings,0.67,0.445,0.7
+8,original,Elijah Higgins,TE,ARI,DAL,Receptions,O 2.5,140,FanDuel,-28.0,,
+8,market_only,Elijah Higgins,TE,ARI,DAL,Receptions,O 2.5,140,FanDuel,-2.56,0.406,-2.6
+8,v1,Elijah Higgins,TE,ARI,DAL,Receptions,O 2.5,140,FanDuel,-13.38,0.361,-13.4
+8,original,Evan Engram,TE,DEN,KC,Receptions,O 2.5,100,BetMGM,0.0,,
+8,market_only,Evan Engram,TE,DEN,KC,Receptions,U 2.5,-121,Caesars,-3.04,0.531,-3.0
+8,v1,Evan Engram,TE,DEN,KC,Receptions,U 2.5,-121,Caesars,-0.63,0.544,-0.6
+8,original,Garrett Wilson,WR,NYJ,LV,Rec Yds,U 64.5,-115,Hard Rock,1.09,,
+8,market_only,Garrett Wilson,WR,NYJ,LV,Rec Yds,O 63.5,-111,DraftKings,-3.43,0.508,-3.4
+8,v1,Garrett Wilson,WR,NYJ,LV,Rec Yds,U 64.5,-115,Hard Rock,0.42,0.537,0.4
+8,original,Garrett Wilson,WR,NYJ,LV,Receptions,U 5.5,-122,Caesars,7.27,,
+8,market_only,Garrett Wilson,WR,NYJ,LV,Receptions,O 5.5,102,DraftKings,-2.95,0.48,-3.0
+8,v1,Garrett Wilson,WR,NYJ,LV,Receptions,U 5.5,-122,Caesars,2.66,0.564,2.7
+8,original,Geno Smith,QB,NYJ,LV,Pass Yds,O 220.5,-120,Fanatics,10.29,,
+8,market_only,Geno Smith,QB,NYJ,LV,Pass Yds,U 226.5,-115,BetMGM,-3.06,0.518,-3.1
+8,v1,Geno Smith,QB,NYJ,LV,Pass Yds,O 220.5,-120,Fanatics,3.88,0.567,3.9
+8,original,George Pickens,WR,DAL,ARI,Rec Yds,O 62.5,-114,DraftKings,6.88,,
+8,market_only,George Pickens,WR,DAL,ARI,Rec Yds,O 62.5,-114,DraftKings,-1.8,0.523,-1.8
+8,v1,George Pickens,WR,DAL,ARI,Rec Yds,U 65.5,-114,FanDuel,1.46,0.54,1.5
+8,original,George Pickens,WR,DAL,ARI,Receptions,O 4.5,103,DraftKings,6.67,,
+8,market_only,George Pickens,WR,DAL,ARI,Receptions,O 4.5,103,DraftKings,-1.59,0.485,-1.6
+8,v1,George Pickens,WR,DAL,ARI,Receptions,U 4.5,-120,FanDuel,-2.74,0.531,-2.7
+8,original,Germie Bernard,WR,PIT,CLE,Rec Yds,O 43.5,-114,DraftKings,15.4,,
+8,market_only,Germie Bernard,WR,PIT,CLE,Rec Yds,U 45.5,-115,BetMGM,-2.01,0.524,-2.0
+8,v1,Germie Bernard,WR,PIT,CLE,Rec Yds,U 45.5,-115,BetMGM,0.38,0.537,0.4
+8,original,Germie Bernard,WR,PIT,CLE,Receptions,O 4.5,-102,FanDuel,13.33,,
+8,market_only,Germie Bernard,WR,PIT,CLE,Receptions,O 4.5,-102,FanDuel,-0.7,0.501,-0.7
+8,v1,Germie Bernard,WR,PIT,CLE,Receptions,O 4.5,-102,FanDuel,0.56,0.508,0.6
+8,original,Greg Dulcich,TE,MIA,NE,Rec Yds,U 30.5,-125,Fanatics,1.31,,
+8,market_only,Greg Dulcich,TE,MIA,NE,Rec Yds,O 28.5,-112,DraftKings,-4.13,0.506,-4.1
+8,v1,Greg Dulcich,TE,MIA,NE,Rec Yds,U 30.5,-125,Fanatics,0.15,0.556,0.2
+8,original,Greg Dulcich,TE,MIA,NE,Receptions,O 3.5,125,DraftKings,-14.29,,
+8,market_only,Greg Dulcich,TE,MIA,NE,Receptions,O 3.5,125,DraftKings,-4.76,0.423,-4.8
+8,v1,Greg Dulcich,TE,MIA,NE,Receptions,O 3.5,125,DraftKings,-13.48,0.385,-13.5
+8,original,Gunnar Helm,TE,TEN,CIN,Receptions,O 2.5,-120,DraftKings,8.0,,
+8,market_only,Gunnar Helm,TE,TEN,CIN,Receptions,U 2.5,106,FanDuel,-1.07,0.48,-1.1
+8,v1,Gunnar Helm,TE,TEN,CIN,Receptions,U 2.5,106,FanDuel,-0.36,0.484,-0.4
+8,original,Harold Fannin,TE,CLE,PIT,Rec Yds,U 34.5,-114,FanDuel,-4.35,,
+8,market_only,Harold Fannin,TE,CLE,PIT,Rec Yds,O 34.5,-109,DraftKings,-4.39,0.499,-4.4
+8,v1,Harold Fannin,TE,CLE,PIT,Rec Yds,U 34.5,-114,FanDuel,0.2,0.534,0.2
+8,original,Harold Fannin,TE,CLE,PIT,Receptions,O 3.5,-121,DraftKings,2.86,,
+8,market_only,Harold Fannin,TE,CLE,PIT,Receptions,O 3.5,-121,DraftKings,-5.06,0.52,-5.1
+8,v1,Harold Fannin,TE,CLE,PIT,Receptions,U 3.5,-104,Caesars,-2.76,0.496,-2.8
+8,original,Hunter Henry,TE,NE,MIA,Rec Yds,U 45.5,-105,Fanatics,15.16,,
+8,market_only,Hunter Henry,TE,NE,MIA,Rec Yds,U 45.5,-105,Fanatics,-1.12,0.506,-1.1
+8,v1,Hunter Henry,TE,NE,MIA,Rec Yds,U 45.5,-105,Fanatics,9.75,0.562,9.8
+8,original,Hunter Henry,TE,NE,MIA,Receptions,O 4.5,116,FanDuel,-26.67,,
+8,market_only,Hunter Henry,TE,NE,MIA,Receptions,O 4.5,116,FanDuel,-3.08,0.449,-3.1
+8,v1,Hunter Henry,TE,NE,MIA,Receptions,O 4.5,116,FanDuel,-18.45,0.378,-18.5
+8,original,Jacoby Brissett,QB,ARI,DAL,Pass Yds,U 258.5,-114,FanDuel,5.45,,
+8,market_only,Jacoby Brissett,QB,ARI,DAL,Pass Yds,O 255.5,-115,Fanatics,-3.9,0.514,-3.9
+8,v1,Jacoby Brissett,QB,ARI,DAL,Pass Yds,U 258.5,-114,FanDuel,-1.79,0.523,-1.8
+8,original,Jahan Dotson,WR,ATL,TB,Rec Yds,U 25.5,-114,FanDuel,-27.06,,
+8,market_only,Jahan Dotson,WR,ATL,TB,Rec Yds,U 25.5,-114,FanDuel,-5.18,0.505,-5.2
+8,v1,Jahan Dotson,WR,ATL,TB,Rec Yds,U 25.5,-114,FanDuel,-2.96,0.517,-3.0
+8,original,Jahan Dotson,WR,ATL,TB,Receptions,O 2.5,143,Caesars,-12.0,,
+8,market_only,Jahan Dotson,WR,ATL,TB,Receptions,O 2.5,143,Caesars,-0.78,0.408,-0.8
+8,v1,Jahan Dotson,WR,ATL,TB,Receptions,O 2.5,143,Caesars,-1.05,0.407,-1.1
+8,original,Jahmyr Gibbs,RB,DET,MIN,Rec Yds,U 31.5,-118,BetMGM,13.02,,
+8,market_only,Jahmyr Gibbs,RB,DET,MIN,Rec Yds,U 31.5,-118,BetMGM,-0.77,0.537,-0.8
+8,v1,Jahmyr Gibbs,RB,DET,MIN,Rec Yds,U 31.5,-118,BetMGM,6.56,0.577,6.6
+8,original,Jahmyr Gibbs,RB,DET,MIN,Receptions,U 3.5,120,BetMGM,2.86,,
+8,market_only,Jahmyr Gibbs,RB,DET,MIN,Receptions,O 4.5,128,Caesars,-6.03,0.412,-6.0
+8,v1,Jahmyr Gibbs,RB,DET,MIN,Receptions,U 3.5,120,BetMGM,1.61,0.462,1.6
+8,original,Jahmyr Gibbs,RB,DET,MIN,Rush Yds,U 87.5,-111,DraftKings,-8.0,,
+8,market_only,Jahmyr Gibbs,RB,DET,MIN,Rush Yds,U 87.5,-111,DraftKings,-3.96,0.505,-4.0
+8,v1,Jahmyr Gibbs,RB,DET,MIN,Rush Yds,U 87.5,-111,DraftKings,-2.52,0.513,-2.5
+8,original,Jake Ferguson,TE,DAL,ARI,Receptions,O 2.5,145,Caesars,-12.0,,
+8,market_only,Jake Ferguson,TE,DAL,ARI,Receptions,O 2.5,145,Caesars,-3.6,0.393,-3.6
+8,v1,Jake Ferguson,TE,DAL,ARI,Receptions,O 2.5,145,Caesars,-3.88,0.392,-3.9
+8,original,Ja'Kobi Lane,WR,BAL,BUF,Rec Yds,O 30.5,-125,BetMGM,30.49,,
+8,market_only,Ja'Kobi Lane,WR,BAL,BUF,Rec Yds,U 32.5,-113,Caesars,-4.56,0.506,-4.6
+8,v1,Ja'Kobi Lane,WR,BAL,BUF,Rec Yds,U 32.5,-113,Caesars,-2.9,0.515,-2.9
+8,original,Ja'Kobi Lane,WR,BAL,BUF,Receptions,O 2.5,-112,DraftKings,28.0,,
+8,market_only,Ja'Kobi Lane,WR,BAL,BUF,Receptions,O 2.5,-112,DraftKings,-1.7,0.519,-1.7
+8,v1,Ja'Kobi Lane,WR,BAL,BUF,Receptions,O 2.5,-112,DraftKings,2.29,0.54,2.3
+8,original,Jakobi Meyers,WR,JAC,IND,Rec Yds,O 35.5,-110,Caesars,24.23,,
+8,market_only,Jakobi Meyers,WR,JAC,IND,Rec Yds,U 35.5,-105,Fanatics,-1.3,0.506,-1.3
+8,v1,Jakobi Meyers,WR,JAC,IND,Rec Yds,U 35.5,-105,Fanatics,-0.08,0.512,-0.1
+8,original,Jakobi Meyers,WR,JAC,IND,Receptions,O 3.5,133,DraftKings,-2.86,,
+8,market_only,Jakobi Meyers,WR,JAC,IND,Receptions,O 3.5,133,DraftKings,-4.26,0.411,-4.3
+8,v1,Jakobi Meyers,WR,JAC,IND,Receptions,O 3.5,133,DraftKings,-9.1,0.39,-9.1
+8,original,Ja'Marr Chase,WR,CIN,TEN,Rec Yds,U 80.5,-111,DraftKings,0.5,,
+8,market_only,Ja'Marr Chase,WR,CIN,TEN,Rec Yds,U 80.5,-111,DraftKings,-3.91,0.506,-3.9
+8,v1,Ja'Marr Chase,WR,CIN,TEN,Rec Yds,U 80.5,-111,DraftKings,1.63,0.535,1.6
+8,original,Ja'Marr Chase,WR,CIN,TEN,Receptions,O 6.5,-120,Fanatics,4.62,,
+8,market_only,Ja'Marr Chase,WR,CIN,TEN,Receptions,O 6.5,-120,Fanatics,0.08,0.546,0.1
+8,v1,Ja'Marr Chase,WR,CIN,TEN,Receptions,O 6.5,-120,Fanatics,-2.45,0.532,-2.5
+8,original,James Cook,RB,BUF,BAL,Rush Yds,U 86.5,-115,BetMGM,-4.74,,
+8,market_only,James Cook,RB,BUF,BAL,Rush Yds,U 86.5,-115,BetMGM,-0.03,0.535,-0.0
+8,v1,James Cook,RB,BUF,BAL,Rush Yds,U 86.5,-115,BetMGM,1.6,0.543,1.6
+8,original,Jameson Williams,WR,DET,MIN,Rec Yds,U 53.5,-114,DraftKings,4.11,,
+8,market_only,Jameson Williams,WR,DET,MIN,Rec Yds,U 53.5,-114,DraftKings,-0.69,0.529,-0.7
+8,v1,Jameson Williams,WR,DET,MIN,Rec Yds,U 53.5,-114,DraftKings,5.64,0.563,5.6
+8,original,Jameson Williams,WR,DET,MIN,Receptions,O 3.5,110,Fanatics,-5.71,,
+8,market_only,Jameson Williams,WR,DET,MIN,Receptions,O 3.5,110,Fanatics,-2.84,0.463,-2.8
+8,v1,Jameson Williams,WR,DET,MIN,Receptions,O 3.5,110,Fanatics,-8.3,0.437,-8.3
+8,original,Jared Goff,QB,DET,MIN,Pass Yds,U 260.5,-112,DraftKings,9.79,,
+8,market_only,Jared Goff,QB,DET,MIN,Pass Yds,O 255.5,-115,Fanatics,-1.66,0.526,-1.7
+8,v1,Jared Goff,QB,DET,MIN,Pass Yds,U 260.5,-112,DraftKings,2.75,0.543,2.8
+8,original,Javonte Williams,RB,DAL,ARI,Receptions,O 2.5,161,Caesars,-16.0,,
+8,market_only,Javonte Williams,RB,DAL,ARI,Receptions,O 2.5,161,Caesars,-1.13,0.379,-1.1
+8,v1,Javonte Williams,RB,DAL,ARI,Receptions,O 2.5,161,Caesars,4.33,0.4,4.3
+8,original,Javonte Williams,RB,DAL,ARI,Rush Yds,U 77.5,-115,BetMGM,-1.42,,
+8,market_only,Javonte Williams,RB,DAL,ARI,Rush Yds,U 77.5,-115,BetMGM,-4.69,0.51,-4.7
+8,v1,Javonte Williams,RB,DAL,ARI,Rush Yds,U 77.5,-115,BetMGM,-1.26,0.528,-1.3
+8,original,Jaxon Smith-Njigba,WR,SEA,CHI,Rec Yds,O 98.5,-110,DraftKings,6.5,,
+8,market_only,Jaxon Smith-Njigba,WR,SEA,CHI,Rec Yds,O 98.5,-110,DraftKings,-3.15,0.507,-3.2
+8,v1,Jaxon Smith-Njigba,WR,SEA,CHI,Rec Yds,U 100.5,-115,Fanatics,-0.9,0.53,-0.9
+8,original,Jaxon Smith-Njigba,WR,SEA,CHI,Receptions,U 7.5,-125,BetMGM,4.0,,
+8,market_only,Jaxon Smith-Njigba,WR,SEA,CHI,Receptions,U 7.5,-125,BetMGM,-2.75,0.54,-2.8
+8,v1,Jaxon Smith-Njigba,WR,SEA,CHI,Receptions,U 7.5,-125,BetMGM,4.36,0.58,4.4
+8,original,Jayden Daniels,QB,WAS,PHI,Pass Yds,O 195.5,-120,Fanatics,8.18,,
+8,market_only,Jayden Daniels,QB,WAS,PHI,Pass Yds,U 200.5,-113,DraftKings,-3.09,0.514,-3.1
+8,v1,Jayden Daniels,QB,WAS,PHI,Pass Yds,O 195.5,-120,Fanatics,2.24,0.558,2.2
+8,original,Jayden Daniels,QB,WAS,PHI,Rush Yds,U 36.5,-114,FanDuel,2.19,,
+8,market_only,Jayden Daniels,QB,WAS,PHI,Rush Yds,O 35.5,-115,DraftKings,-4.36,0.512,-4.4
+8,v1,Jayden Daniels,QB,WAS,PHI,Rush Yds,U 36.5,-114,FanDuel,-2.23,0.521,-2.2
+8,original,Jaylen Warren,RB,PIT,CLE,Rec Yds,U 25.5,-114,FanDuel,5.49,,
+8,market_only,Jaylen Warren,RB,PIT,CLE,Rec Yds,U 25.5,-114,FanDuel,-3.87,0.512,-3.9
+8,v1,Jaylen Warren,RB,PIT,CLE,Rec Yds,U 25.5,-114,FanDuel,3.3,0.55,3.3
+8,original,Jaylen Warren,RB,PIT,CLE,Receptions,O 3.5,155,Fanatics,-17.14,,
+8,market_only,Jaylen Warren,RB,PIT,CLE,Receptions,U 2.5,113,DraftKings,-6.55,0.439,-6.5
+8,v1,Jaylen Warren,RB,PIT,CLE,Receptions,U 2.5,113,DraftKings,-7.89,0.432,-7.9
+8,original,Jaylen Warren,RB,PIT,CLE,Rush Yds,U 66.5,-113,DraftKings,-3.16,,
+8,market_only,Jaylen Warren,RB,PIT,CLE,Rush Yds,U 66.5,-113,DraftKings,-2.77,0.516,-2.8
+8,v1,Jaylen Warren,RB,PIT,CLE,Rush Yds,U 66.5,-113,DraftKings,-0.77,0.526,-0.8
+8,original,Jeremiyah Love,RB,ARI,DAL,Receptions,O 2.5,135,BetMGM,-8.0,,
+8,market_only,Jeremiyah Love,RB,ARI,DAL,Receptions,O 2.5,135,BetMGM,-1.54,0.419,-1.5
+8,v1,Jeremiyah Love,RB,ARI,DAL,Receptions,O 2.5,135,BetMGM,-6.79,0.397,-6.8
+8,original,Jeremiyah Love,RB,ARI,DAL,Rush Yds,O 39.5,-120,BetMGM,27.85,,
+8,market_only,Jeremiyah Love,RB,ARI,DAL,Rush Yds,U 41.5,-114,DraftKings,-3.86,0.512,-3.9
+8,v1,Jeremiyah Love,RB,ARI,DAL,Rush Yds,O 39.5,-120,BetMGM,-1.88,0.535,-1.9
+8,original,Jerry Jeudy,WR,CLE,PIT,Receptions,O 2.5,148,FanDuel,0.0,,
+8,market_only,Jerry Jeudy,WR,CLE,PIT,Receptions,O 2.5,148,FanDuel,-0.22,0.402,-0.2
+8,v1,Jerry Jeudy,WR,CLE,PIT,Receptions,O 2.5,148,FanDuel,-3.37,0.39,-3.4
+8,original,J.K. Dobbins,RB,DEN,KC,Rush Yds,O 27.5,-120,Hard Rock,27.27,,
+8,market_only,J.K. Dobbins,RB,DEN,KC,Rush Yds,O 27.5,-120,Hard Rock,-4.41,0.521,-4.4
+8,v1,J.K. Dobbins,RB,DEN,KC,Rush Yds,O 27.5,-120,Hard Rock,-2.26,0.533,-2.3
+8,original,Joe Burrow,QB,CIN,TEN,Pass Yds,U 274.5,-113,DraftKings,1.17,,
+8,market_only,Joe Burrow,QB,CIN,TEN,Pass Yds,O 265.5,-120,Fanatics,0.11,0.546,0.1
+8,v1,Joe Burrow,QB,CIN,TEN,Pass Yds,O 265.5,-120,Fanatics,0.67,0.549,0.7
+8,original,Jonah Coleman,RB,DEN,KC,Receptions,U 2.5,125,BetMGM,16.0,,
+8,market_only,Jonah Coleman,RB,DEN,KC,Receptions,U 2.5,125,BetMGM,-7.72,0.41,-7.7
+8,v1,Jonah Coleman,RB,DEN,KC,Receptions,U 2.5,125,BetMGM,-0.47,0.442,-0.5
+8,original,Jonah Coleman,RB,DEN,KC,Rush Yds,U 46.5,-114,DraftKings,-0.65,,
+8,market_only,Jonah Coleman,RB,DEN,KC,Rush Yds,O 43.5,-114,FanDuel,-1.48,0.525,-1.5
+8,v1,Jonah Coleman,RB,DEN,KC,Rush Yds,U 46.5,-114,DraftKings,0.17,0.534,0.2
+8,original,Jonathan Taylor,RB,IND,JAC,Receptions,O 2.5,-101,DraftKings,8.0,,
+8,market_only,Jonathan Taylor,RB,IND,JAC,Receptions,O 2.5,-101,DraftKings,0.38,0.504,0.4
+8,v1,Jonathan Taylor,RB,IND,JAC,Receptions,O 2.5,-101,DraftKings,-0.31,0.501,-0.3
+8,original,Jonathan Taylor,RB,IND,JAC,Rush Yds,U 57.5,-115,DraftKings,-1.39,,
+8,market_only,Jonathan Taylor,RB,IND,JAC,Rush Yds,U 57.5,-115,DraftKings,-4.52,0.511,-4.5
+8,v1,Jonathan Taylor,RB,IND,JAC,Rush Yds,U 57.5,-115,DraftKings,-1.82,0.525,-1.8
+8,original,Jordan Addison,WR,MIN,DET,Rec Yds,O 37.5,-114,FanDuel,24.0,,
+8,market_only,Jordan Addison,WR,MIN,DET,Rec Yds,U 39.5,-115,BetMGM,-3.25,0.517,-3.3
+8,v1,Jordan Addison,WR,MIN,DET,Rec Yds,U 39.5,-115,BetMGM,-1.68,0.526,-1.7
+8,original,Jordan Addison,WR,MIN,DET,Receptions,O 3.5,123,Caesars,-2.86,,
+8,market_only,Jordan Addison,WR,MIN,DET,Receptions,O 3.5,123,Caesars,-4.06,0.43,-4.1
+8,v1,Jordan Addison,WR,MIN,DET,Receptions,O 3.5,123,Caesars,-8.75,0.409,-8.8
+8,original,Jordan Mason,RB,MIN,DET,Rush Yds,O 49.5,-111,DraftKings,15.15,,
+8,market_only,Jordan Mason,RB,MIN,DET,Rush Yds,O 49.5,-111,DraftKings,-5.26,0.498,-5.3
+8,v1,Jordan Mason,RB,MIN,DET,Rush Yds,O 49.5,-111,DraftKings,-4.53,0.502,-4.5
+8,original,Josh Allen,QB,BUF,BAL,Pass Yds,U 247.5,-113,DraftKings,1.41,,
+8,market_only,Josh Allen,QB,BUF,BAL,Pass Yds,O 240.5,-120,Fanatics,-0.39,0.543,-0.4
+8,v1,Josh Allen,QB,BUF,BAL,Pass Yds,O 240.5,-120,Fanatics,-0.01,0.545,-0.0
+8,original,Josh Allen,QB,BUF,BAL,Rush Yds,U 36.5,-120,Hard Rock,9.32,,
+8,market_only,Josh Allen,QB,BUF,BAL,Rush Yds,O 35.5,-113,DraftKings,-5.0,0.504,-5.0
+8,v1,Josh Allen,QB,BUF,BAL,Rush Yds,U 36.5,-120,Hard Rock,-2.22,0.533,-2.2
+8,original,Josh Cameron,WR,JAC,IND,Receptions,O 2.5,105,DraftKings,-32.0,,
+8,market_only,Josh Cameron,WR,JAC,IND,Receptions,O 2.5,105,DraftKings,-5.24,0.462,-5.2
+8,v1,Josh Cameron,WR,JAC,IND,Receptions,O 2.5,105,DraftKings,-15.84,0.411,-15.8
+8,original,Josh Downs,WR,IND,JAC,Rec Yds,O 32.5,-113,Caesars,42.77,,
+8,market_only,Josh Downs,WR,IND,JAC,Rec Yds,O 32.5,-113,Caesars,-4.58,0.506,-4.6
+8,v1,Josh Downs,WR,IND,JAC,Rec Yds,O 32.5,-113,Caesars,-2.28,0.518,-2.3
+8,original,Josh Downs,WR,IND,JAC,Receptions,O 3.5,118,DraftKings,14.29,,
+8,market_only,Josh Downs,WR,IND,JAC,Receptions,O 3.5,118,DraftKings,-5.12,0.435,-5.1
+8,v1,Josh Downs,WR,IND,JAC,Receptions,O 3.5,118,DraftKings,-3.74,0.442,-3.7
+8,original,Justin Herbert,QB,LAC,LA,Pass Yds,U 205.5,-111,DraftKings,4.43,,
+8,market_only,Justin Herbert,QB,LAC,LA,Pass Yds,O 200.5,-115,Fanatics,-0.66,0.531,-0.7
+8,v1,Justin Herbert,QB,LAC,LA,Pass Yds,O 200.5,-115,Fanatics,-1.08,0.529,-1.1
+8,original,Justin Jefferson,WR,MIN,DET,Rec Yds,U 79.5,-114,DraftKings,2.01,,
+8,market_only,Justin Jefferson,WR,MIN,DET,Rec Yds,U 79.5,-114,DraftKings,0.22,0.534,0.2
+8,v1,Justin Jefferson,WR,MIN,DET,Rec Yds,U 79.5,-114,DraftKings,5.3,0.561,5.3
+8,original,Justin Jefferson,WR,MIN,DET,Receptions,U 5.5,118,FanDuel,-7.27,,
+8,market_only,Justin Jefferson,WR,MIN,DET,Receptions,O 6.5,125,BetMGM,-5.07,0.422,-5.1
+8,v1,Justin Jefferson,WR,MIN,DET,Receptions,U 5.5,118,FanDuel,-1.49,0.452,-1.5
+8,original,Kalif Raymond,WR,CHI,SEA,Receptions,O 2.5,130,Fanatics,-8.0,,
+8,market_only,Kalif Raymond,WR,CHI,SEA,Receptions,O 2.5,130,Fanatics,-3.26,0.421,-3.3
+8,v1,Kalif Raymond,WR,CHI,SEA,Receptions,O 2.5,130,Fanatics,-8.4,0.398,-8.4
+8,original,KC Concepcion,WR,CLE,PIT,Rec Yds,O 44.5,-115,BetMGM,13.03,,
+8,market_only,KC Concepcion,WR,CLE,PIT,Rec Yds,U 47.5,-115,DraftKings,-2.25,0.523,-2.3
+8,v1,KC Concepcion,WR,CLE,PIT,Rec Yds,U 47.5,-115,DraftKings,1.26,0.542,1.3
+8,original,KC Concepcion,WR,CLE,PIT,Receptions,O 4.5,-124,DraftKings,8.89,,
+8,market_only,KC Concepcion,WR,CLE,PIT,Receptions,U 4.5,-102,FanDuel,-5.03,0.48,-5.0
+8,v1,KC Concepcion,WR,CLE,PIT,Receptions,U 4.5,-102,FanDuel,-4.53,0.482,-4.5
+8,original,Keenan Allen,WR,IND,JAC,Rec Yds,O 35.5,-114,FanDuel,33.52,,
+8,market_only,Keenan Allen,WR,IND,JAC,Rec Yds,U 38.5,-115,BetMGM,-1.23,0.528,-1.2
+8,v1,Keenan Allen,WR,IND,JAC,Rec Yds,U 38.5,-115,BetMGM,-1.49,0.527,-1.5
+8,original,Keenan Allen,WR,IND,JAC,Receptions,O 4.5,100,Caesars,11.11,,
+8,market_only,Keenan Allen,WR,IND,JAC,Receptions,U 4.5,-120,DraftKings,-3.48,0.526,-3.5
+8,v1,Keenan Allen,WR,IND,JAC,Receptions,U 4.5,-120,DraftKings,-3.83,0.525,-3.8
+8,original,Kendrick Bourne,WR,ARI,DAL,Rec Yds,O 35.5,-125,Fanatics,21.97,,
+8,market_only,Kendrick Bourne,WR,ARI,DAL,Rec Yds,U 37.5,-115,BetMGM,-4.85,0.509,-4.9
+8,v1,Kendrick Bourne,WR,ARI,DAL,Rec Yds,U 37.5,-115,BetMGM,-2.54,0.521,-2.5
+8,original,Kendrick Bourne,WR,ARI,DAL,Receptions,O 3.5,-118,FanDuel,20.0,,
+8,market_only,Kendrick Bourne,WR,ARI,DAL,Receptions,U 3.5,101,DraftKings,-2.83,0.483,-2.8
+8,v1,Kendrick Bourne,WR,ARI,DAL,Receptions,O 3.5,-118,FanDuel,-0.52,0.538,-0.5
+8,original,Kenneth Walker,RB,KC,DEN,Receptions,O 3.5,140,FanDuel,-20.0,,
+8,market_only,Kenneth Walker,RB,KC,DEN,Receptions,O 3.5,140,FanDuel,-2.69,0.405,-2.7
+8,v1,Kenneth Walker,RB,KC,DEN,Receptions,U 2.5,120,BetMGM,-2.6,0.443,-2.6
+8,original,Kenneth Walker,RB,KC,DEN,Rush Yds,U 89.5,-111,DraftKings,-4.58,,
+8,market_only,Kenneth Walker,RB,KC,DEN,Rush Yds,O 86.5,-115,BetMGM,-2.35,0.522,-2.4
+8,v1,Kenneth Walker,RB,KC,DEN,Rush Yds,U 89.5,-111,DraftKings,-0.26,0.525,-0.3
+8,original,Kenyon Sadiq,TE,NYJ,LV,Receptions,O 2.5,165,Caesars,-28.0,,
+8,market_only,Kenyon Sadiq,TE,NYJ,LV,Receptions,O 2.5,165,Caesars,0.28,0.378,0.3
+8,v1,Kenyon Sadiq,TE,NYJ,LV,Receptions,O 2.5,165,Caesars,1.89,0.384,1.9
+8,original,Keon Coleman,WR,BUF,BAL,Rec Yds,O 28.5,-113,DraftKings,16.14,,
+8,market_only,Keon Coleman,WR,BUF,BAL,Rec Yds,O 28.5,-113,DraftKings,-3.43,0.512,-3.4
+8,v1,Keon Coleman,WR,BUF,BAL,Rec Yds,U 29.5,-114,FanDuel,-1.64,0.524,-1.6
+8,original,Keon Coleman,WR,BUF,BAL,Receptions,O 2.5,120,Fanatics,-4.0,,
+8,market_only,Keon Coleman,WR,BUF,BAL,Receptions,O 2.5,120,Fanatics,-4.46,0.434,-4.5
+8,v1,Keon Coleman,WR,BUF,BAL,Receptions,O 2.5,120,Fanatics,-8.37,0.417,-8.4
+8,original,Khalil Shakir,WR,BUF,BAL,Rec Yds,O 40.5,-120,Fanatics,18.02,,
+8,market_only,Khalil Shakir,WR,BUF,BAL,Rec Yds,O 40.5,-120,Fanatics,-3.36,0.527,-3.4
+8,v1,Khalil Shakir,WR,BUF,BAL,Rec Yds,U 42.5,-114,DraftKings,-3.39,0.515,-3.4
+8,original,Khalil Shakir,WR,BUF,BAL,Receptions,O 4.5,142,Caesars,-8.89,,
+8,market_only,Khalil Shakir,WR,BUF,BAL,Receptions,O 4.5,142,Caesars,-5.79,0.389,-5.8
+8,v1,Khalil Shakir,WR,BUF,BAL,Receptions,U 3.5,116,FanDuel,-1.41,0.456,-1.4
+8,original,Kirk Cousins,QB,LV,NYJ,Pass Yds,O 236.5,-115,BetMGM,4.19,,
+8,market_only,Kirk Cousins,QB,LV,NYJ,Pass Yds,U 240.5,-111,DraftKings,-2.51,0.513,-2.5
+8,v1,Kirk Cousins,QB,LV,NYJ,Pass Yds,O 236.5,-115,BetMGM,0.66,0.538,0.7
+8,original,Kyle Pitts,TE,ATL,TB,Rec Yds,O 34.5,-111,BetMGM,15.07,,
+8,market_only,Kyle Pitts,TE,ATL,TB,Rec Yds,O 34.5,-111,BetMGM,-3.41,0.508,-3.4
+8,v1,Kyle Pitts,TE,ATL,TB,Rec Yds,U 35.5,-114,FanDuel,-0.45,0.53,-0.4
+8,original,Kyle Pitts,TE,ATL,TB,Receptions,O 3.5,-118,BetMGM,11.43,,
+8,market_only,Kyle Pitts,TE,ATL,TB,Receptions,U 3.5,-106,FanDuel,-4.67,0.491,-4.7
+8,v1,Kyle Pitts,TE,ATL,TB,Receptions,U 3.5,-106,FanDuel,-5.01,0.489,-5.0
+8,original,Kyle Williams,WR,NE,MIA,Rec Yds,U 25.5,-116,DraftKings,5.1,,
+8,market_only,Kyle Williams,WR,NE,MIA,Rec Yds,U 25.5,-116,DraftKings,-4.24,0.514,-4.2
+8,v1,Kyle Williams,WR,NE,MIA,Rec Yds,U 25.5,-116,DraftKings,2.81,0.552,2.8
+8,original,Kyler Murray,QB,MIN,DET,Pass Yds,U 224.5,-111,DraftKings,2.23,,
+8,market_only,Kyler Murray,QB,MIN,DET,Pass Yds,O 220.5,-115,Fanatics,-0.98,0.53,-1.0
+8,v1,Kyler Murray,QB,MIN,DET,Pass Yds,O 220.5,-115,Fanatics,-0.57,0.532,-0.6
+8,original,Kyler Murray,QB,MIN,DET,Rush Yds,U 25.5,-112,DraftKings,5.1,,
+8,market_only,Kyler Murray,QB,MIN,DET,Rush Yds,U 25.5,-112,DraftKings,-3.19,0.511,-3.2
+8,v1,Kyler Murray,QB,MIN,DET,Rush Yds,U 25.5,-112,DraftKings,-1.23,0.522,-1.2
+8,original,Kyren Williams,RB,LA,LAC,Receptions,O 3.5,115,DraftKings,-2.86,,
+8,market_only,Kyren Williams,RB,LA,LAC,Receptions,O 3.5,115,DraftKings,-6.27,0.436,-6.3
+8,v1,Kyren Williams,RB,LA,LAC,Receptions,O 3.5,115,DraftKings,-10.81,0.415,-10.8
+8,original,Kyren Williams,RB,LA,LAC,Rush Yds,O 59.5,-112,DraftKings,23.19,,
+8,market_only,Kyren Williams,RB,LA,LAC,Rush Yds,U 62.5,-115,BetMGM,0.21,0.536,0.2
+8,v1,Kyren Williams,RB,LA,LAC,Rush Yds,O 59.5,-112,DraftKings,-1.07,0.523,-1.1
+8,original,Ladd McConkey,WR,LAC,LA,Rec Yds,O 45.5,-120,Fanatics,20.22,,
+8,market_only,Ladd McConkey,WR,LAC,LA,Rec Yds,U 47.5,-114,DraftKings,-4.62,0.508,-4.6
+8,v1,Ladd McConkey,WR,LAC,LA,Rec Yds,U 47.5,-114,DraftKings,-3.11,0.516,-3.1
+8,original,Ladd McConkey,WR,LAC,LA,Receptions,O 4.5,144,Caesars,-11.11,,
+8,market_only,Ladd McConkey,WR,LAC,LA,Receptions,U 3.5,120,FanDuel,-4.17,0.436,-4.2
+8,v1,Ladd McConkey,WR,LAC,LA,Receptions,U 3.5,120,FanDuel,-5.55,0.429,-5.5
+8,original,Lamar Jackson,QB,BAL,BUF,Pass Yds,O 235.5,-115,Fanatics,8.49,,
+8,market_only,Lamar Jackson,QB,BAL,BUF,Pass Yds,O 235.5,-115,Fanatics,-3.96,0.514,-4.0
+8,v1,Lamar Jackson,QB,BAL,BUF,Pass Yds,O 235.5,-115,Fanatics,2.84,0.55,2.8
+8,original,Lamar Jackson,QB,BAL,BUF,Rush Yds,U 25.5,-114,FanDuel,23.53,,
+8,market_only,Lamar Jackson,QB,BAL,BUF,Rush Yds,U 25.5,-114,FanDuel,-3.07,0.516,-3.1
+8,v1,Lamar Jackson,QB,BAL,BUF,Rush Yds,U 25.5,-114,FanDuel,2.07,0.544,2.1
+8,original,Laquon Treadwell,WR,IND,JAC,Rec Yds,U 25.5,-114,FanDuel,-30.2,,
+8,market_only,Laquon Treadwell,WR,IND,JAC,Rec Yds,U 25.5,-114,FanDuel,-1.97,0.522,-2.0
+8,v1,Laquon Treadwell,WR,IND,JAC,Rec Yds,U 25.5,-114,FanDuel,-0.98,0.527,-1.0
+8,original,Laquon Treadwell,WR,IND,JAC,Receptions,O 2.5,138,DraftKings,0.0,,
+8,market_only,Laquon Treadwell,WR,IND,JAC,Receptions,O 2.5,138,DraftKings,-3.87,0.404,-3.9
+8,v1,Laquon Treadwell,WR,IND,JAC,Receptions,O 2.5,138,DraftKings,-6.9,0.391,-6.9
+8,original,Luther Burden,WR,CHI,SEA,Rec Yds,U 52.5,-115,BetMGM,-0.57,,
+8,market_only,Luther Burden,WR,CHI,SEA,Rec Yds,U 52.5,-115,BetMGM,-4.28,0.512,-4.3
+8,v1,Luther Burden,WR,CHI,SEA,Rec Yds,U 52.5,-115,BetMGM,1.2,0.541,1.2
+8,original,Luther Burden,WR,CHI,SEA,Receptions,O 4.5,118,FanDuel,0.0,,
+8,market_only,Luther Burden,WR,CHI,SEA,Receptions,U 4.5,-125,BetMGM,0.84,0.56,0.8
+8,v1,Luther Burden,WR,CHI,SEA,Receptions,U 4.5,-125,BetMGM,4.42,0.58,4.4
+8,original,Makai Lemon,WR,PHI,WAS,Rec Yds,O 41.5,-115,BetMGM,17.59,,
+8,market_only,Makai Lemon,WR,PHI,WAS,Rec Yds,O 41.5,-115,BetMGM,-0.09,0.534,-0.1
+8,v1,Makai Lemon,WR,PHI,WAS,Rec Yds,U 44.5,-112,DraftKings,0.59,0.531,0.6
+8,original,Makai Lemon,WR,PHI,WAS,Receptions,O 4.5,-120,FanDuel,11.11,,
+8,market_only,Makai Lemon,WR,PHI,WAS,Receptions,U 4.5,101,DraftKings,-2.08,0.487,-2.1
+8,v1,Makai Lemon,WR,PHI,WAS,Receptions,U 4.5,101,DraftKings,-2.47,0.485,-2.5
+8,original,Malik Washington,WR,MIA,NE,Rec Yds,U 41.5,-114,FanDuel,-5.78,,
+8,market_only,Malik Washington,WR,MIA,NE,Rec Yds,O 40.5,-113,DraftKings,-4.34,0.507,-4.3
+8,v1,Malik Washington,WR,MIA,NE,Rec Yds,U 41.5,-114,FanDuel,-0.32,0.531,-0.3
+8,original,Malik Washington,WR,MIA,NE,Receptions,O 4.5,115,DraftKings,-13.33,,
+8,market_only,Malik Washington,WR,MIA,NE,Receptions,O 4.5,115,DraftKings,-2.79,0.452,-2.8
+8,v1,Malik Washington,WR,MIA,NE,Receptions,O 4.5,115,DraftKings,-12.66,0.406,-12.7
+8,original,Malik Willis,QB,MIA,NE,Pass Yds,O 180.5,-120,Fanatics,1.88,,
+8,market_only,Malik Willis,QB,MIA,NE,Pass Yds,U 185.5,-114,FanDuel,-3.6,0.514,-3.6
+8,v1,Malik Willis,QB,MIA,NE,Pass Yds,O 180.5,-120,Fanatics,-1.14,0.539,-1.1
+8,original,Malik Willis,QB,MIA,NE,Rush Yds,O 32.5,-115,DraftKings,15.08,,
+8,market_only,Malik Willis,QB,MIA,NE,Rush Yds,O 32.5,-115,DraftKings,-3.81,0.514,-3.8
+8,v1,Malik Willis,QB,MIA,NE,Rush Yds,O 32.5,-115,DraftKings,-3.78,0.515,-3.8
+8,original,Mark Andrews,TE,BAL,BUF,Rec Yds,U 28.5,-113,DraftKings,-5.96,,
+8,market_only,Mark Andrews,TE,BAL,BUF,Rec Yds,O 27.5,-114,FanDuel,-4.28,0.51,-4.3
+8,v1,Mark Andrews,TE,BAL,BUF,Rec Yds,U 28.5,-113,DraftKings,0.5,0.533,0.5
+8,original,Mark Andrews,TE,BAL,BUF,Receptions,O 3.5,116,FanDuel,0.0,,
+8,market_only,Mark Andrews,TE,BAL,BUF,Receptions,O 3.5,116,FanDuel,-3.4,0.447,-3.4
+8,v1,Mark Andrews,TE,BAL,BUF,Receptions,O 3.5,116,FanDuel,-7.0,0.431,-7.0
+8,original,Mason Taylor,TE,NYJ,LV,Receptions,O 2.5,-125,BetMGM,24.0,,
+8,market_only,Mason Taylor,TE,NYJ,LV,Receptions,O 2.5,-125,BetMGM,-2.59,0.541,-2.6
+8,v1,Mason Taylor,TE,NYJ,LV,Receptions,O 2.5,-125,BetMGM,0.3,0.557,0.3
+8,original,Matthew Stafford,QB,LA,LAC,Pass Yds,U 252.5,-115,BetMGM,8.75,,
+8,market_only,Matthew Stafford,QB,LA,LAC,Pass Yds,U 252.5,-115,BetMGM,-2.22,0.523,-2.2
+8,v1,Matthew Stafford,QB,LA,LAC,Pass Yds,U 252.5,-115,BetMGM,1.89,0.545,1.9
+8,original,Mike Gesicki,TE,CIN,TEN,Rec Yds,U 25.5,-115,BetMGM,-0.39,,
+8,market_only,Mike Gesicki,TE,CIN,TEN,Rec Yds,U 25.5,-115,BetMGM,-0.18,0.534,-0.2
+8,v1,Mike Gesicki,TE,CIN,TEN,Rec Yds,U 25.5,-115,BetMGM,5.26,0.563,5.3
+8,original,Mike Gesicki,TE,CIN,TEN,Receptions,U 2.5,-130,DraftKings,12.0,,
+8,market_only,Mike Gesicki,TE,CIN,TEN,Receptions,U 2.5,-130,DraftKings,-2.39,0.552,-2.4
+8,v1,Mike Gesicki,TE,CIN,TEN,Receptions,U 2.5,-130,DraftKings,2.48,0.579,2.5
+8,original,Michael Mayer,TE,LV,NYJ,Rec Yds,U 25.5,-114,FanDuel,-27.84,,
+8,market_only,Michael Mayer,TE,LV,NYJ,Rec Yds,U 25.5,-114,FanDuel,-4.72,0.508,-4.7
+8,v1,Michael Mayer,TE,LV,NYJ,Rec Yds,U 25.5,-114,FanDuel,-2.64,0.519,-2.6
+8,original,Michael Mayer,TE,LV,NYJ,Receptions,O 3.5,150,Fanatics,-2.86,,
+8,market_only,Michael Mayer,TE,LV,NYJ,Receptions,U 2.5,126,DraftKings,-4.42,0.423,-4.4
+8,v1,Michael Mayer,TE,LV,NYJ,Receptions,O 3.5,150,Fanatics,0.77,0.403,0.8
+8,original,Michael Penix,QB,ATL,TB,Pass Yds,U 229.5,-114,FanDuel,3.53,,
+8,market_only,Michael Penix,QB,ATL,TB,Pass Yds,O 225.5,-115,BetMGM,-3.28,0.517,-3.3
+8,v1,Michael Penix,QB,ATL,TB,Pass Yds,U 229.5,-114,FanDuel,-3.1,0.516,-3.1
+8,original,Mike Washington,RB,LV,NYJ,Rush Yds,O 30.5,-115,DraftKings,13.44,,
+8,market_only,Mike Washington,RB,LV,NYJ,Rush Yds,O 30.5,-115,DraftKings,-4.63,0.51,-4.6
+8,v1,Mike Washington,RB,LV,NYJ,Rush Yds,O 30.5,-115,DraftKings,-4.91,0.509,-4.9
+8,original,Michael Wilson,WR,ARI,DAL,Rec Yds,U 57.5,-111,DraftKings,5.22,,
+8,market_only,Michael Wilson,WR,ARI,DAL,Rec Yds,U 57.5,-111,DraftKings,-5.12,0.499,-5.1
+8,v1,Michael Wilson,WR,ARI,DAL,Rec Yds,U 57.5,-111,DraftKings,2.25,0.538,2.3
+8,original,Michael Wilson,WR,ARI,DAL,Receptions,O 4.5,-118,FanDuel,13.33,,
+8,market_only,Michael Wilson,WR,ARI,DAL,Receptions,U 4.5,100,DraftKings,-2.39,0.488,-2.4
+8,v1,Michael Wilson,WR,ARI,DAL,Receptions,O 4.5,-118,FanDuel,-3.23,0.524,-3.2
+8,original,Ollie Gordon,RB,MIA,NE,Rush Yds,O 58.5,-115,BetMGM,14.87,,
+8,market_only,Ollie Gordon,RB,MIA,NE,Rush Yds,O 58.5,-115,BetMGM,-1.14,0.529,-1.1
+8,v1,Ollie Gordon,RB,MIA,NE,Rush Yds,U 61.5,-110,DraftKings,-1.32,0.517,-1.3
+8,original,Omar Cooper,WR,NYJ,LV,Rec Yds,O 40.5,-120,Fanatics,19.75,,
+8,market_only,Omar Cooper,WR,NYJ,LV,Rec Yds,U 42.5,-110,DraftKings,-2.75,0.509,-2.8
+8,v1,Omar Cooper,WR,NYJ,LV,Rec Yds,U 42.5,-110,DraftKings,-0.5,0.521,-0.5
+8,original,Omar Cooper,WR,NYJ,LV,Receptions,O 3.5,120,Fanatics,2.86,,
+8,market_only,Omar Cooper,WR,NYJ,LV,Receptions,O 3.5,120,Fanatics,-3.64,0.438,-3.6
+8,v1,Omar Cooper,WR,NYJ,LV,Receptions,O 3.5,120,Fanatics,-6.29,0.426,-6.3
+8,original,Omarion Hampton,RB,LAC,LA,Rush Yds,O 31.5,-114,FanDuel,31.11,,
+8,market_only,Omarion Hampton,RB,LAC,LA,Rush Yds,U 34.5,-115,BetMGM,-0.0,0.535,-0.0
+8,v1,Omarion Hampton,RB,LAC,LA,Rush Yds,O 31.5,-114,FanDuel,1.1,0.539,1.1
+8,original,Parker Washington,WR,JAC,IND,Rec Yds,U 68.5,-115,BetMGM,2.48,,
+8,market_only,Parker Washington,WR,JAC,IND,Rec Yds,O 67.5,-110,DraftKings,-3.79,0.504,-3.8
+8,v1,Parker Washington,WR,JAC,IND,Rec Yds,U 68.5,-115,BetMGM,1.65,0.544,1.7
+8,original,Parker Washington,WR,JAC,IND,Receptions,U 4.5,105,Fanatics,-2.22,,
+8,market_only,Parker Washington,WR,JAC,IND,Receptions,U 4.5,105,Fanatics,-4.84,0.464,-4.8
+8,v1,Parker Washington,WR,JAC,IND,Receptions,U 4.5,105,Fanatics,-1.6,0.48,-1.6
+8,original,Pat Freiermuth,TE,PIT,CLE,Rec Yds,U 25.5,-115,BetMGM,-25.49,,
+8,market_only,Pat Freiermuth,TE,PIT,CLE,Rec Yds,U 25.5,-115,BetMGM,-5.35,0.506,-5.3
+8,v1,Pat Freiermuth,TE,PIT,CLE,Rec Yds,U 25.5,-115,BetMGM,-3.55,0.516,-3.5
+8,original,Pat Freiermuth,TE,PIT,CLE,Receptions,O 3.5,160,Fanatics,-5.71,,
+8,market_only,Pat Freiermuth,TE,PIT,CLE,Receptions,U 2.5,117,DraftKings,-4.34,0.441,-4.3
+8,v1,Pat Freiermuth,TE,PIT,CLE,Receptions,O 3.5,160,Fanatics,-1.68,0.378,-1.7
+8,original,Patrick Mahomes,QB,KC,DEN,Pass Yds,O 220.5,-120,Fanatics,1.45,,
+8,market_only,Patrick Mahomes,QB,KC,DEN,Pass Yds,U 223.5,-114,FanDuel,-4.85,0.507,-4.9
+8,v1,Patrick Mahomes,QB,KC,DEN,Pass Yds,O 220.5,-120,Fanatics,-3.32,0.527,-3.3
+8,original,Puka Nacua,WR,LA,LAC,Rec Yds,U 94.5,-115,BetMGM,9.31,,
+8,market_only,Puka Nacua,WR,LA,LAC,Rec Yds,U 94.5,-115,BetMGM,-2.02,0.524,-2.0
+8,v1,Puka Nacua,WR,LA,LAC,Rec Yds,U 94.5,-115,BetMGM,6.18,0.568,6.2
+8,original,Puka Nacua,WR,LA,LAC,Receptions,U 7.5,105,Caesars,2.67,,
+8,market_only,Puka Nacua,WR,LA,LAC,Receptions,U 7.5,105,Caesars,-5.04,0.463,-5.0
+8,v1,Puka Nacua,WR,LA,LAC,Receptions,U 7.5,105,Caesars,2.38,0.499,2.4
+8,original,Quinshon Judkins,RB,CLE,PIT,Receptions,O 2.5,165,Caesars,-4.0,,
+8,market_only,Quinshon Judkins,RB,CLE,PIT,Receptions,O 2.5,165,Caesars,-1.18,0.373,-1.2
+8,v1,Quinshon Judkins,RB,CLE,PIT,Receptions,O 2.5,165,Caesars,8.31,0.409,8.3
+8,original,Quinshon Judkins,RB,CLE,PIT,Rush Yds,O 47.5,-114,FanDuel,13.26,,
+8,market_only,Quinshon Judkins,RB,CLE,PIT,Rush Yds,U 48.5,-109,DraftKings,-1.7,0.513,-1.7
+8,v1,Quinshon Judkins,RB,CLE,PIT,Rush Yds,U 48.5,-109,DraftKings,-1.94,0.511,-1.9
+8,original,Rachaad White,RB,WAS,PHI,Receptions,O 2.5,110,Caesars,4.0,,
+8,market_only,Rachaad White,RB,WAS,PHI,Receptions,O 2.5,110,Caesars,-3.5,0.46,-3.5
+8,v1,Rachaad White,RB,WAS,PHI,Receptions,O 2.5,110,Caesars,-5.24,0.451,-5.2
+8,original,Rachaad White,RB,WAS,PHI,Rush Yds,O 44.5,-108,DraftKings,13.48,,
+8,market_only,Rachaad White,RB,WAS,PHI,Rush Yds,U 46.5,-115,BetMGM,-1.13,0.529,-1.1
+8,v1,Rachaad White,RB,WAS,PHI,Rush Yds,U 46.5,-115,BetMGM,-1.44,0.527,-1.4
+8,original,Rashee Rice,WR,KC,DEN,Rec Yds,U 53.5,-114,DraftKings,2.8,,
+8,market_only,Rashee Rice,WR,KC,DEN,Rec Yds,U 53.5,-114,DraftKings,-1.72,0.524,-1.7
+8,v1,Rashee Rice,WR,KC,DEN,Rec Yds,U 53.5,-114,DraftKings,4.23,0.555,4.2
+8,original,Rashee Rice,WR,KC,DEN,Receptions,U 4.5,-109,DraftKings,2.22,,
+8,market_only,Rashee Rice,WR,KC,DEN,Receptions,O 4.5,-111,Caesars,-3.16,0.509,-3.2
+8,v1,Rashee Rice,WR,KC,DEN,Receptions,U 4.5,-109,DraftKings,-0.42,0.519,-0.4
+8,original,Rashod Bateman,WR,BAL,BUF,Rec Yds,U 25.5,-112,DraftKings,-36.08,,
+8,market_only,Rashod Bateman,WR,BAL,BUF,Rec Yds,U 25.5,-112,DraftKings,-2.04,0.518,-2.0
+8,v1,Rashod Bateman,WR,BAL,BUF,Rec Yds,U 25.5,-112,DraftKings,-2.08,0.517,-2.1
+8,original,Rashod Bateman,WR,BAL,BUF,Receptions,O 2.5,130,FanDuel,-4.0,,
+8,market_only,Rashod Bateman,WR,BAL,BUF,Receptions,O 2.5,130,FanDuel,-4.29,0.416,-4.3
+8,v1,Rashod Bateman,WR,BAL,BUF,Receptions,O 2.5,130,FanDuel,-8.33,0.399,-8.3
+8,original,Rhamondre Stevenson,RB,NE,MIA,Receptions,O 2.5,-123,DraftKings,0.0,,
+8,market_only,Rhamondre Stevenson,RB,NE,MIA,Receptions,O 2.5,-123,DraftKings,-2.7,0.537,-2.7
+8,v1,Rhamondre Stevenson,RB,NE,MIA,Receptions,U 2.5,104,FanDuel,-1.27,0.484,-1.3
+8,original,Rhamondre Stevenson,RB,NE,MIA,Rush Yds,U 52.5,-115,DraftKings,2.29,,
+8,market_only,Rhamondre Stevenson,RB,NE,MIA,Rush Yds,U 52.5,-115,DraftKings,-5.07,0.508,-5.1
+8,v1,Rhamondre Stevenson,RB,NE,MIA,Rush Yds,U 52.5,-115,DraftKings,-1.59,0.526,-1.6
+8,original,Rico Dowdle,RB,PIT,CLE,Receptions,O 2.5,-114,FanDuel,4.0,,
+8,market_only,Rico Dowdle,RB,PIT,CLE,Receptions,U 2.5,-104,DraftKings,-2.39,0.498,-2.4
+8,v1,Rico Dowdle,RB,PIT,CLE,Receptions,U 2.5,-104,DraftKings,-0.75,0.506,-0.8
+8,original,Rico Dowdle,RB,PIT,CLE,Rush Yds,O 27.5,-115,BetMGM,21.45,,
+8,market_only,Rico Dowdle,RB,PIT,CLE,Rush Yds,O 27.5,-115,BetMGM,3.1,0.551,3.1
+8,v1,Rico Dowdle,RB,PIT,CLE,Rush Yds,O 27.5,-115,BetMGM,2.78,0.55,2.8
+8,original,Rome Odunze,WR,CHI,SEA,Rec Yds,U 42.5,-115,BetMGM,-0.24,,
+8,market_only,Rome Odunze,WR,CHI,SEA,Rec Yds,U 42.5,-115,BetMGM,0.24,0.536,0.2
+8,v1,Rome Odunze,WR,CHI,SEA,Rec Yds,U 42.5,-115,BetMGM,5.39,0.564,5.4
+8,original,Rome Odunze,WR,CHI,SEA,Receptions,O 3.5,135,Fanatics,-11.43,,
+8,market_only,Rome Odunze,WR,CHI,SEA,Receptions,O 3.5,135,Fanatics,-5.15,0.404,-5.2
+8,v1,Rome Odunze,WR,CHI,SEA,Receptions,O 3.5,135,Fanatics,-13.09,0.37,-13.1
+8,original,Ryan Flournoy,WR,DAL,ARI,Rec Yds,O 35.5,-115,BetMGM,30.42,,
+8,market_only,Ryan Flournoy,WR,DAL,ARI,Rec Yds,U 38.5,-113,DraftKings,-1.55,0.522,-1.6
+8,v1,Ryan Flournoy,WR,DAL,ARI,Rec Yds,U 38.5,-113,DraftKings,-1.12,0.525,-1.1
+8,original,Ryan Flournoy,WR,DAL,ARI,Receptions,O 3.5,106,FanDuel,5.71,,
+8,market_only,Ryan Flournoy,WR,DAL,ARI,Receptions,O 3.5,106,FanDuel,-2.78,0.472,-2.8
+8,v1,Ryan Flournoy,WR,DAL,ARI,Receptions,U 3.5,-123,DraftKings,-1.71,0.542,-1.7
+8,original,Sam Darnold,QB,SEA,CHI,Pass Yds,O 235.5,-115,Fanatics,3.44,,
+8,market_only,Sam Darnold,QB,SEA,CHI,Pass Yds,U 238.5,-113,DraftKings,-3.75,0.511,-3.7
+8,v1,Sam Darnold,QB,SEA,CHI,Pass Yds,O 235.5,-115,Fanatics,-0.75,0.531,-0.7
+8,original,Sam LaPorta,TE,DET,MIN,Rec Yds,U 48.5,-112,DraftKings,10.52,,
+8,market_only,Sam LaPorta,TE,DET,MIN,Rec Yds,U 48.5,-112,DraftKings,-0.7,0.525,-0.7
+8,v1,Sam LaPorta,TE,DET,MIN,Rec Yds,U 48.5,-112,DraftKings,7.51,0.568,7.5
+8,original,Sam LaPorta,TE,DET,MIN,Receptions,U 4.5,-111,DraftKings,17.78,,
+8,market_only,Sam LaPorta,TE,DET,MIN,Receptions,U 4.5,-111,DraftKings,-2.59,0.512,-2.6
+8,v1,Sam LaPorta,TE,DET,MIN,Receptions,U 4.5,-111,DraftKings,7.93,0.568,7.9
+8,original,Saquon Barkley,RB,PHI,WAS,Receptions,O 2.5,128,DraftKings,-28.0,,
+8,market_only,Saquon Barkley,RB,PHI,WAS,Receptions,O 2.5,128,DraftKings,-1.54,0.432,-1.5
+8,v1,Saquon Barkley,RB,PHI,WAS,Receptions,O 2.5,128,DraftKings,-12.05,0.386,-12.0
+8,original,Saquon Barkley,RB,PHI,WAS,Rush Yds,U 56.5,-120,Hard Rock,17.35,,
+8,market_only,Saquon Barkley,RB,PHI,WAS,Rush Yds,O 55.5,-110,Fanatics,-4.15,0.502,-4.1
+8,v1,Saquon Barkley,RB,PHI,WAS,Rush Yds,U 56.5,-120,Hard Rock,2.14,0.557,2.1
+8,original,Stefon Diggs,WR,WAS,PHI,Rec Yds,O 40.5,-125,Fanatics,17.04,,
+8,market_only,Stefon Diggs,WR,WAS,PHI,Rec Yds,U 43.5,-115,BetMGM,-3.49,0.516,-3.5
+8,v1,Stefon Diggs,WR,WAS,PHI,Rec Yds,U 43.5,-115,BetMGM,-0.02,0.535,-0.0
+8,original,Stefon Diggs,WR,WAS,PHI,Receptions,O 4.5,132,FanDuel,6.67,,
+8,market_only,Stefon Diggs,WR,WAS,PHI,Receptions,O 4.5,132,FanDuel,-1.45,0.425,-1.4
+8,v1,Stefon Diggs,WR,WAS,PHI,Receptions,O 4.5,132,FanDuel,-3.02,0.418,-3.0
+8,original,Tanner McKee,QB,PHI,WAS,Pass Yds,O 195.5,-115,Fanatics,7.57,,
+8,market_only,Tanner McKee,QB,PHI,WAS,Pass Yds,O 195.5,-115,Fanatics,-2.55,0.521,-2.5
+8,v1,Tanner McKee,QB,PHI,WAS,Pass Yds,O 195.5,-115,Fanatics,3.34,0.553,3.3
+8,original,Ted Hurst,WR,TB,ATL,Rec Yds,O 30.5,-110,Fanatics,17.05,,
+8,market_only,Ted Hurst,WR,TB,ATL,Rec Yds,O 30.5,-110,Fanatics,-0.15,0.523,-0.2
+8,v1,Ted Hurst,WR,TB,ATL,Rec Yds,U 32.5,-110,DraftKings,2.3,0.536,2.3
+8,original,Ted Hurst,WR,TB,ATL,Receptions,O 2.5,105,Fanatics,0.0,,
+8,market_only,Ted Hurst,WR,TB,ATL,Receptions,U 2.5,-119,DraftKings,-1.3,0.536,-1.3
+8,v1,Ted Hurst,WR,TB,ATL,Receptions,U 2.5,-119,DraftKings,1.13,0.55,1.1
+8,original,Tee Higgins,WR,CIN,TEN,Rec Yds,U 70.5,-114,FanDuel,3.55,,
+8,market_only,Tee Higgins,WR,CIN,TEN,Rec Yds,O 68.5,-110,DraftKings,-1.68,0.515,-1.7
+8,v1,Tee Higgins,WR,CIN,TEN,Rec Yds,U 70.5,-114,FanDuel,2.78,0.548,2.8
+8,original,Tee Higgins,WR,CIN,TEN,Receptions,U 4.5,120,Fanatics,-6.67,,
+8,market_only,Tee Higgins,WR,CIN,TEN,Receptions,U 4.5,120,Fanatics,-7.29,0.421,-7.3
+8,v1,Tee Higgins,WR,CIN,TEN,Receptions,U 4.5,120,Fanatics,4.21,0.474,4.2
+8,original,Tez Johnson,WR,TB,ATL,Rec Yds,O 29.5,-114,FanDuel,26.78,,
+8,market_only,Tez Johnson,WR,TB,ATL,Rec Yds,O 29.5,-114,FanDuel,-2.01,0.522,-2.0
+8,v1,Tez Johnson,WR,TB,ATL,Rec Yds,U 31.5,-111,DraftKings,0.21,0.527,0.2
+8,original,Tez Johnson,WR,TB,ATL,Receptions,O 2.5,122,FanDuel,4.0,,
+8,market_only,Tez Johnson,WR,TB,ATL,Receptions,U 2.5,-125,DraftKings,2.77,0.571,2.8
+8,v1,Tez Johnson,WR,TB,ATL,Receptions,U 2.5,-125,DraftKings,4.24,0.579,4.2
+8,original,T.J. Hockenson,TE,MIN,DET,Rec Yds,U 41.5,-115,Hard Rock,4.34,,
+8,market_only,T.J. Hockenson,TE,MIN,DET,Rec Yds,U 41.5,-115,Hard Rock,-2.42,0.522,-2.4
+8,v1,T.J. Hockenson,TE,MIN,DET,Rec Yds,U 41.5,-115,Hard Rock,4.51,0.559,4.5
+8,original,T.J. Hockenson,TE,MIN,DET,Receptions,O 4.5,-105,BetMGM,0.0,,
+8,market_only,T.J. Hockenson,TE,MIN,DET,Receptions,O 4.5,-105,BetMGM,-1.59,0.504,-1.6
+8,v1,T.J. Hockenson,TE,MIN,DET,Receptions,U 4.5,-110,Fanatics,-0.0,0.524,-0.0
+8,original,Tony Pollard,RB,TEN,CIN,Receptions,O 2.5,143,DraftKings,-24.0,,
+8,market_only,Tony Pollard,RB,TEN,CIN,Receptions,O 2.5,143,DraftKings,2.81,0.423,2.8
+8,v1,Tony Pollard,RB,TEN,CIN,Receptions,O 2.5,143,DraftKings,-7.19,0.382,-7.2
+8,original,Tony Pollard,RB,TEN,CIN,Rush Yds,U 66.5,-114,FanDuel,0.0,,
+8,market_only,Tony Pollard,RB,TEN,CIN,Rush Yds,O 65.5,-110,DraftKings,-3.38,0.506,-3.4
+8,v1,Tony Pollard,RB,TEN,CIN,Rush Yds,U 66.5,-114,FanDuel,-1.05,0.527,-1.0
+8,original,Travis Kelce,TE,KC,DEN,Rec Yds,U 46.5,-113,DraftKings,2.15,,
+8,market_only,Travis Kelce,TE,KC,DEN,Rec Yds,O 44.5,-115,BetMGM,-1.6,0.526,-1.6
+8,v1,Travis Kelce,TE,KC,DEN,Rec Yds,U 46.5,-113,DraftKings,1.79,0.54,1.8
+8,original,Travis Kelce,TE,KC,DEN,Receptions,O 4.5,122,DraftKings,-8.89,,
+8,market_only,Travis Kelce,TE,KC,DEN,Receptions,O 4.5,122,DraftKings,-0.3,0.449,-0.3
+8,v1,Travis Kelce,TE,KC,DEN,Receptions,U 3.5,145,BetMGM,-1.42,0.402,-1.4
+8,original,Tre Tucker,WR,LV,NYJ,Rec Yds,O 45.5,-125,Fanatics,14.73,,
+8,market_only,Tre Tucker,WR,LV,NYJ,Rec Yds,U 48.5,-114,FanDuel,-2.6,0.519,-2.6
+8,v1,Tre Tucker,WR,LV,NYJ,Rec Yds,U 48.5,-114,FanDuel,0.39,0.535,0.4
+8,original,Tre Tucker,WR,LV,NYJ,Receptions,O 3.5,-119,DraftKings,8.57,,
+8,market_only,Tre Tucker,WR,LV,NYJ,Receptions,U 3.5,100,BetMGM,-2.24,0.489,-2.2
+8,v1,Tre Tucker,WR,LV,NYJ,Receptions,U 3.5,100,BetMGM,-1.65,0.492,-1.7
+8,original,Trevor Lawrence,QB,JAC,IND,Pass Yds,O 239.5,-115,BetMGM,1.92,,
+8,market_only,Trevor Lawrence,QB,JAC,IND,Pass Yds,U 240.5,-111,DraftKings,-4.24,0.504,-4.2
+8,v1,Trevor Lawrence,QB,JAC,IND,Pass Yds,O 239.5,-115,BetMGM,-3.07,0.518,-3.1
+8,original,Trey McBride,TE,ARI,DAL,Rec Yds,U 74.5,-113,DraftKings,12.75,,
+8,market_only,Trey McBride,TE,ARI,DAL,Rec Yds,U 74.5,-113,DraftKings,-1.43,0.523,-1.4
+8,v1,Trey McBride,TE,ARI,DAL,Rec Yds,U 74.5,-113,DraftKings,8.24,0.574,8.2
+8,original,Trey McBride,TE,ARI,DAL,Receptions,U 7.5,109,DraftKings,-1.33,,
+8,market_only,Trey McBride,TE,ARI,DAL,Receptions,U 7.5,109,DraftKings,1.48,0.486,1.5
+8,v1,Trey McBride,TE,ARI,DAL,Receptions,U 7.5,109,DraftKings,6.63,0.51,6.6
+8,original,Ty Johnson,RB,BUF,BAL,Receptions,O 2.5,142,Caesars,-24.0,,
+8,market_only,Ty Johnson,RB,BUF,BAL,Receptions,O 2.5,142,Caesars,-5.52,0.39,-5.5
+8,v1,Ty Johnson,RB,BUF,BAL,Receptions,O 2.5,142,Caesars,-15.17,0.351,-15.2
+8,original,Tyler Higbee,TE,LA,LAC,Rec Yds,U 37.5,-115,DraftKings,23.47,,
+8,market_only,Tyler Higbee,TE,LA,LAC,Rec Yds,O 35.5,-115,BetMGM,-3.04,0.519,-3.0
+8,v1,Tyler Higbee,TE,LA,LAC,Rec Yds,U 37.5,-115,DraftKings,7.06,0.573,7.1
+8,original,Tyler Higbee,TE,LA,LAC,Receptions,U 3.5,101,DraftKings,22.86,,
+8,market_only,Tyler Higbee,TE,LA,LAC,Receptions,O 3.5,-105,BetMGM,2.97,0.527,3.0
+8,v1,Tyler Higbee,TE,LA,LAC,Receptions,U 3.5,101,DraftKings,8.46,0.54,8.5
+8,original,Tyler Warren,TE,IND,JAC,Rec Yds,O 35.5,-114,DraftKings,23.38,,
+8,market_only,Tyler Warren,TE,IND,JAC,Rec Yds,O 35.5,-114,DraftKings,-4.71,0.508,-4.7
+8,v1,Tyler Warren,TE,IND,JAC,Rec Yds,U 36.5,-115,Hard Rock,-3.64,0.515,-3.6
+8,original,Tyler Warren,TE,IND,JAC,Receptions,O 4.5,102,FanDuel,17.78,,
+8,market_only,Tyler Warren,TE,IND,JAC,Receptions,U 4.5,-124,DraftKings,-2.9,0.538,-2.9
+8,v1,Tyler Warren,TE,IND,JAC,Receptions,O 4.5,102,FanDuel,-1.88,0.486,-1.9
+8,original,Wan'Dale Robinson,WR,TEN,CIN,Rec Yds,U 48.5,-114,FanDuel,12.78,,
+8,market_only,Wan'Dale Robinson,WR,TEN,CIN,Rec Yds,U 48.5,-114,FanDuel,-3.64,0.513,-3.6
+8,v1,Wan'Dale Robinson,WR,TEN,CIN,Rec Yds,U 48.5,-114,FanDuel,5.72,0.563,5.7
+8,original,Wan'Dale Robinson,WR,TEN,CIN,Receptions,U 5.5,-118,FanDuel,9.09,,
+8,market_only,Wan'Dale Robinson,WR,TEN,CIN,Receptions,O 5.5,-105,Fanatics,-4.51,0.489,-4.5
+8,v1,Wan'Dale Robinson,WR,TEN,CIN,Receptions,U 5.5,-118,FanDuel,3.42,0.56,3.4
+8,original,Xavier Worthy,WR,KC,DEN,Rec Yds,O 29.5,-114,FanDuel,42.37,,
+8,market_only,Xavier Worthy,WR,KC,DEN,Rec Yds,U 30.5,-111,DraftKings,-3.47,0.508,-3.5
+8,v1,Xavier Worthy,WR,KC,DEN,Rec Yds,O 29.5,-114,FanDuel,-3.66,0.513,-3.7
+8,original,Xavier Worthy,WR,KC,DEN,Receptions,O 3.5,130,BetMGM,14.29,,
+8,market_only,Xavier Worthy,WR,KC,DEN,Receptions,O 3.5,130,BetMGM,0.39,0.436,0.4
+8,v1,Xavier Worthy,WR,KC,DEN,Receptions,O 3.5,130,BetMGM,1.84,0.443,1.8
+8,original,Zay Flowers,WR,BAL,BUF,Rec Yds,O 80.5,-125,Fanatics,9.94,,
+8,market_only,Zay Flowers,WR,BAL,BUF,Rec Yds,U 84.5,-110,DraftKings,-3.07,0.508,-3.1
+8,v1,Zay Flowers,WR,BAL,BUF,Rec Yds,U 84.5,-110,DraftKings,-0.21,0.523,-0.2
+8,original,Zay Flowers,WR,BAL,BUF,Receptions,O 6.5,120,FanDuel,3.08,,
+8,market_only,Zay Flowers,WR,BAL,BUF,Receptions,O 6.5,120,FanDuel,-4.44,0.434,-4.4
+8,v1,Zay Flowers,WR,BAL,BUF,Receptions,O 6.5,120,FanDuel,-8.29,0.417,-8.3

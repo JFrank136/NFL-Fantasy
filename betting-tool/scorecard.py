@@ -10,7 +10,7 @@ model and are labelled in-sample -- they are context, not evidence. Also reporte
 a v1-vs-market-only head-to-head on the bets where they differ, Brier scores, closing-line value, a check that the
 scoring code is unchanged since the freeze, and whether the unattended closing capture is alive.
 
-Usage: python scorecard.py   -> console tables; grades/scorecard.csv, scorecard_breakdown.csv, scorecard_h2h.csv
+Usage: python scorecard.py   -> console tables; grades/scorecard.csv
 """
 import ast
 import json
@@ -243,9 +243,7 @@ def main():
                                        Close_EV_Pct=('Close_EV_Pct', 'mean')).round(2).to_string())
     OUT_FILE.parent.mkdir(exist_ok=True)
     table.to_csv(OUT_FILE, index=False)
-    breakdown.to_csv(OUT_FILE.with_name('scorecard_breakdown.csv'), index=False)
-    h2h.to_csv(OUT_FILE.with_name('scorecard_h2h.csv'), index=False)
-    print(f"\nWrote {OUT_FILE.relative_to(HERE)}, scorecard_breakdown.csv, scorecard_h2h.csv")
+    print(f"\nWrote {OUT_FILE.relative_to(HERE)} (the by-market and head-to-head tables above are console-only)")
 
 
 if __name__ == '__main__':

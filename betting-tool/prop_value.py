@@ -10,8 +10,9 @@ listed odds, plus reliability flags and a Lean/Watch/Pass tier. The fair value f
 book being bet (leave-one-book-out). Raw_Gap/Edge_* are the ORIGINAL model's numbers (projection minus line), kept for
 reference and as a comparison baseline; they did not predict results (see calibrate.py).
 
-Outputs: exports/prop_value.csv (active model, everything, sorted by EV), exports/prop_shortlist.csv (Lean + Watch),
-exports/prop_predictions.csv (original, market-only and active models side by side, for scorecard.py).
+Output: exports/prop_value.csv, the one user-facing table (every evaluated prop; filter Tier, sort EV). Internally
+data/prop_predictions.csv holds the original, market-only and active models' picks side by side (archived in each
+snapshot for scorecard.py). Quotes for games already started are dropped before scoring.
 Usage: python prop_value.py   |   python prop_value.py --explain "Player Name" [--stat "Rec Yds"]
 """
 import argparse
@@ -209,15 +210,27 @@ def explain(row, params):
     return '\n'.join(out)
 
 
-def weekly_top(out, picks, params):
-    """The concise weekly list: Lean picks only (EV >= lean cutoff, enough books, no flags), best EV first, capped at
-    selection.top_n. Never padded: a quiet week gives a short or empty list. Display only -- the model's scoring and
-    the full candidate set (prop_value.csv) are untouched."""
-    top = out[out['Tier'] == 'Lean'].sort_values('EV_Pct', ascending=False).head(params['selection']['top_n']).copy()
+LEAD_COLS = ['Week', 'Tier', 'Player', 'Pos', 'Team', 'Opp', 'Stat', 'Direction', 'Line', 'Pick', 'Book', 'Odds',
+             'P_Win', 'BreakEven', 'EV_Pct', 'Mkt_Agrees', 'Source', 'Flags']
+TIER_ORDER = {'Lean': 0, 'Watch': 1, 'Pass': 2}
+
+
+def finalize(act, picks):
+    """The single user-facing table: one row per evaluated prop, filterable by Tier and sortable by EV in Excel (rows
+    come sorted Lean, Watch, Pass, then best EV first). Mkt_Agrees = the market-only baseline makes the same bet."""
     mkt = picks[picks['Model'] == 'market_only'].set_index(['Player', 'Stat'])[['Pick', 'Book']]
-    same = [(p, s) in mkt.index and tuple(mkt.loc[(p, s)]) == (pick, book)
-            for p, s, pick, book in zip(top['Player'], top['Stat'], top['Pick'], top['Book'])]
-    return top.assign(Mkt_Agrees=same)
+    same = ['Yes' if (p, s) in mkt.index and tuple(mkt.loc[(p, s)]) == (pick, book) else 'No'
+            for p, s, pick, book in zip(act['Player'], act['Stat'], act['Pick'], act['Book'])]
+    out = act.drop(columns=['_trace'], errors='ignore').assign(
+        Mkt_Agrees=same, Direction=act['Pick'].str[0].map({'O': 'Over', 'U': 'Under'}), Line=act['Pick'].str.split().str[1].astype(float))
+    out = out.assign(_t=out['Tier'].map(TIER_ORDER)).sort_values(['_t', 'EV_Pct'], ascending=[True, False]).drop(columns='_t')
+    return out[LEAD_COLS + [c for c in out.columns if c not in LEAD_COLS and c != 'Model']]
+
+
+def drop_started(lines, now):
+    """Remove quotes for games that have already kicked off (stale quotes after a late pull): they must not be scored."""
+    start = pd.to_datetime(lines['Start'], utc=True)
+    return lines[start > now], int((start <= now).sum())
 
 
 def main():
@@ -228,6 +241,10 @@ def main():
     params = prop_model.load_params()
     version = params['version']
     lines, proj = pd.read_csv('data/prop_lines.csv'), pd.read_csv('data/ds_projections.csv')
+    if not args.explain:
+        lines, n_started = drop_started(lines, pd.Timestamp.now(tz='UTC'))
+        if n_started:
+            print(f"Excluded {n_started} quotes for games that had already started.")
     picks, unmatched = score_slate(lines, proj, params, hist_records(), log=(lambda *_: None) if args.explain else print)
     act = picks[picks['Model'] == version].copy()
     if args.explain:
@@ -241,24 +258,21 @@ def main():
         return
     os.makedirs('exports', exist_ok=True)
     keep = ['Week', 'Model', 'Player', 'Pos', 'Team', 'Opp', 'Stat', 'Pick', 'Odds', 'Book', 'Score', 'P_Win', 'EV_Pct']
-    picks[keep].to_csv('exports/prop_predictions.csv', index=False)
-    out = act.drop(columns=['_trace']).sort_values('EV_Pct', ascending=False)
+    picks[keep].to_csv('data/prop_predictions.csv', index=False)   # internal: 3-model predictions, archived by snapshot.py
+    out = finalize(act, picks)
     out.to_csv('exports/prop_value.csv', index=False)
-    short = out[out['Tier'].isin(['Lean', 'Watch'])]
-    short = short.assign(_t=short['Tier'].ne('Lean')).sort_values(['_t', 'EV_Pct'], ascending=[True, False]).drop(columns='_t')
-    short.to_csv('exports/prop_shortlist.csv', index=False)
-    top = weekly_top(out, picks, params)
-    top.to_csv('exports/prop_weekly_top.csv', index=False)
-    print(f"Wrote {len(out)} candidates to exports/prop_value.csv (model {version}, odds >= {MIN_ODDS}, >= {MIN_BOOKS} books), "
-          f"{len(short)} Lean+Watch to exports/prop_shortlist.csv, {len(top)} to exports/prop_weekly_top.csv")
+    n = out['Tier'].value_counts()
+    print(f"Wrote {len(out)} props to exports/prop_value.csv (model {version}): {n.get('Lean', 0)} Lean, {n.get('Watch', 0)} Watch, "
+          f"{n.get('Pass', 0)} Pass. Filter Tier in Excel; rows are sorted Lean > Watch > Pass, then EV.")
     if unmatched:
         print(f"  {len(unmatched)} prop players had no Draft Sharks projection (e.g. {sorted(unmatched)[:5]})")
     print(f"\nNOTE: model {version} is frozen; out-of-sample results start with week {params.get('oos_from_week')} "
           "(python scorecard.py). In the in-sample weeks v1 did not beat the market-only baseline, so treat this as a "
-          "list to check by hand, not a signal. Mkt_Agrees = the market-only baseline picks the same bet.")
-    print(f"Weekly top (Lean only, by EV, at most {params['selection']['top_n']}; fewer or none when little qualifies):")
+          "list to check by hand, not a signal. Mkt_Agrees = the market-only baseline makes the same bet.")
+    lean = out[out['Tier'] == 'Lean'].head(20)
+    print("Top Lean picks (up to 20; none if nothing qualifies):")
     cols = ['Player', 'Team', 'Stat', 'Pick', 'Odds', 'Book', 'P_Win', 'BreakEven', 'EV_Pct', 'Source', 'Mkt_Agrees']
-    print(top[cols].to_string(index=False) if len(top) else "  (none -- no pick clears the Lean bar this week)")
+    print(lean[cols].to_string(index=False) if len(lean) else "  (none -- no pick clears the Lean bar this week)")
 
 
 if __name__ == "__main__":

@@ -1,3 +1,0 @@
-Sample,Compared,N,v1 hit%,v1 ROI%,mkt hit%,mkt ROI%,avg odds v/m,units diff/bet,CI95
-in-sample,all,394,54.3,4.9,54.6,5.5,-105/-105,-0.007,-0.10..+0.11
-in-sample,different bets only,121,49.6,-4.8,50.4,-2.7,-108/-106,-0.022,-0.36..+0.30

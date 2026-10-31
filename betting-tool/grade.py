@@ -14,7 +14,7 @@ A player with snaps but no stats row played and recorded 0 (Basis=snap_count_zer
 Units are flat 1-unit stakes at the listed odds and are HYPOTHETICAL unless you actually bet.
 Each row is one player/stat opportunity, not one per sportsbook.
 
-Usage: python grade.py   -> grades/graded_picks.csv, grades/report.csv, console summary
+Usage: python grade.py   -> grades/graded_picks.csv, console summary
 """
 import json
 import math
@@ -199,7 +199,6 @@ def main():
         sub = g[g['Result'] == res] if res == 'void' else g[g['Basis'] == res]
         if not sub.empty:
             print(f"{label}:", ', '.join(f"{r.Player} {r.Stat} {r.Pick}" for r in sub.itertuples()))
-    reports = []
     for label, by in [('overall', ['Week', 'Provenance']), ('stat+direction', ['Stat', 'Direction']),
                       ('position', ['Pos']), ('direction', ['Direction'])]:
         t = summarize(g, by)
@@ -207,10 +206,7 @@ def main():
             continue
         print(f"\n== {label} (hypothetical, 1u flat at listed odds) ==")
         print(t.to_string(index=False))
-        reports.append(t.assign(Cut=label))
-    if reports:
-        pd.concat(reports).to_csv(OUT_DIR / 'report.csv', index=False)
-    print(f"\nWrote {OUT_DIR.name}/graded_picks.csv, report.csv")
+    print(f"\nWrote {OUT_DIR.name}/graded_picks.csv")
 
 
 if __name__ == '__main__':

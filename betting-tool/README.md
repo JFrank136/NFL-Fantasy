@@ -27,8 +27,8 @@ of line on projection; `Fair_Line` is what the market "should" be for that proje
 
 `snapshot.py` (last step of `run_all.py`) saves an immutable copy of `prop_lines.csv`, `ds_projections.csv` and
 `prop_value.csv` to `snapshots/<capture time>/` (skipped if unchanged). `python grade.py` grades the latest
-pre-kickoff pick per week/player/stat against nflverse (`nflreadpy`) and writes `grades/graded_picks.csv` and
-`grades/report.csv`. Results: win/loss/push/void/pending/unverified. Snap counts decide DNP (void) vs played-with-no-stats (graded on 0); a missing player is never silently a loss. `python snapshot.py --import-picks FILE` loads a past export (kickoff from the nflverse schedule, pregame assumed).
+pre-kickoff pick per week/player/stat against nflverse (`nflreadpy`) and writes `grades/graded_picks.csv`
+(the summary tables print to the console). Results: win/loss/push/void/pending/unverified. Snap counts decide DNP (void) vs played-with-no-stats (graded on 0); a missing player is never silently a loss. `python snapshot.py --import-picks FILE` loads a past export (kickoff from the nflverse schedule, pregame assumed).
 Units are hypothetical flat 1u at listed odds. Tests: `python -m pytest tests`. Needs `pip install nflreadpy`.
 
 
@@ -47,8 +47,13 @@ Pass), `Flags`, `Hist` (graded record for that stat/direction), and where the ed
 `Mkt_Edge_Pts` (market probability minus break-even, so it includes the vig and is usually slightly negative),
 `Skew_Pts`, `Proj_Pts`, summarised as `Source` = Pricing / Projection / Pricing+Projection / Base-rate.
 `P_Mkt` / `EV_Mkt_Pct` are the same pick valued on books alone (no skew, no projection).
-Outputs: `exports/prop_value.csv` (all), `exports/prop_shortlist.csv` (Lean + Watch), `exports/prop_predictions.csv`
-(original, market-only and v1 picks side by side; copied into each snapshot).
+**Output: `exports/prop_value.csv` is the one user-facing file** -- every evaluated prop, one row each, leading with
+`Week, Tier, Player, Pos, Team, Opp, Stat, Direction, Line, Pick, Book, Odds, P_Win, BreakEven, EV_Pct, Mkt_Agrees, Source,
+Flags` (then the supporting detail). Rows are sorted Lean > Watch > Pass, then best EV; in Excel turn on a filter and pick
+`Tier = Lean` (or Lean + Watch) and/or sort `EV_Pct`. `Mkt_Agrees` = the market-only baseline makes the same bet. A quiet
+week simply has few or no Lean rows -- nothing is forced. Quotes for games that had already started are dropped before
+scoring. Internally (not for reading) `data/prop_predictions.csv` holds the original, market-only and v1 picks side by
+side and is archived in each snapshot for `scorecard.py`.
 
 ### Frozen versions and the scorecard
 `models/<version>/params.json` + `FROZEN.json` (hash, code commit, freeze time). A frozen version is never edited:
@@ -59,18 +64,30 @@ through the original model, a market-only baseline and v1, grades each model's t
 listed odds, labels weeks in-sample vs OUT-OF-SAMPLE, and reports Brier scores and closing-line value. Do not retune v1
 on results; if a change is warranted, fit a new version and compare both going forward.
 
-### Weekly routine
-    python run_all.py --week N      # grades finished games, refreshes grades/universe.csv, pulls, snapshots, scores
-    python scorecard.py             # after the week's games: ROI / hit rate / avg odds / N per model, by market and direction
-    python calibrate.py             # diagnostics only (leave-one-week-out log loss); --version v2 --write freezes a NEW version
+### Weekly routine (mostly automatic)
+The pull and closing-line capture run on their own (below). Your part: open `exports/prop_value.csv`, filter Tier, and
+after the week's games run
+
+    python scorecard.py             # health block, then ROI / hit rate / avg odds / N per model, by market and direction
+    python calibrate.py             # diagnostics only; --version v2 --write freezes a NEW version (never edits v1)
+    python weekly_pull.py           # manual pull, if the scheduled one failed (--if-missing = only when the week has no snapshot)
+    python run_all.py --week N      # the older full refresh incl. the yards-allowed scrapers (not needed by v1)
+
 `scorecard.py` opens with an **Operational health** block (`health.py`): every finished selection graded; closing captures
 present for each out-of-sample kickoff (and the scheduler heartbeat/errors); each snapshot's prices and 3-model predictions
-intact (hash, row counts, valid odds/lines, two-sided quotes, captured pre-kickoff) and a snapshot for every week already
-underway; working data files fresh and consistent. Read it first each week: any FAIL/WARN means the evidence for that
-week is incomplete (e.g. the weekly pull was not run before kickoff -- the pull is still manual, `run_all.py --week N`).
-Closing lines are captured automatically (below). Outputs per week: `exports/prop_weekly_top.csv` is the concise list
-(Lean picks only, best EV first, at most 20, never padded -- empty on a quiet week; `Mkt_Agrees` says whether the
-market-only baseline makes the same bet); `prop_shortlist.csv` is Lean + Watch; `prop_value.csv` keeps every candidate.
+intact (hash, row counts, valid odds/lines, two-sided quotes, captured pre-kickoff); a snapshot for every week already
+underway, a warning when a week kicks off within 36h without one, and the weekly-pull failures; working data files fresh
+and consistent. Any FAIL/WARN means that week's evidence is incomplete. Games that kicked off before a week's first
+snapshot have no pregame data and are excluded from evaluation (the scorecard only scores quotes captured before kickoff).
+
+### Weekly pull (automatic)
+Windows task `PropWeeklyPull` runs `pythonw weekly_pull.py --if-missing` Wednesday 10:00, with backups Wednesday 16:00 and
+Thursday 11:00 (times shift an hour earlier in local time after the Nov 1 clock change) -- before Thursday's kickoff. A
+backup only runs if the week still has no snapshot. Each run waits for the network, refreshes grades, pulls lines and Draft
+Sharks projections, **refuses to snapshot if the projections are for a different week than the lines** (Draft Sharks may
+not have rolled over yet; the next trigger retries), scores with v1 and saves the snapshot, then confirms it exists.
+Failures exit non-zero (Task Scheduler retries 3x at 10-minute intervals), and everything is logged to
+`logs/weekly_pull.log`. It wakes the laptop to run and needs you logged in; check `Get-ScheduledTaskInfo PropWeeklyPull`.
 
 ### Keeping the test clean (weeks 8+)
 Do not edit `models/v1/` (hash-checked), the tier cutoffs, the flags or the scoring functions in `prop_model.py` /

@@ -15,6 +15,7 @@ import pandas as pd
 
 PENDING_HOURS = 5        # grade.py treats a game as pending until this long after kickoff
 CAPTURE_WINDOW = 60      # a game counts as captured if a closing capture exists within this many minutes before kickoff
+PULL_DUE_HOURS = 36      # warn when a week kicks off within this long and has no snapshot yet
 STALE_HOURS_GRADES = 12  # graded files should be refreshed within this long after the last finished game
 SNAP_FILES = ['prop_lines.csv', 'ds_projections.csv', 'prop_value.csv']
 
@@ -131,13 +132,31 @@ def check_snapshots(snap_dir, params, now, expected_weeks=None, kickoffs=None):
             continue
         late = [k for k in (kickoffs or {}).get(w, []) if k < cap and k < now]
         if late:
-            total = len([k for k in kickoffs[w] if k < now or k >= cap])
-            out.append(('Saved data', 'WARN', f"week {w}: {len(late)} kickoff time(s) passed before the first snapshot ({cap:%a %m/%d %H:%MZ}), "
-                        f"so those games have no pregame prices or predictions: {', '.join(k.strftime('%a %m/%d %H:%MZ') for k in late)}"))
+            out.append(('Saved data', 'WARN', f"week {w}: {len(late)} kickoff time(s) passed before the first snapshot ({cap:%a %m/%d %H:%MZ}); "
+                        f"those games have no pregame data and are EXCLUDED from evaluation: {', '.join(k.strftime('%a %m/%d %H:%MZ') for k in late)}"))
     for w in sorted(expected_weeks or []):
         if w >= oos and w not in seen:
             out.append(('Saved data', 'FAIL', f"week {w} has started but no snapshot (prices + predictions) was saved for it"))
+    for w, ks in sorted((kickoffs or {}).items()):
+        if w >= oos and w not in seen and now < ks[0] <= now + timedelta(hours=PULL_DUE_HOURS):
+            out.append(('Saved data', 'WARN', f"week {w} kicks off {ks[0]:%a %m/%d %H:%MZ} and has no snapshot yet; the weekly pull is due "
+                        f"(python weekly_pull.py)"))
     return out
+
+
+def check_pull(log_file, now):
+    """Failures of the unattended weekly pull (logs/weekly_pull.log)."""
+    log_file = Path(log_file)
+    if not log_file.exists():
+        return [('Weekly pull', 'OK', "no pull log yet (the scheduled PropWeeklyPull task has not run)")]
+    lines = [ln for ln in log_file.read_text(encoding='utf-8').splitlines() if ln.strip()]
+    recent = [ln for ln in lines if pd.to_datetime(ln.split()[0], utc=True) > now - timedelta(days=7)]
+    errs = [ln for ln in recent if ' ERROR ' in ln]
+    oks = [ln for ln in lines if ' OK ' in ln]
+    last = f"last success {oks[-1][:25]}" if oks else "no successful pull logged yet"
+    if errs:
+        return [('Weekly pull', 'WARN', f"{len(errs)} failed attempt(s) in the last 7 days; latest: {errs[-1][27:150]}; {last}")]
+    return [('Weekly pull', 'OK', f"no failures in the last 7 days; {last}")]
 
 
 def check_inputs(root, now, max_age_days=4):
@@ -169,11 +188,12 @@ def schedule_kickoffs(now, season=2026):
         return {}
 
 
-def run_checks(graded, picks, params, now, root, snap_dir, closing_dir, grades_dir, weeks=None):
+def run_checks(graded, picks, params, now, root, snap_dir, closing_dir, grades_dir, weeks=None, pull_log=None):
     kickoffs = schedule_kickoffs(now) if weeks is None else {}
     weeks = [w for w, ks in kickoffs.items() if ks[0] < now] if weeks is None else weeks
     return (check_grading(graded, now, grades_dir) + check_closing(picks, now, closing_dir, params['oos_from_week'])
-            + check_snapshots(snap_dir, params, now, weeks, kickoffs) + check_inputs(root, now))
+            + check_snapshots(snap_dir, params, now, weeks, kickoffs) + check_pull(pull_log or Path(root) / 'logs' / 'weekly_pull.log', now)
+            + check_inputs(root, now))
 
 
 def render(results):

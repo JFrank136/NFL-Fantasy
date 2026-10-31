@@ -13,14 +13,24 @@ def test_avg_american_odds():
     assert sc.avg_american([-200, 200]) == 125   # decimals 1.5 and 3.0 average to 2.25
 
 
-def test_weekly_top_is_lean_only_capped_and_never_padded():
-    out = pd.DataFrame({'Player': [f'P{i}' for i in range(30)], 'Stat': 'Rec Yds', 'Pick': 'U 40.5', 'Book': 'DK',
-                        'Tier': ['Lean'] * 25 + ['Watch'] * 5, 'EV_Pct': [30 - i for i in range(30)]})
-    picks = pd.DataFrame({'Model': 'market_only', 'Player': ['P0', 'P1'], 'Stat': 'Rec Yds', 'Pick': ['U 40.5', 'O 40.5'], 'Book': 'DK'})
-    top = pv.weekly_top(out, picks, PARAMS)
-    assert len(top) == 20 and set(top['Tier']) == {'Lean'} and top['EV_Pct'].is_monotonic_decreasing
-    assert list(top['Mkt_Agrees'][:2]) == [True, False] and not top['Mkt_Agrees'][2:].any()
-    assert pv.weekly_top(out[out['Tier'] != 'Lean'], picks, PARAMS).empty   # nothing qualifies -> nothing forced
+def test_finalize_is_one_filterable_table_sorted_lean_first():
+    act = pd.DataFrame({'Week': 8, 'Player': ['A', 'B', 'C'], 'Pos': 'WR', 'Team': 'X', 'Opp': 'Y', 'Stat': 'Rec Yds',
+                        'Pick': ['U 40.5', 'O 30.5', 'U 50.5'], 'Odds': -110, 'Book': 'DK', 'P_Win': .55, 'BreakEven': .52,
+                        'EV_Pct': [2.0, 9.0, 5.0], 'Tier': ['Watch', 'Pass', 'Lean'], 'Source': 'Projection', 'Flags': '',
+                        'Model': 'v1', 'DS_Proj': 1.0, '_trace': None})
+    picks = pd.DataFrame({'Model': 'market_only', 'Player': ['A', 'B'], 'Stat': 'Rec Yds', 'Pick': ['U 40.5', 'U 30.5'], 'Book': 'DK'})
+    out = pv.finalize(act, picks)
+    assert list(out.columns[:len(pv.LEAD_COLS)]) == pv.LEAD_COLS and 'Model' not in out.columns and '_trace' not in out.columns
+    assert list(out['Player']) == ['C', 'A', 'B']                      # Lean, Watch, Pass
+    assert list(out['Direction']) == ['Under', 'Under', 'Over'] and list(out['Line']) == [50.5, 40.5, 30.5]
+    assert dict(zip(out['Player'], out['Mkt_Agrees'])) == {'A': 'Yes', 'B': 'No', 'C': 'No'}   # C has no market-only row
+
+
+def test_started_games_are_dropped_before_scoring():
+    now = pd.Timestamp('2026-11-05T02:00:00Z')
+    lines = pd.DataFrame({'Player': ['A', 'B'], 'Start': ['2026-11-05T01:15:00+00:00', '2026-11-08T18:00:00+00:00']})
+    kept, n = pv.drop_started(lines, now)
+    assert list(kept['Player']) == ['B'] and n == 1
 
 
 def test_head_to_head_ignores_identical_bets():
