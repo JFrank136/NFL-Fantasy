@@ -73,10 +73,20 @@ export function computeFlexRanks(rows: AggregatedWeeklyRow[], week: number | nul
   return ranks
 }
 
-export function buildWeeklyPool(rows: AggregatedWeeklyRow[], week: number | null): WeeklyPlayer[] {
+/**
+ * `includeDst` adds team defenses to the pool. Off by default: Add/Drop is
+ * about waiver pickups and doesn't want them. DST is ranked against other
+ * defenses only (its own scale group), so Start/Sit compares DST with DST.
+ */
+export function buildWeeklyPool(
+  rows: AggregatedWeeklyRow[],
+  week: number | null,
+  opts: { includeDst?: boolean } = {},
+): WeeklyPlayer[] {
   const flex = computeFlexRanks(rows, week)
+  const allowed = opts.includeDst ? [...WEEKLY_POSITIONS, 'DST'] : WEEKLY_POSITIONS
   return rows
-    .filter(r => WEEKLY_POSITIONS.includes(r.position))
+    .filter(r => allowed.includes(r.position))
     .map(r => {
       const key = identityKey(r.canonicalName, r.position)
       return {

@@ -182,7 +182,7 @@ export function recommendStartSit(players: WeeklyPlayer[]): StartSitRecommendati
       status: 'not-comparable', starterKey: null, confidence: null, reasons: [],
       note: [
         byeNote,
-        "QBs are ranked against QBs only, so a QB can't be compared with an RB, WR or TE. Compare like with like.",
+        "QBs and defenses are each ranked against their own position only, so they can't be compared with an RB, WR or TE (or each other). Compare like with like.",
       ].filter(Boolean).join(' '),
     }
   }

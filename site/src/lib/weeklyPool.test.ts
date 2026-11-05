@@ -70,6 +70,14 @@ describe('buildWeeklyPool', () => {
     expect(pool.find(p => p.canonicalName === 'qb')!.flexRank).toBeNull()
   })
 
+  it('includes DST only when asked, with no FLEX rank', () => {
+    const rows = [row('rb', 'RB', 4), row('eagles', 'DST', 2, '@NYG', { aggregateRank: 1 })]
+    expect(buildWeeklyPool(rows, null).map(p => p.canonicalName)).toEqual(['rb'])
+    const pool = buildWeeklyPool(rows, null, { includeDst: true })
+    expect(pool.map(p => p.canonicalName).sort()).toEqual(['eagles', 'rb'])
+    expect(pool.find(p => p.canonicalName === 'eagles')).toMatchObject({ positionRank: 1, flexRank: null })
+  })
+
   it('flags a bye from the stored bye column when it matches the current week', () => {
     const pool = buildWeeklyPool([
       row('onbye', 'RB', 1, 'vs. DET', { byeWeek: 7 }),

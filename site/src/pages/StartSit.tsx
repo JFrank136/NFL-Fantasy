@@ -19,7 +19,7 @@ export default function StartSit() {
   // ROS value is context only, so it never blocks or fails the page.
   const ros = useComparisonPool(scoring)
 
-  const pool = useMemo(() => buildWeeklyPool(weekly.rows, weekly.week), [weekly.rows, weekly.week])
+  const pool = useMemo(() => buildWeeklyPool(weekly.rows, weekly.week, { includeDst: true }), [weekly.rows, weekly.week])
   const rosByKey = useMemo(() => new Map(ros.pool.map(p => [p.key, p.blended])), [ros.pool])
   const byKey = useMemo(() => new Map(pool.map(p => [p.key, p])), [pool])
 
