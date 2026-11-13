@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { headshotUrl, initials, usePlayerImages } from '../lib/playerImages'
+import { headshotUrl, initials, isLogoId, usePlayerImages } from '../lib/playerImages'
 
 /** Round headshot (ESPN CDN) looked up by identityKey(canonicalName, position);
  * falls back to initials when the player has no id or the image fails. */
@@ -24,7 +24,7 @@ export default function PlayerAvatar({
       style={{ width: size, height: size, fontSize: Math.max(10, Math.round(size * 0.36)) }}
     >
       {id && !failed ? (
-        <img src={headshotUrl(id)} alt={name} loading="lazy" onError={() => setFailed(true)} />
+        <img src={headshotUrl(id)} alt={name} loading="lazy" onError={() => setFailed(true)} className={isLogoId(id) ? 'logo' : undefined} />
       ) : (
         initials(name)
       )}

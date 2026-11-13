@@ -330,3 +330,9 @@ body {
   @apply w-full h-full object-cover;
   object-position: top;
 }
+
+/* Defense team logos: contain with a little padding instead of cropping. */
+.player-avatar img.logo {
+  @apply object-contain p-1;
+  object-position: center;
+}

@@ -500,6 +500,12 @@ try {
     & $PythonExe "scripts\push_to_supabase.py" 2>&1 | ForEach-Object { Log $_ }
     Log "push_to_supabase.py exit code: $LASTEXITCODE"
 
+    # Refresh the ESPN headshot lookup so new players/rookies get photos.
+    # Cosmetic only -- a failure here is logged but never fails the pull.
+    Log "Running build_player_images.py --push..."
+    & $PythonExe "scriptsuild_player_images.py" --push 2>&1 | ForEach-Object { Log $_ }
+    Log "build_player_images.py exit code: $LASTEXITCODE"
+
     $currentWeek = (& $PythonExe -c "import sys; sys.path.insert(0, '.'); from src.season_config import current_week; print(current_week())").Trim()
     $lastWeek = (& $PythonExe -c "import sys; sys.path.insert(0, '.'); from src.season_config import LAST_WEEK; print(LAST_WEEK)").Trim()
     Log "Current active week: $currentWeek (season ends at week $lastWeek)"

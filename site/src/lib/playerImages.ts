@@ -11,7 +11,12 @@ import { identityKey } from './blend'
 
 const HEADSHOT_BASE = 'https://a.espncdn.com/i/headshots/nfl/players/full'
 
-export const headshotUrl = (espnId: string) => `${HEADSHOT_BASE}/${espnId}.png`
+const LOGO_BASE = 'https://a.espncdn.com/i/teamlogos/nfl/500'
+
+/** ids prefixed "team:" are defenses -> ESPN team logo; others are athlete headshots. */
+export const isLogoId = (espnId: string) => espnId.startsWith('team:')
+export const headshotUrl = (espnId: string) =>
+  isLogoId(espnId) ? `${LOGO_BASE}/${espnId.slice(5)}.png` : `${HEADSHOT_BASE}/${espnId}.png`
 
 export const initials = (name: string) =>
   name.split(' ').filter(Boolean).slice(0, 2).map(w => w[0]).join('')

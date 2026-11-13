@@ -35,6 +35,9 @@ def fetch_espn() -> dict[tuple[str, str], str]:
     out: dict[tuple[str, str], str] = {}
     for t in teams:
         tid = t["team"]["id"]
+        # Defenses: canonical_name is the full team name, position DST. The
+        # site draws the team logo for ids prefixed "team:".
+        out[(normalize_name(t["team"]["displayName"]), "DST")] = "team:" + t["team"]["abbreviation"].lower()
         roster = requests.get(f"{API}/teams/{tid}/roster", timeout=30).json()
         for group in roster.get("athletes", []):
             for a in group.get("items", []):
@@ -56,7 +59,7 @@ def pool_from_csvs() -> set[tuple[str, str]]:
     for p in (paths.PROCESSED_DIR / "trade_values_long.csv", paths.PROCESSED_DIR / "ros_rankings_long.csv"):
         with p.open(newline="", encoding="utf-8") as f:
             for r in csv.DictReader(f):
-                if r["position"] in ("QB", "RB", "WR", "TE"):
+                if r["position"] in ("QB", "RB", "WR", "TE", "DST"):
                     pool.add((normalize_name(r["canonical_name"]), r["position"]))
     return pool
 
