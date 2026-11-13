@@ -4,6 +4,8 @@ import { toBooneRosInput, toDsRosInput, type Scoring } from '../lib/useBlendedRo
 import { buildMovers, describeBaseline, explainMissingBaseline, explainMissingWeekBaseline, metricSources, splitSnapshots, topMovers, weekSnapshot, TIMEFRAME_MIN_GAP_MS, type Metric, type MoverRow, type Timeframe } from '../lib/movers'
 import { onlyWeek } from '../lib/freshness'
 import { useCurrentWeek } from '../lib/useCurrentWeek'
+import PlayerAvatar from '../components/PlayerAvatar'
+import { identityKey } from '../lib/blend'
 import ColumnPicker, { toggleInSet } from '../components/ColumnPicker'
 
 const POSITIONS = ['ALL', 'QB', 'RB', 'WR', 'TE']
@@ -72,7 +74,7 @@ function MoversTable({ title, rows, kind, hidden }: { title: string; rows: Mover
         <tbody>
           {rows.map(r => (
             <tr key={`${r.canonicalName}::${r.position}`}>
-              <td className="sticky-col">{r.playerName} {r.team && <span className="subtle">{r.team}</span>}</td>
+              <td className="sticky-col"><span className="flex items-center gap-2"><PlayerAvatar playerKey={identityKey(r.canonicalName, r.position)} name={r.playerName} size={28} /><span>{r.playerName} {r.team && <span className="subtle">{r.team}</span>}</span></span></td>
               {show('pos') && <td>{r.position}</td>}
               {show('rank') && <td className="text-right">{r.rank ?? ''}</td>}
               {show('prev') && <td className="text-right">{fmt(r.previous)}</td>}

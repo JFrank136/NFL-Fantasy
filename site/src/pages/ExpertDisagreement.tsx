@@ -1,10 +1,11 @@
 import { useMemo, useState } from 'react'
 import { useRosHistory } from '../lib/useRosHistory'
 import { toBooneRosInput, toDsRosInput, type Scoring } from '../lib/useBlendedRos'
-import { blendRosValues } from '../lib/blend'
+import { blendRosValues, identityKey } from '../lib/blend'
 import { buildMovers, describeBaseline, explainMissingBaseline, explainMissingWeekBaseline, splitSnapshots, weekSnapshot, TIMEFRAME_MIN_GAP_MS, type Timeframe } from '../lib/movers'
 import { onlyWeek } from '../lib/freshness'
 import { useCurrentWeek } from '../lib/useCurrentWeek'
+import PlayerAvatar from '../components/PlayerAvatar'
 import ColumnPicker, { toggleInSet } from '../components/ColumnPicker'
 import { currentDisagreements, directionDisagreements } from '../lib/disagreement'
 
@@ -168,7 +169,7 @@ export default function ExpertDisagreement() {
             <tbody>
               {currentRows.map(r => (
                 <tr key={`${r.canonicalName}::${r.position}`}>
-                  <td className="sticky-col">{r.playerName} {r.team && <span className="subtle">{r.team}</span>}</td>
+                  <td className="sticky-col"><span className="flex items-center gap-2"><PlayerAvatar playerKey={identityKey(r.canonicalName, r.position)} name={r.playerName} size={28} /><span>{r.playerName} {r.team && <span className="subtle">{r.team}</span>}</span></span></td>
                   {show('pos') && <td>{r.position}</td>}
                   {show('dsRank') && <td className="text-right">{r.dsRank}</td>}
                   {show('booneRank') && <td className="text-right">{r.booneRank}</td>}
@@ -225,7 +226,7 @@ export default function ExpertDisagreement() {
             <tbody>
               {directionRows.map(r => (
                 <tr key={`${r.canonicalName}::${r.position}`}>
-                  <td className="sticky-col">{r.playerName} {r.team && <span className="subtle">{r.team}</span>}</td>
+                  <td className="sticky-col"><span className="flex items-center gap-2"><PlayerAvatar playerKey={identityKey(r.canonicalName, r.position)} name={r.playerName} size={28} /><span>{r.playerName} {r.team && <span className="subtle">{r.team}</span>}</span></span></td>
                   {show('pos') && <td>{r.position}</td>}
                   {show('booneChange') && <td className={`text-right ${signClass(r.booneChange)}`}>{signed(r.booneChange)}</td>}
                   {show('dsChange') && <td className={`text-right ${signClass(r.dsChange)}`}>{signed(r.dsChange)}</td>}

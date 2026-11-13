@@ -3,6 +3,8 @@ import { supabase, fetchAllRows, type RosRankingRow, type TradeValueLatestRow } 
 import { pivotTradeValues, sourcesWithData, type Scoring, type TradeValueSourceRow } from '../lib/tradeValues'
 import { dropStaleStragglers, onlyWeek, staleSources } from '../lib/freshness'
 import { useCurrentWeek } from '../lib/useCurrentWeek'
+import PlayerAvatar from '../components/PlayerAvatar'
+import { identityKey } from '../lib/blend'
 import ColumnPicker, { toggleInSet } from '../components/ColumnPicker'
 
 const POSITIONS = ['ALL', 'QB', 'RB', 'WR', 'TE']
@@ -236,7 +238,7 @@ export default function TradeValues() {
             {display.map(r => (
               <tr key={`${r.canonicalName}__${r.position}`}>
                 {show('rank') && <td>{r.rank ?? ''}</td>}
-                <td className="sticky-col">{r.playerName}</td>
+                <td className="sticky-col"><span className="flex items-center gap-2"><PlayerAvatar playerKey={identityKey(r.canonicalName, r.position)} name={r.playerName} size={28} />{r.playerName}</span></td>
                 {show('team') && <td>{r.team ?? ''}</td>}
                 {show('pos') && <td>{r.position}</td>}
                 {show('score') && (
