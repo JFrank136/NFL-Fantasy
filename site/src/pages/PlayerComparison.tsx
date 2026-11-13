@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react'
 import PlayerPicker from '../components/PlayerPicker'
 import ComparisonTable from '../components/ComparisonTable'
+import PlayerAvatar from '../components/PlayerAvatar'
 import ScoringToggle from '../components/ScoringToggle'
 import { useComparisonPool } from '../lib/useComparisonPool'
 import type { Scoring } from '../lib/useBlendedRos'
@@ -58,6 +59,7 @@ export default function PlayerComparison() {
           <ComparisonTable
             columns={selected.map(p => ({
               key: p.key,
+              avatar: <PlayerAvatar playerKey={p.key} name={p.playerName} size={40} />,
               header: (
                 <span>
                   {p.playerName}{' '}

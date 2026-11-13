@@ -319,3 +319,14 @@ body {
 .compare-table tr.blended-row td.win-b { background: color-mix(in srgb, var(--side-b) 45%, var(--bg-page)); @apply text-2xl; }
 .edge-a { color: var(--side-a); }
 .edge-b { color: var(--side-b); }
+
+/* Player headshots (ESPN CDN); initials show behind/instead when missing. */
+.player-avatar {
+  @apply inline-flex items-center justify-center rounded-full overflow-hidden flex-shrink-0 font-bold;
+  background: color-mix(in srgb, var(--accent-gold) 25%, #f4efe0);
+  color: #1f4a3a;
+}
+.player-avatar img {
+  @apply w-full h-full object-cover;
+  object-position: top;
+}

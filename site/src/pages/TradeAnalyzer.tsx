@@ -1,3 +1,4 @@
+import PlayerAvatar from '../components/PlayerAvatar'
 import { useMemo, useState } from 'react'
 import { useBlendedRos, type Scoring } from '../lib/useBlendedRos'
 import { identityKey, type BlendedRosRow } from '../lib/blend'
@@ -69,7 +70,7 @@ function PlayerPicker({
               className="search-result"
               onMouseDown={() => { onAdd(r); setQuery('') }}
             >
-              <span>{r.playerName}</span>
+              <span className="flex items-center gap-2"><PlayerAvatar playerKey={identityKey(r.canonicalName, r.position)} name={r.playerName} size={24} />{r.playerName}</span>
               <span className="search-result-meta">{r.team ?? 'FA'} · {r.position}</span>
             </div>
           ))}
@@ -118,9 +119,12 @@ function TradeSide({
             const key = identityKey(p.canonicalName, p.position)
             return (
               <div key={key} className="player-chip">
-                <div className="min-w-0">
+                <div className="min-w-0 flex items-center gap-2">
+                  <PlayerAvatar playerKey={key} name={p.playerName} size={36} />
+                  <div className="min-w-0">
                   <div className={key === bestPlayerKey ? 'font-bold' : 'font-semibold'}>{p.playerName}</div>
                   <div className="subtle">{p.position}{p.team ? ` · ${p.team}` : ''}</div>
+                  </div>
                 </div>
                 <div className="player-chip-values">
                   <div className="sm:text-right">
