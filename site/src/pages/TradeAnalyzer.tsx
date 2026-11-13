@@ -51,7 +51,9 @@ function PlayerPicker({
   }, [candidates, query, searching])
 
   return (
-    <div className="relative">
+    // On phones the wrapper is static so the popover spans the whole
+    // two-column grid (which is `relative`) instead of one narrow half.
+    <div className="sm:relative">
       <input
         className="input w-full"
         placeholder={disabled ? `Max ${MAX_PLAYERS_PER_SIDE} players` : 'Search a player to add…'}
@@ -70,7 +72,7 @@ function PlayerPicker({
               className="search-result"
               onMouseDown={() => { onAdd(r); setQuery('') }}
             >
-              <span className="flex items-center gap-2"><PlayerAvatar playerKey={identityKey(r.canonicalName, r.position)} name={r.playerName} size={24} />{r.playerName}</span>
+              <span className="search-result-name"><PlayerAvatar playerKey={identityKey(r.canonicalName, r.position)} name={r.playerName} size={24} /><span className="min-w-0">{r.playerName}</span></span>
               <span className="search-result-meta">{r.team ?? 'FA'} · {r.position}</span>
             </div>
           ))}
@@ -306,7 +308,7 @@ export default function TradeAnalyzer() {
 
       {!loading && !error && (
         <>
-          <div className="grid grid-cols-2 gap-2 sm:gap-5">
+          <div className="grid grid-cols-2 gap-2 sm:gap-5 relative sm:static">
             <TradeSide
               side="A"
               players={sideAPlayers}

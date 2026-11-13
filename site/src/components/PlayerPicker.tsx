@@ -56,7 +56,7 @@ export default function PlayerPicker({
               className="search-result"
               onMouseDown={() => { onAdd(p); setQuery('') }}
             >
-              <span className="flex items-center gap-2"><PlayerAvatar playerKey={p.key} name={p.playerName} size={24} /><span>{p.playerName} <span className="search-result-sub">{p.position}{p.team ? ` · ${p.team}` : ''}</span></span></span>
+              <span className="search-result-name"><PlayerAvatar playerKey={p.key} name={p.playerName} size={24} /><span className="min-w-0">{p.playerName} <span className="search-result-sub">{p.position}{p.team ? ` · ${p.team}` : ''}</span></span></span>
               <span className="search-result-meta">{p.detail !== undefined ? (p.detail ?? '—') : p.blended != null ? Math.round(p.blended) : '—'}</span>
             </div>
           ))}
