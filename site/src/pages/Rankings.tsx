@@ -7,6 +7,7 @@ import { buildMovers, splitSnapshots, TIMEFRAME_MIN_GAP_MS } from '../lib/movers
 import { onlyWeek } from '../lib/freshness'
 import { useCurrentWeek } from '../lib/useCurrentWeek'
 import { computeFlexRanks, FLEX_POSITIONS } from '../lib/weeklyPool'
+import PlayerAvatar from '../components/PlayerAvatar'
 import ColumnPicker, { toggleInSet } from '../components/ColumnPicker'
 
 // Weekly has no 'ALL' -- aggregateWeeklyRanks ranks within each position, so
@@ -244,7 +245,12 @@ export default function Rankings() {
     switch (key) {
       case 'displayRank': return r.displayRank ?? ''
       case 'overallRank': return r.overallRank ?? ''
-      case 'playerName': return r.playerName
+      case 'playerName': return (
+        <span className="flex items-center gap-2">
+          <PlayerAvatar playerKey={identityKey(r.canonicalName, r.position)} name={r.playerName} size={28} />
+          {r.playerName}
+        </span>
+      )
       case 'position': return r.position
       case 'team': return r.team ?? ''
       case 'blendedValue': return r.blendedValue != null ? Math.round(r.blendedValue) : ''
@@ -262,7 +268,12 @@ export default function Rankings() {
     switch (key) {
       case 'displayRank': return r.displayRank ?? ''
       case 'aggregateRank': return r.aggregateRank ?? ''
-      case 'playerName': return r.playerName
+      case 'playerName': return (
+        <span className="flex items-center gap-2">
+          <PlayerAvatar playerKey={identityKey(r.canonicalName, r.position)} name={r.playerName} size={28} />
+          {r.playerName}
+        </span>
+      )
       case 'position': return r.position
       case 'team': return r.team ?? ''
       case 'opponent': return r.opponent ?? ''
