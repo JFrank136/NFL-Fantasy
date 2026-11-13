@@ -52,6 +52,7 @@ These should be built before most page-specific work to avoid duplicating logic.
 - [x] Shared player search/select component
 - [x] Shared side-by-side comparison table
 - [x] Support best/worst highlighting by row
+- [x] Shared player avatar (ESPN headshots, DST team logos, initials fallback) on all player pages
 - [ ] Shared player value display
 - [ ] Shared source transparency display
 - [ ] Shared confidence indicator

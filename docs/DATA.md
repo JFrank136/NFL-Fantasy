@@ -362,6 +362,20 @@ is a small mutable status table, one row per dataset:
   append-only): `last_success_at, last_attempt_at, status, message,
   row_count`. Lets a consumer (or a human) check whether a pull is stale
   without scanning the append-only tables.
+- **`player_images`** (migration `0003`, 2026-11-12) — headshot lookup, one row per
+  `(canonical_name, position)` (primary key): `espn_id, updated_at`. **RLS is on** with a public
+  read-only policy (unlike the other in-season tables). `espn_id` is an ESPN athlete id; the site
+  builds `https://a.espncdn.com/i/headshots/nfl/players/full/<id>.png`. Defenses use position
+  `DST`, `canonical_name` = full team name ("arizona cardinals"), and `espn_id` = `team:<abbr>`
+  (e.g. `team:ari`), drawn as the ESPN team logo. Built by `scripts/build_player_images.py` from
+  ESPN's public roster API, matched on `normalize_name` + position, with a unique-match nickname
+  fallback (cameron/cam, matthew/matt). ESPN rosters omit free agents and some players whose names
+  differ (Zonovan Knight = Bam Knight, Nathaniel Dell = Tank Dell, Marquise = Hollywood Brown);
+  those go in `data/player_image_overrides.csv` (`canonical_name,position,espn_id`, ids found via
+  ESPN's player search). The script upserts every roster player, not just today's pool, so new
+  players resolve once refreshed. `scheduled_pull.ps1` runs it after the Supabase push (logged only,
+  never fails the pull). Dry run (no writes): `python scripts/build_player_images.py` prints
+  unmatched players; as of 2026-11-12 all 505 current players matched.
 
 Three views, each `select distinct on (...) ... order by ..., pulled_at desc`
 over their base table — i.e. "latest pull per logical key" without the
