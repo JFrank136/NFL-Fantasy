@@ -170,6 +170,7 @@ def evaluate_week(season: int, week: int, scoring: str, snap: pd.DataFrame, resu
         pool, unmatched = build_pool(snap, results_week, scoring)
     else:
         pool = attach_results(pool[["canon", "position", "consensus", "pos_rank"]].copy(), results_week, scoring)
+        unmatched = int((~pool.matched).sum())
     pool = pool.reset_index(drop=True)
     sources = sorted(snap.source.unique())
     rm, cov = rank_matrix(snap, pool, sources)

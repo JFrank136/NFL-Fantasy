@@ -2,7 +2,7 @@
 import { useState } from 'react'
 import Sidebar from './components/Sidebar'
 import MobileNav from './components/MobileNav'
-import { Rankings, TradeValues, TradeAnalyzer, StartSit, AddDrop, MoversFallers, ExpertDisagreement, PlayerComparison } from './pages'
+import { Rankings, TradeValues, TradeAnalyzer, StartSit, AddDrop, MoversFallers, ExpertDisagreement, PlayerComparison, ExpertAccuracy } from './pages'
 import type { PageId } from './nav'
 
 export default function App() {
@@ -22,6 +22,7 @@ export default function App() {
           {page === 'movers' && <MoversFallers />}
           {page === 'disagreement' && <ExpertDisagreement />}
           {page === 'compare' && <PlayerComparison />}
+          {page === 'experts' && <ExpertAccuracy />}
         </main>
       </div>
     </div>
