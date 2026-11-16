@@ -424,3 +424,20 @@ sources by name should follow this pattern, not `canonical_name` alone. This
 still doesn't solve cross-dataset gaps like a player missing entirely from
 one source's pull; see `docs/superpowers/specs/2026-09-12-supabase-foundation-design.md`
 for what's explicitly out of scope.
+
+## Expert evaluation tables (`supabase/migrations/0004_expert_eval.sql`, `0005_expert_eval_availability.sql`)
+
+Written by `src/expert_eval/` (weekly step in `scheduled_pull.ps1`); full method in `docs/EXPERT_EVAL.md`. All keyed by
+natural keys and upserted (snapshots/pools insert-only). `position`/`tier` = `ALL` on overall rows.
+
+- `expert_eval_snapshots` (season, week, source, scoring, canonical_name, position): last ranking before the player's own
+  kickoff, `raw_rank` as published and `scaled_rank` on the site's QB/FLEX scale; `provenance` = `pipeline` (live) or
+  `yahoo_archive` (2025 backfill, no pull times, never mixed into live series).
+- `expert_eval_results`: actual points (std/half/ppr) plus `status` / `roster_status` / `report_status` (why a player did not score).
+- `expert_eval_pool`: frozen per-week roster pool, versioned by `config_version` (`v1.1`, `v1.1-rw` real-world, `v1.1-archive`).
+- `expert_eval_scores`: tall metrics (`regret`, `edge_regret`, `rw_edge`, `pair_acc`, `rank_corr`, coverage, ...) by source/position/tier.
+- `expert_eval_weights`: shadow weights (`six` / `three` sets) with skill mean/sd, P(better than field), reason codes.
+- `expert_eval_backtests`, `expert_eval_runs`, `expert_eval_config`: promotion runs, run log, versioned settings.
+- Yahoo `fanPro` also serves past weeks (2025: Boone/Smyth/Harmon/Pianowski; no Draft Sharks/Winks) but returns the
+  CURRENT view of that week, not a lock-time snapshot (54-67% exact match to our frozen 2026 snapshots).
+- Paged reads of these tables must be ordered by key (unordered ranges skip/repeat rows while tables are written to).
