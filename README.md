@@ -93,6 +93,12 @@ Two layers, both populated on every pull:
   next run retries from a persisted watermark
   (`data/supabase_push_state.json`). See `docs/DATA.md` for the exact schema.
 
+## Expert accuracy and shadow weights
+
+`src/expert_eval/` grades every expert's weekly rankings against actual results (lineup regret) and tracks shadow
+dynamic weights. It runs automatically as a step in `scheduled_pull.ps1` and feeds the site's **Expert Accuracy** page.
+It does not change the live Rankings blend (static weights in `site/src/lib/consensusWeights.ts`). See `docs/EXPERT_EVAL.md`.
+
 ## Scheduled runs & notifications
 
 `scripts/scheduled_pull.ps1` is the Windows Task Scheduler entry point — runs
