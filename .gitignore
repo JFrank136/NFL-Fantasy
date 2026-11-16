@@ -5,3 +5,5 @@ __pycache__/
 data/raw/
 data/processed/
 data/scheduled_run_logs/
+data/last_expert_eval_status.json
+data/expert_eval_alert_date.txt
