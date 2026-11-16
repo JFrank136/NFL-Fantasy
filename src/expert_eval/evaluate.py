@@ -40,7 +40,7 @@ def is_excluded(roster_status, report_status, inactive, policy=None) -> pd.Serie
     return pd.Series(np.where(has_detail, rs.isin(ANY_ROSTER) | out, inactive.astype(bool)), index=inactive.index)
 
 
-def attach_results(cands: pd.DataFrame, results_week: pd.DataFrame, scoring: str) -> pd.DataFrame:
+def attach_results(cands: pd.DataFrame, results_week: pd.DataFrame, scoring: str, policy=None) -> pd.DataFrame:
     """Adds pts + inactive to (canon, position) candidates. Match on name+position first,
     then name alone among offensive positions (e.g. a FB listed RB by one side, TE by the
     other). Unmatched players are scored 0 and counted, not silently dropped."""
@@ -62,15 +62,15 @@ def attach_results(cands: pd.DataFrame, results_week: pd.DataFrame, scoring: str
     out["pts"] = out.pts.fillna(0.0)
     out["status"] = out.status.where(out.matched, "no_result")
     out["inactive"] = out.inactive.fillna(False).astype(bool)
-    out["excluded"] = is_excluded(out.roster_status, out.report_status, out.inactive)
+    out["excluded"] = is_excluded(out.roster_status, out.report_status, out.inactive, policy)
     return out.drop(columns="rpos")
 
 
-def build_pool(snap: pd.DataFrame, results_week: pd.DataFrame, scoring: str):
+def build_pool(snap: pd.DataFrame, results_week: pd.DataFrame, scoring: str, policy=None):
     """Expert-neutral pool: top-N per position by equal-weight mean scaled rank across all
     sources present, minus confirmed-inactive players. Returns (pool, count of pool players with no result row)."""
     cand = snap.groupby(["canon", "position"], as_index=False).scaled_rank.mean().rename(columns={"scaled_rank": "consensus"})
-    cand = attach_results(cand, results_week, scoring)
+    cand = attach_results(cand, results_week, scoring, policy)
     parts, excluded = [], 0
     for pos in POS:
         c = cand[cand.position == pos].sort_values(["consensus", "canon"])
@@ -216,16 +216,16 @@ def top_unavailable(snap: pd.DataFrame, results_week: pd.DataFrame, scoring: str
 
 
 def evaluate_week(season: int, week: int, scoring: str, snap: pd.DataFrame, results_week: pd.DataFrame,
-                  pool=None, extra_ranks=None):
+                  pool=None, extra_ranks=None, policy=None):
     """Returns (score_rows, pool, info). `pool` may be a stored (frozen) pool; `extra_ranks`
     (name -> array over pool rows) scores synthetic blends on the identical scenarios."""
     snap = snap[(snap.week == week) & (snap.scoring == scoring)]
     if snap.empty:
         return [], None, {"reason": "no snapshots"}
     if pool is None:
-        pool, counts = build_pool(snap, results_week, scoring)
+        pool, counts = build_pool(snap, results_week, scoring, policy)
     else:
-        pool = attach_results(pool[["canon", "position", "consensus", "pos_rank"]].copy(), results_week, scoring)
+        pool = attach_results(pool[["canon", "position", "consensus", "pos_rank"]].copy(), results_week, scoring, policy)
         counts = pool_counts(pool)
     pool = pool.reset_index(drop=True)
     sources = sorted(snap.source.unique())

@@ -38,7 +38,8 @@ def main() -> int:
         audit(store, season)
         return 0
     if a.backtest:
-        backtest(store, season)
+        from src.expert_eval.promotion import run_promotion
+        run_promotion(store, season)
         return 0
     out = pipeline.run(season, weeks=a.weeks, store=store, full=a.full)
     print(json.dumps({k: v for k, v in out.items() if k != "info"}, default=str))

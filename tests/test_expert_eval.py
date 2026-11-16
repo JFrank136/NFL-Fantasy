@@ -192,3 +192,29 @@ def test_result_changes_counts_stat_corrections_and_status_flips():
                         {**k, "canonical_name": "b", "pts_ppr": 0.0, "pts_std": 0.0, "status": "inactive_roster"}])
     assert _result_changes(old, new) == 2
     assert _result_changes(old, old) == 0
+
+
+def test_restricted_strategies_are_convex_mixes_anchored_on_the_incumbent():
+    import pandas as pd
+    from src.expert_eval.promotion import build_strategies
+    from src.expert_eval.config import SOURCES
+    dyn = pd.Series({s: 1 / 6 for s in SOURCES})
+    S = build_strategies(dyn, dyn, list(SOURCES))
+    for name in ("anchor10", "anchor20", "anchor30", "anchor20dyn", "blend50", "plus_winks", "static3", "equal6"):
+        w = S[name]("WR")
+        assert abs(sum(w.values()) - 1) < 1e-9 and min(w.values()) >= 0, name
+    a20 = S["anchor20"]("WR")
+    assert abs(sum(a20[s] for s in ("harmon", "pianowski", "winks")) - 0.20) < 1e-9          # extras get exactly their dose
+    assert S["static3"]("QB")["boone"] > S["static3"]("WR")["boone"]                          # QB uses the QB static weights
+    # without any extras present (e.g. 2025 archive has none for Winks / Draft Sharks) strategies fall back safely
+    only_core = build_strategies(dyn, dyn, ["draftsharks", "boone", "smythe"])
+    assert abs(sum(only_core["anchor20"]("WR").values()) - 1) < 1e-9 if "anchor20" in only_core else True
+
+
+def test_promotion_gate_is_measured_against_static_weights_and_needs_every_check():
+    from src.expert_eval.promotion import gate
+    ok = dict(mean=0.3, p_improve=0.9, share_weeks_worse=0.3, worst_week=-0.5, n_weeks=8)
+    assert gate(ok, 0.02, 0.05)["pass"]
+    assert not gate({**ok, "mean": 0.05}, 0.02, 0.05)["pass"]          # too small a gain
+    assert not gate(ok, 0.02, 0.4)["pass"]                              # indistinguishable from random skill assignment
+    assert not gate(ok, 0.5, 0.05)["pass"]                              # weights churn too much

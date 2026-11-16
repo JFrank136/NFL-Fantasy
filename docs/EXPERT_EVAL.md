@@ -44,13 +44,22 @@ overall rows), `_weights`, `_backtests`, `_runs`. Migration `supabase/migrations
 (additive). Every write is an upsert on a natural key; reruns are idempotent (verified: identical scores
 across reruns) and nothing is deleted. A rerun after nflverse stat corrections updates that week in place.
 
-## Backtest and promotion gate
+## Promotion gate (`promotion.py`, `--backtest`)
 
-`--backtest` replays each season week by week: dynamic (six / three, separate / pooled across scoring)
-vs equal weights vs the site's static weights vs individual experts, on identical pools and scenarios.
-Gate thresholds (config `gate`): mean improvement >= 0.10 pts/wk, week-bootstrap P(improve) >= 0.70,
-share of weeks worse <= 55%, worst week >= -4, average turnover <= 0.08. Early (single-season) results are
-indicative only.
+**Primary benchmark = the site's current static weights** (`STATIC_WEIGHTS`, the incumbent); equal weighting is a
+secondary, reported-only benchmark. A candidate must clear every check in BOTH scoring formats: mean saved vs static
+>= 0.10 pts/wk, week-bootstrap P(improve) >= 0.70, share of weeks worse <= 55%, worst week >= -4, average turnover
+<= 0.08, and (once the other checks pass) an exact permutation test p <= 0.10. Thresholds live in `config.SPEC["gate"]`.
+
+Strategies are fixed in advance, not tuned: `static3` (incumbent), `equal3/equal6`, `dyn3/dyn6` (shadow Kalman
+weights, as-is), `anchor10/20/30` (incumbent + extra experts at a fixed dose), `plus_<expert>` (incumbent + one extra at
+15%), and two pre-declared CANDIDATES -- `anchor20dyn` (incumbent 80% + extras 20% split by learned skill) and
+`blend50` (50% learned six-expert + 50% incumbent). Only candidates can be promoted; the rest are diagnostics, so
+multiple-comparison exposure is two candidates.
+
+Result (2026 weeks 2-9, and 2025 archive weeks 2-18 as sensitivity): no candidate beats the incumbent in either
+format; adding extra experts at any dose is flat to negative, learned weights do not beat static. Single-expert
+diagnostics (e.g. Winks +0.26 in half-PPR only) are not acted on. Live Rankings stay on the static three-expert weights.
 
 ## Availability (config v1.1)
 
@@ -59,8 +68,9 @@ Players with no stats are classified from nflverse weekly rosters + injury repor
 `doubtful_dnp` / `questionable_dnp` (active on the roster, no stats), and `no_result` (none of the above:
 unexpected scratch or a name-match gap; scored 0 and counted). Policy `all_confirmed` (default) removes
 the first two from every expert's lineup choices; Doubtful/Questionable sitters stay eligible at 0.
-Counts per week are stored as `pool_*` metrics, and `top_unavailable` keeps each expert's late-news
-exposure visible. Sensitivity (`--audit`): `known_early` gives the same expert ordering; `none` (score
+Counts per week are stored as `pool_*` metrics; `top_unavailable` keeps each expert's late-news exposure visible; and
+`rw_regret` / `rw_edge` score the same experts on a pool that does NOT remove late inactives (they score 0), i.e. real-world
+lineups without hindsight (pool version `v1.1-rw`). Sensitivity (`--audit`): `known_early` gives the same expert ordering; `none` (score
 every non-player as 0) reorders the experts (Draft Sharks drops from +1.1 to -0.6 pts/wk), so that
 choice matters and is labeled in the config.
 
@@ -89,12 +99,14 @@ Weeks are evaluated only after every game is final (last kickoff + 5h).
 
 ## Historical archive (Yahoo 2023-2025)
 
-`archive.py`. Yahoo returns past weeks on demand but without pull times, so these ranks are labeled
-`provenance='yahoo_archive'`, use config_version `v1.1-archive`, and are never mixed into the live series.
+`archive.py` (`run_archive`). Yahoo returns past weeks on demand but without pull times, so these ranks are labeled
+`provenance='yahoo_archive'`, use config_version `v1.1-archive`, and are never mixed into the live series. 2025 (weeks
+1-18; Boone, Harmon, Pianowski, Smyth through week 16; no Draft Sharks or Winks) is backfilled for exploratory analysis and
+sensitivity testing only -- no weights are written and nothing trains production weights from it.
 Probe (2026, weeks 7-9): the endpoint queried after the games matches the frozen pre-kickoff snapshot
 exactly for only 54-67% of players (mean absolute difference 1.2-5.0 ranks), so the archive is NOT
 guaranteed to be the lock-time ranking. Its correlation with results (0.3-0.7 by position) is in the
-normal forecast range, so there is no sign of results leaking into the ranks. Not written to Supabase.
+normal forecast range, so there is no sign of results leaking into the ranks.
 
 ## Known limits / TODO
 

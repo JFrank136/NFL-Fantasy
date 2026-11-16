@@ -59,3 +59,43 @@ def validate_archive(arch: pd.DataFrame, results: pd.DataFrame, scoring="half-pp
             corr[f"{src}/{pos}"] = round(float(g.groupby("week").apply(lambda x: x.scaled_rank.rank().corr(-x[col].rank())).mean()), 3)
     out["mean_weekly_rank_corr"] = corr
     return out
+
+
+def run_archive(season: int, store, weeks=range(1, 19), log=print) -> dict:
+    """Additive backfill: labeled archive snapshots (provenance 'yahoo_archive'), the season's results, and scores
+    under ARCHIVE_VERSION. Never touches live-series rows (different season / provenance / config_version) and never
+    writes weights. Safe to rerun: snapshots and pools are insert-only, scores/results upsert on natural keys."""
+    import uuid
+    from datetime import datetime, timezone
+
+    from src.expert_eval import evaluate as E, inputs, results as results_mod
+    from src.expert_eval.config import SCORINGS, SPEC
+    from src.expert_eval.pipeline import pool_to_db, results_to_db
+
+    arch = fetch_archive(season, weeks, log=log)
+    sched = inputs.load_schedule(season)
+    arch = arch.merge(sched.rename(columns={"ko": "kickoff_at"}), on=["week", "team"], how="left")
+    res = results_mod.build_results(season)
+    snap_db = arch.rename(columns={"canon": "canonical_name"}).assign(season=season)[
+        ["season", "week", "source", "scoring", "canonical_name", "position", "raw_rank", "scaled_rank", "pulled_at", "kickoff_at", "provenance"]]
+    n_snap = store.insert_missing("expert_eval_snapshots", snap_db)
+    store.upsert("expert_eval_results", results_to_db(res, season))
+    n_scores = 0
+    for scoring in SCORINGS:
+        for w in sorted(arch.week.unique()):
+            snap = arch[arch.scoring == scoring]
+            rows, pool, info = E.evaluate_week(season, int(w), scoring, snap, res[res.week == w])
+            if pool is None:
+                continue
+            store.insert_missing("expert_eval_pool", pool_to_db(pool, season, int(w), scoring, ARCHIVE_VERSION))
+            df = pd.DataFrame(rows)
+            df["season"], df["week"], df["scoring"], df["config_version"] = season, int(w), scoring, ARCHIVE_VERSION
+            df["calc_at"] = datetime.now(timezone.utc).isoformat()
+            n_scores += store.upsert("expert_eval_scores", df[["season", "week", "source", "scoring", "config_version",
+                                                               "position", "tier", "metric", "value", "n", "calc_at"]])
+    store.upsert("expert_eval_config", [{"version": ARCHIVE_VERSION, "spec": {**SPEC, "version": ARCHIVE_VERSION, "provenance": "yahoo_archive",
+                                                                              "note": "ranks are not guaranteed to be pre-kickoff; exploratory only"}}])
+    store.upsert("expert_eval_runs", [{"run_id": "archive-" + datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ-") + uuid.uuid4().hex[:4],
+                                       "season": season, "week": int(max(weeks)), "kind": "archive_backfill", "config_version": ARCHIVE_VERSION,
+                                       "notes": f"snapshots={n_snap} scores={n_scores}; provenance=yahoo_archive; no weights written"}])
+    return {"snapshots": n_snap, "scores": n_scores}

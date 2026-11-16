@@ -5,6 +5,7 @@ import hashlib
 import json
 
 CONFIG_VERSION = "v1.1"
+REALWORLD_VERSION = CONFIG_VERSION + "-rw"   # pool version for the no-hindsight (real-world) lineup metric
 
 SOURCES = ["draftsharks", "boone", "smythe", "harmon", "pianowski", "winks"]
 CORE_THREE = ["draftsharks", "boone", "smythe"]
@@ -51,7 +52,12 @@ SPEC = {
         "max_step": 0.18,   # max weekly weight change = max_step / K
     },
     # Promotion gate thresholds (fixed before looking at backtest results).
+    # Promotion gate. The PRIMARY benchmark is the incumbent static weights (STATIC_WEIGHTS); equal weighting is
+    # reported as a secondary benchmark only. A candidate must pass in BOTH scoring formats.
     "gate": {
+        "benchmark": "static3",
+        "secondary_benchmark": "equal6",
+        "require_both_formats": True,
         "min_improvement": 0.10,     # points/week of regret saved vs equal weights
         "min_p_improve": 0.70,       # week-bootstrap P(improvement > 0)
         "max_share_weeks_worse": 0.55,

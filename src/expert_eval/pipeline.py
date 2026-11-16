@@ -12,7 +12,7 @@ import numpy as np
 import pandas as pd
 
 from src.expert_eval import evaluate as E, inputs, snapshots, results as results_mod
-from src.expert_eval.config import CONFIG_VERSION, SCORINGS, SOURCES, CORE_THREE, SPEC, config_hash
+from src.expert_eval.config import CONFIG_VERSION, REALWORLD_VERSION, SCORINGS, SOURCES, CORE_THREE, SPEC, config_hash
 from src.expert_eval.store import Store
 from src.expert_eval.weights import run_filter
 
@@ -42,9 +42,9 @@ def results_from_db(df: pd.DataFrame) -> pd.DataFrame:
     return df.rename(columns={"canonical_name": "canon"})
 
 
-def pool_to_db(pool: pd.DataFrame, season: int, week: int, scoring: str) -> pd.DataFrame:
+def pool_to_db(pool: pd.DataFrame, season: int, week: int, scoring: str, config_version: str = CONFIG_VERSION) -> pd.DataFrame:
     d = pool.rename(columns={"canon": "canonical_name", "consensus": "consensus_rank"}).copy()
-    d["season"], d["week"], d["scoring"], d["config_version"] = season, week, scoring, CONFIG_VERSION
+    d["season"], d["week"], d["scoring"], d["config_version"] = season, week, scoring, config_version
     return d[["season", "week", "scoring", "canonical_name", "position", "consensus_rank", "config_version"]]
 
 
@@ -120,7 +120,7 @@ def _run(season, weeks, store, now, log, run_id, full) -> dict:
 
     store.upsert("expert_eval_config", [{"version": CONFIG_VERSION, "spec": SPEC}])
     # Snapshots are frozen evidence: weeks already stored are reused as-is, never reselected.
-    stored = store.select("expert_eval_snapshots", season=season)
+    stored = store.select("expert_eval_snapshots", season=season, provenance="pipeline")
     have = set(stored.week.astype(int)) if len(stored) else set()
     new_weeks = [w for w in todo if w not in have]
     parts = [snaps_from_db(stored[stored.week.isin(todo)])] if len(stored) else []
@@ -154,6 +154,20 @@ def _run(season, weeks, store, now, log, run_id, full) -> dict:
                 df["season"], df["week"], df["scoring"], df["config_version"] = season, w, scoring, CONFIG_VERSION
                 df["calc_at"] = datetime.now(timezone.utc).isoformat()
                 store.upsert("expert_eval_scores", df[["season", "week", "source", "scoring", "config_version",
+                                                       "position", "tier", "metric", "value", "n", "calc_at"]])
+            # Real-world lineups: nobody is removed for late inactives (they score 0), so this is what a manager who
+            # could not know the game-day inactive list would have lived with. Stored as rw_regret / rw_edge.
+            frozen_rw = store.select("expert_eval_pool", season=season, week=w, scoring=scoring, config_version=REALWORLD_VERSION)
+            pool_rw = pool_from_db(frozen_rw) if len(frozen_rw) else None
+            rrows, rpool, _ = E.evaluate_week(season, w, scoring, snap_all, res_all[res_all.week == w], pool=pool_rw, policy="none")
+            if pool_rw is None and rpool is not None:
+                store.insert_missing("expert_eval_pool", pool_to_db(rpool, season, w, scoring, REALWORLD_VERSION))
+            rw = pd.DataFrame([dict(r, metric={"regret": "rw_regret", "edge_regret": "rw_edge"}[r["metric"]]) for r in rrows
+                               if r["metric"] in ("regret", "edge_regret") and r["position"] == "ALL"])
+            if len(rw):
+                rw["season"], rw["week"], rw["scoring"], rw["config_version"] = season, w, scoring, CONFIG_VERSION
+                rw["calc_at"] = datetime.now(timezone.utc).isoformat()
+                store.upsert("expert_eval_scores", rw[["season", "week", "source", "scoring", "config_version",
                                                        "position", "tier", "metric", "value", "n", "calc_at"]])
             summary[f"{scoring}/{w}"] = {"present": info["present"], "absent": info["absent"], "counts": info["counts"]}
             log(f"{scoring} week {w}: present={info['present']} absent={info['absent']} pool={info['pool']} {info['counts']}")

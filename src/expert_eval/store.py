@@ -41,7 +41,7 @@ def _load_env() -> None:
 
 
 def _clean(v):
-    if v is None:
+    if v is None or v is pd.NaT:
         return None
     if isinstance(v, dict):
         return {str(k): _clean(x) for k, x in v.items()}
@@ -114,6 +114,8 @@ class Store:
             return df.reset_index(drop=True)
         out, off = [], 0
         params = {k: f"eq.{v}" for k, v in eq.items()}
+        if table in KEYS:
+            params["order"] = ",".join(KEYS[table])   # stable paging: unordered ranges can skip/repeat rows once the table is written to
         while True:
             r = requests.get(f"{self.url}/rest/v1/{table}", params=params,
                              headers=self._headers(Range=f"{off}-{off + 999}", **{"Range-Unit": "items"}), timeout=60)

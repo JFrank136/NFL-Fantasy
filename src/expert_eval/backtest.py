@@ -45,18 +45,18 @@ def static_weights(pos: str) -> dict:
     return {s: w.get(s, 0.0) for s in SOURCES}
 
 
-def load_frozen(store, season: int, scoring: str):
-    snap = snaps_from_db(store.select("expert_eval_snapshots", season=season, scoring=scoring))
+def load_frozen(store, season: int, scoring: str, config_version: str = CONFIG_VERSION, provenance: str = "pipeline"):
+    snap = snaps_from_db(store.select("expert_eval_snapshots", season=season, scoring=scoring, provenance=provenance))
     res = results_from_db(store.select("expert_eval_results", season=season))
     weeks = sorted(snap.week.unique())
-    pools = {w: pool_from_db(store.select("expert_eval_pool", season=season, week=int(w), scoring=scoring, config_version=CONFIG_VERSION)) for w in weeks}
+    pools = {w: pool_from_db(store.select("expert_eval_pool", season=season, week=int(w), scoring=scoring, config_version=config_version)) for w in weeks}
     return snap, res, pools
 
 
-def weekly_edges(frozen: dict, season: int) -> dict:
+def weekly_edges(frozen: dict, season: int, scorings=SCORINGS) -> dict:
     """scoring -> DataFrame (season,week) x source of overall regret edges, from the frozen inputs."""
     out = {}
-    for scoring in SCORINGS:
+    for scoring in scorings:
         snap, res, pools = frozen[scoring]
         rows = {}
         for w in sorted(pools):

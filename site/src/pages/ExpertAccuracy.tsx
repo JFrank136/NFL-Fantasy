@@ -12,15 +12,22 @@ const signed = (n: number, d = 2) => `${n > 0 ? '+' : ''}${n.toFixed(d)}`
 const pct = (n: number, d = 0) => `${(n * 100).toFixed(d)}%`
 const signClass = (n: number | null) => (n == null ? '' : n > 0.05 ? 'signal-up' : n < -0.05 ? 'signal-down' : '')
 
-const BACKTEST_LABELS: Record<string, string> = {
-  dyn6_vs_equal6: 'Dynamic (6 experts) vs equal weights (6)',
-  dyn3_vs_equal3: 'Dynamic (3 experts) vs equal weights (3)',
-  dyn6_vs_static3: 'Dynamic (6 experts) vs site static weights',
-  dyn3_vs_static3: 'Dynamic (3 experts) vs site static weights',
-  equal6_vs_equal3: 'Equal weights: 6 experts vs 3 experts',
-  equal6_vs_static3: 'Equal weights (6) vs site static weights',
-  equal3_vs_static3: 'Equal weights (3) vs site static weights',
-}
+// Everything is measured against the site's current static weights (the incumbent). Candidates are the only
+// strategies eligible for promotion; the rest are references/diagnostics.
+const STRATEGY_LABELS: [string, string][] = [
+  ['anchor20dyn', 'Candidate: static weights 80% + extra experts 20% (split by learned skill)'],
+  ['blend50', 'Candidate: 50% learned six-expert weights + 50% static'],
+  ['dyn6', 'Learned weights, 6 experts (reference)'],
+  ['dyn3', 'Learned weights, 3 experts (reference)'],
+  ['equal6', 'Equal weights, 6 experts (reference)'],
+  ['equal3', 'Equal weights, 3 experts (reference)'],
+  ['anchor10', 'Static + extras at 10% (diagnostic)'],
+  ['anchor20', 'Static + extras at 20% (diagnostic)'],
+  ['anchor30', 'Static + extras at 30% (diagnostic)'],
+  ['plus_harmon', 'Static + Harmon at 15% (diagnostic)'],
+  ['plus_pianowski', 'Static + Pianowski at 15% (diagnostic)'],
+  ['plus_winks', 'Static + Winks at 15% (diagnostic)'],
+]
 
 function HistoryTable({ grid, format, caption }: { grid: HistoryGrid; format: (n: number) => string; caption: string }) {
   if (!grid.weeks.length) return null
@@ -53,14 +60,15 @@ function HistoryTable({ grid, format, caption }: { grid: HistoryGrid; format: (n
 }
 
 function BacktestCard({ comparisons, weeks }: { comparisons: Record<string, BacktestComparison>; weeks: number[] }) {
-  const rows = Object.entries(BACKTEST_LABELS).filter(([k]) => comparisons[k])
+  const rows = STRATEGY_LABELS.filter(([k]) => comparisons[`${k}_vs_static3`])
   if (!rows.length) return null
   return (
     <div className="card p-3 sm:p-4 space-y-2">
-      <span className="label">Walk-forward backtest (weeks {weeks[0]}–{weeks[weeks.length - 1]})</span>
+      <span className="label">Does anything beat the site's current weights? (weeks {weeks[0]}–{weeks[weeks.length - 1]})</span>
       <p className="subtle text-sm">
-        Each week's weights only use earlier weeks. "Saved" is lineup points per week the first strategy gains over the second. Weeks are the unit of evidence,
-        so these are {weeks.length} observations, and the interval is an 80% range.
+        The benchmark is the static weights Rankings uses today; "Saved" is lineup points per week each strategy gains over them (negative = worse).
+        Any learned weights only use earlier weeks. Weeks are the unit of evidence, so these are {weeks.length} observations, and the range is 80%.
+        A candidate must beat the benchmark in both scoring formats before it can be promoted. Equal weighting is shown for reference.
       </p>
       <div className="table-wrap">
         <table className="table">
@@ -72,25 +80,26 @@ function BacktestCard({ comparisons, weeks }: { comparisons: Record<string, Back
               <th className="text-right">Chance it helps</th>
               <th className="text-right">Weeks worse</th>
               <th className="text-right">Worst week</th>
-              <th className="text-right">Random-weights check</th>
+              <th className="text-right">Vs equal (6)</th>
               <th>Promotion gate</th>
             </tr>
           </thead>
           <tbody>
-            {rows.map(([k, label]) => {
-              const c = comparisons[k]
+            {rows.map(([name, label]) => {
+              const c = comparisons[`${name}_vs_static3`]
+              const eq = comparisons[`${name}_vs_equal6`]
               return (
-                <tr key={k}>
+                <tr key={name}>
                   <td className="sticky-col">{label}</td>
                   <td className={`text-right ${signClass(c.mean)}`}>{signed(c.mean)}</td>
                   <td className="text-right">{signed(c.lo)} to {signed(c.hi)}</td>
                   <td className="text-right">{pct(c.p_improve)}</td>
                   <td className="text-right">{pct(c.share_weeks_worse)}</td>
                   <td className="text-right">{signed(c.worst_week, 1)}</td>
-                  <td className="text-right">{c.perm_p == null ? <span className="subtle">—</span> : `p = ${c.perm_p.toFixed(2)}`}</td>
+                  <td className={`text-right ${signClass(eq?.mean ?? null)}`}>{eq ? signed(eq.mean) : '—'}</td>
                   <td>
                     {c.gate == null ? <span className="subtle">n/a</span>
-                      : c.gate.pass ? 'Meets thresholds (early evidence)'
+                      : c.gate.pass ? 'Meets thresholds'
                       : <span className="subtle">Not yet ({Object.entries(c.gate.checks).filter(([, ok]) => !ok).map(([n]) => n.replace('_', ' ')).join(', ')})</span>}
                   </td>
                 </tr>
@@ -151,6 +160,7 @@ export default function ExpertAccuracy() {
                   <th className="sticky-col">Expert</th>
                   <th className="text-right">Weeks</th>
                   <th className="text-right">Avg edge (pts/wk)</th>
+                  <th className="text-right">Real-world edge</th>
                   <th className="text-right">Skill estimate</th>
                   <th className="text-right">Chance above field</th>
                   <th className="text-right">Weight</th>
@@ -169,6 +179,7 @@ export default function ExpertAccuracy() {
                       <td className={`text-right ${signClass(s.avgEdge)}`}>
                         {s.avgEdge == null ? '—' : <>{signed(s.avgEdge)}{s.edgeSe != null && <span className="subtle"> ±{r2(s.edgeSe)}</span>}</>}
                       </td>
+                      <td className={`text-right ${signClass(s.avgRwEdge)}`}>{s.avgRwEdge == null ? '—' : signed(s.avgRwEdge)}</td>
                       <td className={`text-right ${signClass(s.skillMean)}`}>
                         {s.skillMean == null ? '—' : <>{signed(s.skillMean)}{s.skillSd != null && <span className="subtle"> ±{r2(s.skillSd)}</span>}</>}
                       </td>
@@ -184,6 +195,8 @@ export default function ExpertAccuracy() {
             </table>
           </div>
           <p className="subtle text-sm">
+            Edge grades the ranking itself (players ruled inactive on game day are removed for everyone). Real-world edge keeps them in as zeros,
+            i.e. what a manager who could not know the inactive list would have lived with.
             Skill estimate shrinks each expert's raw average toward zero (the field) and widens when evidence is thin. Weights start equal and move only as that
             estimate does, capped at 0.5×–1.8× an equal share and limited in how far they can move in a week.
           </p>

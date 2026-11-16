@@ -53,7 +53,7 @@ export interface BacktestComparison {
 export interface BacktestRow {
   run_id: string
   created_at: string
-  summary: { weeks: number[]; mean_regret: Record<string, number>; comparisons: Record<string, BacktestComparison> }
+  summary: { weeks: number[]; mean_regret: Record<string, number>; comparisons: Record<string, BacktestComparison>; both_formats_pass?: Record<string, boolean> }
 }
 
 export const EXPERT_LABELS: Record<string, string> = {
@@ -90,6 +90,7 @@ export interface ExpertSummaryRow {
   weeks: number
   avgEdge: number | null
   edgeSe: number | null
+  avgRwEdge: number | null
   skillMean: number | null
   skillSd: number | null
   pBetter: number | null
@@ -105,6 +106,7 @@ export interface ExpertSummaryRow {
 export function buildSummary(scores: ScoreRow[], weights: WeightRow[]): ExpertSummaryRow[] {
   const edges = scores.filter(r => r.metric === 'edge_regret' && r.position === 'ALL' && r.tier === 'ALL' && r.value != null)
   const cov = scores.filter(r => r.metric === 'coverage' && r.value != null)
+  const rw = scores.filter(r => r.metric === 'rw_edge' && r.value != null)
   const next = latestWeekKey(weights)
   const at = (k: { season: number; week: number } | null, set: string) =>
     k ? weights.filter(w => w.season === k.season && w.week === k.week && w.weight_set === set) : []
@@ -122,6 +124,7 @@ export function buildSummary(scores: ScoreRow[], weights: WeightRow[]): ExpertSu
       weeks: e.length,
       avgEdge: mean(e),
       edgeSe: s != null ? s / Math.sqrt(e.length) : null,
+      avgRwEdge: mean(rw.filter(r => r.source === source).map(r => r.value as number)),
       skillMean: w?.skill_mean ?? null,
       skillSd: w?.skill_sd ?? null,
       pBetter: w?.p_better ?? null,
@@ -216,7 +219,7 @@ export interface ExpertEvalData {
   error: string | null
 }
 
-const SCORE_METRICS = ['edge_regret', 'regret', 'pair_acc', 'pair_pts', 'rank_corr', 'coverage', 'n_imputed', 'top_unavailable']
+const SCORE_METRICS = ['edge_regret', 'regret', 'pair_acc', 'pair_pts', 'rank_corr', 'coverage', 'n_imputed', 'top_unavailable', 'rw_edge']
 
 export function useExpertEval(scoring: EvalScoring): ExpertEvalData {
   const [state, setState] = useState<ExpertEvalData>({ scores: [], weights: [], backtest: null, loading: true, error: null })
@@ -233,7 +236,7 @@ export function useExpertEval(scoring: EvalScoring): ExpertEvalData {
           .select('season,week,weight_set,source,weight,equal_weight,skill_mean,skill_sd,p_better,weeks_n,raw_mean,reason')
           .eq('scoring', scoring).eq('config_version', EVAL_CONFIG_VERSION).eq('position', 'ALL').eq('tier', 'ALL'), ['season', 'week', 'weight_set', 'source']).range(from, to))
       const btP = supabase.from('expert_eval_backtests').select('run_id,created_at,summary').eq('scoring', scoring)
-        .order('created_at', { ascending: false }).limit(1)
+        .eq('config_version', EVAL_CONFIG_VERSION).like('run_id', 'promo-%').order('created_at', { ascending: false }).limit(1)
       const [s, w, b] = await Promise.all([scoresP, weightsP, btP])
       if (cancelled) return
       const error = s.error?.message ?? w.error?.message ?? b.error?.message ?? null
