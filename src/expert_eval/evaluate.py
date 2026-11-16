@@ -22,21 +22,47 @@ def week_seed(season: int, week: int, scoring: str) -> int:
     return int(h[:8], 16)
 
 
+EARLY_ROSTER = {"RES", "CUT", "EXE", "RET", "DEV"}
+ANY_ROSTER = EARLY_ROSTER | {"INA"}
+
+
+def is_excluded(roster_status, report_status, inactive, policy=None) -> pd.Series:
+    """Confirmed-unavailable-before-kickoff test under the configured policy. Falls back to the
+    stored `inactive` flag when roster/report detail is missing (older rows)."""
+    policy = policy or SPEC["inactive_policy"]
+    if policy == "none":
+        return pd.Series(False, index=inactive.index)
+    rs = roster_status.fillna("")
+    out = report_status.fillna("") == "Out"
+    if policy == "known_early":
+        return rs.isin(EARLY_ROSTER) | out
+    has_detail = roster_status.notna() | report_status.notna()
+    return pd.Series(np.where(has_detail, rs.isin(ANY_ROSTER) | out, inactive.astype(bool)), index=inactive.index)
+
+
 def attach_results(cands: pd.DataFrame, results_week: pd.DataFrame, scoring: str) -> pd.DataFrame:
     """Adds pts + inactive to (canon, position) candidates. Match on name+position first,
     then name alone among offensive positions (e.g. a FB listed RB by one side, TE by the
     other). Unmatched players are scored 0 and counted, not silently dropped."""
     col = SCORING_COL[scoring]
-    res = results_week[["canon", "position", col, "inactive"]].rename(columns={col: "pts", "position": "rpos"})
+    res = results_week.copy()
+    for c in ("status", "roster_status", "report_status"):
+        if c not in res:
+            res[c] = None
+    res = res[["canon", "position", col, "inactive", "status", "roster_status", "report_status"]].rename(
+        columns={col: "pts", "position": "rpos"})
     out = cands.merge(res, left_on=["canon", "position"], right_on=["canon", "rpos"], how="left")
     miss = out.pts.isna()
     if miss.any():
         byname = res.drop_duplicates("canon").set_index("canon")
         out.loc[miss, "pts"] = out.loc[miss, "canon"].map(byname.pts)
-        out.loc[miss, "inactive"] = out.loc[miss, "canon"].map(byname.inactive)
+        for c in ("inactive", "status", "roster_status", "report_status"):
+            out.loc[miss, c] = out.loc[miss, "canon"].map(byname[c])
     out["matched"] = out.pts.notna()
     out["pts"] = out.pts.fillna(0.0)
+    out["status"] = out.status.where(out.matched, "no_result")
     out["inactive"] = out.inactive.fillna(False).astype(bool)
+    out["excluded"] = is_excluded(out.roster_status, out.report_status, out.inactive)
     return out.drop(columns="rpos")
 
 
@@ -45,14 +71,26 @@ def build_pool(snap: pd.DataFrame, results_week: pd.DataFrame, scoring: str):
     sources present, minus confirmed-inactive players. Returns (pool, count of pool players with no result row)."""
     cand = snap.groupby(["canon", "position"], as_index=False).scaled_rank.mean().rename(columns={"scaled_rank": "consensus"})
     cand = attach_results(cand, results_week, scoring)
-    cand = cand[~cand.inactive]
-    parts = []
+    parts, excluded = [], 0
     for pos in POS:
-        c = cand[cand.position == pos].sort_values(["consensus", "canon"]).head(SPEC["pool_size"][pos]).copy()
+        c = cand[cand.position == pos].sort_values(["consensus", "canon"])
+        excluded += int(c.head(SPEC["pool_size"][pos]).excluded.sum())     # would-be pool members removed
+        c = c[~c.excluded].head(SPEC["pool_size"][pos]).copy()
         c["pos_rank"] = np.arange(1, len(c) + 1)
         parts.append(c)
     pool = pd.concat(parts, ignore_index=True)
-    return pool, int((~pool.matched).sum())   # pool players with no result row (scored 0, flagged)
+    return pool, pool_counts(pool, excluded)
+
+
+def pool_counts(pool: pd.DataFrame, excluded=None) -> dict:
+    """How the pool's non-scoring players break down (all scored 0), for transparency."""
+    st = pool.status.value_counts()
+    d = {"pool_no_result": int(st.get("no_result", 0)), "pool_sat_doubtful": int(st.get("doubtful_dnp", 0)),
+         "pool_sat_questionable": int(st.get("questionable_dnp", 0)),
+         "pool_gameday_inactive_kept": int(pool.status.isin(["inactive_roster", "out_report"]).sum())}
+    if excluded is not None:
+        d["pool_excluded_unavailable"] = int(excluded)
+    return d
 
 
 def rank_matrix(snap: pd.DataFrame, pool: pd.DataFrame, sources):
@@ -158,6 +196,25 @@ def pair_diagnostics(pool: pd.DataFrame, ranks: dict) -> list:
     return rows
 
 
+def top_unavailable(snap: pd.DataFrame, results_week: pd.DataFrame, scoring: str, sources) -> list:
+    """Per expert: how many of their own top-K players per position (K = pool size) turned out to be
+    confirmed-unavailable (game-day inactive / IR / Out). Policy-independent: this is the late-news
+    cost the primary metric deliberately removes, kept visible instead of hidden."""
+    rows = []
+    for s in sources:
+        n = tot = 0
+        for pos in POS:
+            x = snap[(snap.source == s) & (snap.position == pos)].sort_values("scaled_rank").head(SPEC["pool_size"][pos])
+            if x.empty:
+                continue
+            x = attach_results(x[["canon", "position"]].copy(), results_week, scoring)
+            x["unavail"] = is_excluded(x.roster_status, x.report_status, x.inactive, "all_confirmed")
+            n += int(x.unavail.sum()); tot += len(x)
+        if tot:
+            rows.append(dict(source=s, position="ALL", tier="ALL", metric="top_unavailable", value=float(n), n=tot))
+    return rows
+
+
 def evaluate_week(season: int, week: int, scoring: str, snap: pd.DataFrame, results_week: pd.DataFrame,
                   pool=None, extra_ranks=None):
     """Returns (score_rows, pool, info). `pool` may be a stored (frozen) pool; `extra_ranks`
@@ -165,12 +222,11 @@ def evaluate_week(season: int, week: int, scoring: str, snap: pd.DataFrame, resu
     snap = snap[(snap.week == week) & (snap.scoring == scoring)]
     if snap.empty:
         return [], None, {"reason": "no snapshots"}
-    unmatched = 0
     if pool is None:
-        pool, unmatched = build_pool(snap, results_week, scoring)
+        pool, counts = build_pool(snap, results_week, scoring)
     else:
         pool = attach_results(pool[["canon", "position", "consensus", "pos_rank"]].copy(), results_week, scoring)
-        unmatched = int((~pool.matched).sum())
+        counts = pool_counts(pool)
     pool = pool.reset_index(drop=True)
     sources = sorted(snap.source.unique())
     rm, cov = rank_matrix(snap, pool, sources)
@@ -194,6 +250,9 @@ def evaluate_week(season: int, week: int, scoring: str, snap: pd.DataFrame, resu
         rows.append(dict(source=s, position="ALL", tier="ALL", metric="coverage", value=float(cov[s]), n=len(pool)))
         rows.append(dict(source=s, position="ALL", tier="ALL", metric="n_imputed", value=float((1 - cov[s]) * len(pool)), n=len(pool)))
     rows.append(dict(source="field", position="ALL", tier="ALL", metric="field_size", value=float(len(present)), n=len(present)))
-    rows.append(dict(source="field", position="ALL", tier="ALL", metric="pool_unmatched", value=float(unmatched), n=len(pool)))
-    info = {"present": present, "absent": [s for s in sources if s not in present], "pool": len(pool), "unmatched": unmatched}
+    rows += top_unavailable(snap, results_week, scoring, sources)
+    for k, v in counts.items():
+        rows.append(dict(source="field", position="ALL", tier="ALL", metric=k, value=float(v), n=len(pool)))
+    info = {"present": present, "absent": [s for s in sources if s not in present], "pool": len(pool), "counts": counts,
+            "unmatched": counts.get("pool_no_result", 0)}
     return rows, pool, info

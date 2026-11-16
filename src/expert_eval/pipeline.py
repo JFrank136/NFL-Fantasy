@@ -34,8 +34,8 @@ def results_to_db(res: pd.DataFrame, season: int) -> pd.DataFrame:
     d = res.rename(columns={"canon": "canonical_name"}).copy()
     d["season"] = season
     d["data_as_of"] = datetime.now(timezone.utc).isoformat()
-    return d[["season", "week", "canonical_name", "position", "team", "played", "inactive",
-              "pts_std", "pts_half", "pts_ppr", "data_as_of"]]
+    return d[["season", "week", "canonical_name", "position", "team", "played", "inactive", "status",
+              "roster_status", "report_status", "pts_std", "pts_half", "pts_ppr", "data_as_of"]]
 
 
 def results_from_db(df: pd.DataFrame) -> pd.DataFrame:
@@ -65,52 +65,104 @@ def hash_rows(df: pd.DataFrame) -> str:
 # ---- main entry --------------------------------------------------------------------
 
 
-def run(season: int, weeks=None, store: Store | None = None, now=None, log=print) -> dict:
+STATUS_PATH = BASE_STATUS = None  # set below (kept out of import-time side effects)
+RECHECK_WEEKS = 2   # re-evaluate the latest N finalized weeks every run (nflverse stat corrections)
+
+
+def _status_path():
+    from pathlib import Path
+    return Path(__file__).resolve().parent.parent.parent / "data" / "last_expert_eval_status.json"
+
+
+def _write_status(payload: dict) -> None:
+    p = _status_path()
+    p.parent.mkdir(parents=True, exist_ok=True)
+    p.write_text(json.dumps(payload, indent=2, default=str), encoding="utf-8")
+
+
+def _result_changes(old: pd.DataFrame, new: pd.DataFrame) -> int:
+    """Rows whose stored points/status differ from the freshly built results (stat corrections)."""
+    if old.empty:
+        return 0
+    k = ["season", "week", "canonical_name", "position"]
+    m = old.merge(new, on=k, suffixes=("_o", "_n"))
+    diff = (m.pts_ppr_o - m.pts_ppr_n).abs().fillna(0) > 0.01
+    diff |= (m.pts_std_o - m.pts_std_n).abs().fillna(0) > 0.01
+    diff |= m.status_o.fillna("") != m.status_n.fillna("")
+    return int(diff.sum())
+
+
+def run(season: int, weeks=None, store: Store | None = None, now=None, log=print, full: bool = False) -> dict:
     store = store or Store()
     run_id = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ-") + uuid.uuid4().hex[:6]
+    started = datetime.now(timezone.utc).isoformat()
+    try:
+        out = _run(season, weeks, store, now, log, run_id, full)
+        _write_status({"run_at": started, "ok": True, "run_id": run_id, "season": season, "config_version": CONFIG_VERSION, **out})
+        return out
+    except Exception as e:   # always leave a failure record the status email can report
+        _write_status({"run_at": started, "ok": False, "run_id": run_id, "season": season, "error": f"{type(e).__name__}: {e}"})
+        raise
+
+
+def _run(season, weeks, store, now, log, run_id, full) -> dict:
     sched = inputs.load_schedule(season)
-    final_weeks = [w for w in sorted(sched.week.unique()) if inputs.week_is_final(sched, w, now)]
-    todo = [w for w in (weeks or final_weeks) if w in final_weeks]
+    final_weeks = [int(w) for w in sorted(sched.week.unique()) if inputs.week_is_final(sched, w, now)]
+    if weeks:
+        todo = [w for w in weeks if w in final_weeks]
+    else:
+        done = set(store.select("expert_eval_pool", season=season, config_version=CONFIG_VERSION).get("week", pd.Series(dtype=int)).astype(int))
+        todo = [w for w in final_weeks if full or w not in done or w in final_weeks[-RECHECK_WEEKS:]]
     skipped = [w for w in (weeks or []) if w not in final_weeks]
     if not todo:
         log(f"No finalized weeks to evaluate (requested={weeks}, finalized={final_weeks}).")
-        return {"run_id": run_id, "weeks": [], "skipped": skipped}
+        return {"weeks": [], "skipped": skipped, "result_changes": 0, "info": {}}
 
     store.upsert("expert_eval_config", [{"version": CONFIG_VERSION, "spec": SPEC}])
-    rankings = inputs.load_rankings(season, weeks=todo)
-    snap_all = snapshots.select_snapshots(rankings, sched, SPEC["max_snapshot_age_days"])
+    # Snapshots are frozen evidence: weeks already stored are reused as-is, never reselected.
+    stored = store.select("expert_eval_snapshots", season=season)
+    have = set(stored.week.astype(int)) if len(stored) else set()
+    new_weeks = [w for w in todo if w not in have]
+    parts = [snaps_from_db(stored[stored.week.isin(todo)])] if len(stored) else []
+    if new_weeks:
+        rankings = inputs.load_rankings(season, weeks=new_weeks)
+        fresh = snapshots.select_snapshots(rankings, sched, SPEC["max_snapshot_age_days"])
+        store.insert_missing("expert_eval_snapshots", snaps_to_db(fresh, season))
+        parts.append(fresh)
+    snap_all = pd.concat(parts, ignore_index=True) if parts else pd.DataFrame()
     res_all = results_mod.build_results(season)
-    log(f"snapshots: {len(snap_all)} rows; results: {len(res_all)} rows; weeks {todo}")
-
-    store.upsert("expert_eval_snapshots", snaps_to_db(snap_all, season))
     res_db = results_to_db(res_all[res_all.week.isin(todo)], season)
+    old = store.select("expert_eval_results", season=season)
+    changes = _result_changes(old[old.week.isin(todo)] if len(old) else old, res_db)
     store.upsert("expert_eval_results", res_db)
+    log(f"weeks {todo} (new snapshots: {new_weeks}); stored results changed by corrections: {changes}")
 
     summary = {}
     for scoring in SCORINGS:
         for w in todo:
-            snap_w = snap_all[(snap_all.week == w) & (snap_all.scoring == scoring)]
-            if snap_w.empty:
+            if snap_all.empty:
+                break
+            if snap_all[(snap_all.week == w) & (snap_all.scoring == scoring)].empty:
                 continue
-            frozen = store.select("expert_eval_pool", season=season, week=w, scoring=scoring)
+            frozen = store.select("expert_eval_pool", season=season, week=w, scoring=scoring, config_version=CONFIG_VERSION)
             pool = pool_from_db(frozen) if len(frozen) else None
             rows, pool_out, info = E.evaluate_week(season, w, scoring, snap_all, res_all[res_all.week == w], pool=pool)
             if pool is None and pool_out is not None:
-                store.upsert("expert_eval_pool", pool_to_db(pool_out, season, w, scoring))
+                store.insert_missing("expert_eval_pool", pool_to_db(pool_out, season, w, scoring))
             if rows:
                 df = pd.DataFrame(rows)
                 df["season"], df["week"], df["scoring"], df["config_version"] = season, w, scoring, CONFIG_VERSION
                 df["calc_at"] = datetime.now(timezone.utc).isoformat()
                 store.upsert("expert_eval_scores", df[["season", "week", "source", "scoring", "config_version",
                                                        "position", "tier", "metric", "value", "n", "calc_at"]])
-            summary[(scoring, w)] = info
-            log(f"{scoring} week {w}: present={info['present']} absent={info['absent']} pool={info['pool']} unmatched={info['unmatched']}")
+            summary[f"{scoring}/{w}"] = {"present": info["present"], "absent": info["absent"], "counts": info["counts"]}
+            log(f"{scoring} week {w}: present={info['present']} absent={info['absent']} pool={info['pool']} {info['counts']}")
 
     refresh_weights(store, season, log=log)
     store.upsert("expert_eval_runs", [{
         "run_id": run_id, "season": season, "week": max(todo), "kind": "weekly", "config_version": CONFIG_VERSION,
-        "inputs_hash": hash_rows(res_db), "notes": f"weeks={todo} skipped={skipped} cfg={config_hash()}"}])
-    return {"run_id": run_id, "weeks": todo, "skipped": skipped, "info": summary}
+        "inputs_hash": hash_rows(res_db), "notes": f"weeks={todo} skipped={skipped} result_changes={changes} cfg={config_hash()}"}])
+    return {"weeks": todo, "skipped": skipped, "result_changes": changes, "info": summary}
 
 
 def load_edges(store: Store, scoring: str) -> pd.DataFrame:

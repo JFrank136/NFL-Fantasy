@@ -27,14 +27,20 @@ def main() -> int:
     ap.add_argument("--season", type=int, default=None)
     ap.add_argument("--weeks", type=int, nargs="*")
     ap.add_argument("--backtest", action="store_true")
+    ap.add_argument("--audit", action="store_true", help="leakage / permutation / outlier / inactive-policy audit of the backtest")
     ap.add_argument("--local-only", action="store_true")
+    ap.add_argument("--full", action="store_true", help="re-evaluate every finalized week, not just new + latest two")
     a = ap.parse_args()
     season = a.season or getattr(season_config, "SEASON", None) or 2026
     store = Store(local_only=a.local_only)
+    if a.audit:
+        from src.expert_eval.audit import audit
+        audit(store, season)
+        return 0
     if a.backtest:
         backtest(store, season)
         return 0
-    out = pipeline.run(season, weeks=a.weeks, store=store)
+    out = pipeline.run(season, weeks=a.weeks, store=store, full=a.full)
     print(json.dumps({k: v for k, v in out.items() if k != "info"}, default=str))
     return 0
 

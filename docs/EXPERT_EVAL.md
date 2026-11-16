@@ -1,8 +1,8 @@
 # Expert accuracy evaluation and shadow weighting
 
-Code: `src/expert_eval/`. CLI: `scripts/run_expert_eval.py` (`--backtest` for the walk-forward test,
-`--local-only` for a Supabase-free dry run). Standalone weekly wrapper: `scripts/run_expert_eval.ps1`
-(not wired into `scheduled_pull.ps1`). Site page: **Expert Accuracy**. Tests: `tests/test_expert_eval.py`,
+Code: `src/expert_eval/`. CLI: `scripts/run_expert_eval.py` (`--backtest` walk-forward test, `--audit`
+leakage/permutation/outlier/policy audit, `--full` re-evaluate every final week, `--local-only` dry run).
+Runs automatically as a step in `scripts/scheduled_pull.ps1` (see Operations). Site page: **Expert Accuracy**. Tests: `tests/test_expert_eval.py`,
 `site/src/lib/expertEval.test.ts`.
 
 **Shadow only.** Nothing here feeds the live Rankings blend, which still uses
@@ -17,7 +17,7 @@ Code: `src/expert_eval/`. CLI: `scripts/run_expert_eval.py` (`--backtest` for th
   rank is re-ranked within those groups (mirrors `rescaleDraftSharksRanks`). No rank-to-points curve is
   used in v1, so there is no leakage path from future weeks.
 - **Primary metric -- lineup regret:** frozen, expert-neutral pool (QB 14 / RB 28 / WR 34 / TE 14 by
-  consensus rank, confirmed-Out players removed), 2,000 seeded uniform roster draws (2 QB, 5 RB, 5 WR,
+  consensus rank, confirmed-unavailable players removed -- see Availability), 2,000 seeded uniform roster draws (2 QB, 5 RB, 5 WR,
   2 TE) shared by every expert, standard 1QB / 2RB / 2WR / 1TE / 1 FLEX lineup. Regret = best-possible
   points minus the expert's lineup. **Edge** = field-average regret minus own (points/week, + is good).
   Regret is also split into QB / RB / WR / TE / FLEX components.
@@ -52,10 +52,50 @@ Gate thresholds (config `gate`): mean improvement >= 0.10 pts/wk, week-bootstrap
 share of weeks worse <= 55%, worst week >= -4, average turnover <= 0.08. Early (single-season) results are
 indicative only.
 
+## Availability (config v1.1)
+
+Players with no stats are classified from nflverse weekly rosters + injury reports (`results.py`):
+`inactive_roster` (game-day inactive INA, IR/RES, cut, practice squad), `out_report` (final report Out),
+`doubtful_dnp` / `questionable_dnp` (active on the roster, no stats), and `no_result` (none of the above:
+unexpected scratch or a name-match gap; scored 0 and counted). Policy `all_confirmed` (default) removes
+the first two from every expert's lineup choices; Doubtful/Questionable sitters stay eligible at 0.
+Counts per week are stored as `pool_*` metrics, and `top_unavailable` keeps each expert's late-news
+exposure visible. Sensitivity (`--audit`): `known_early` gives the same expert ordering; `none` (score
+every non-player as 0) reorders the experts (Draft Sharks drops from +1.1 to -0.6 pts/wk), so that
+choice matters and is labeled in the config.
+
+## Audit and integrity
+
+`--audit`: (1) leakage -- weights for week t are unchanged when all weeks >= t are replaced with noise;
+(2) exact permutation test -- all 720 re-assignments of the learned skills to experts, to see how often a
+weights path unrelated to real skill matches the real gain; (3) leave-one-week-out and refit-without-week;
+(4) inactive-policy sensitivity. The backtest gate includes the permutation check for the six-expert
+strategy (`gate.max_perm_p`). `audit.verify_integrity` checks that half/full-PPR weights derive only from
+their own format's edges and that a full rerun leaves snapshots, pools, results, scores and older config
+versions unchanged.
+
+## Preservation rules
+
+Snapshots and pools are insert-only (a stored week is reused, never reselected). Results are upserted
+(nflverse stat corrections); the number of changed rows is logged per run (`expert_eval_runs.notes`).
+Scores/weights are upserts on natural keys under a config version; a methodology change is a new version,
+and older versions stay in the tables. A run evaluates new weeks plus the latest two (`RECHECK_WEEKS`).
+
+## Operations
+
+`scheduled_pull.ps1` runs `run_expert_eval.py` after the Supabase push. It never fails the pull; on
+failure it writes `data/last_expert_eval_status.json` (`ok:false`, error) and emails once per day.
+Weeks are evaluated only after every game is final (last kickoff + 5h).
+
+## Historical archive (Yahoo 2023-2025)
+
+`archive.py`. Yahoo returns past weeks on demand but without pull times, so these ranks are labeled
+`provenance='yahoo_archive'`, use config_version `v1.1-archive`, and are never mixed into the live series.
+Probe (2026, weeks 7-9): the endpoint queried after the games matches the frozen pre-kickoff snapshot
+exactly for only 54-67% of players (mean absolute difference 1.2-5.0 ranks), so the archive is NOT
+guaranteed to be the lock-time ranking. Its correlation with results (0.3-0.7 by position) is in the
+normal forecast range, so there is no sign of results leaking into the ranks. Not written to Supabase.
+
 ## Known limits / TODO
 
-- "Confirmed inactive" = final injury report "Out". Questionable/Doubtful players who sat score 0.
-- Weekly history before 2026: Yahoo's `fanPro` endpoint returns 2025 weekly ranks for Boone, Smyth,
-  Harmon and Pianowski (and 2023-2024 for Pianowski/Harmon); Draft Sharks and Winks history not found.
-  Not backfilled yet (no pull timestamps, so "pre-kickoff" cannot be verified for those).
 - Position/tier weights, points-space blending, ownership-weighted rosters: future.

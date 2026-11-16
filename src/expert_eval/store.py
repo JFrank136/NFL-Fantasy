@@ -20,7 +20,7 @@ KEYS = {
     "expert_eval_config": ["version"],
     "expert_eval_results": ["season", "week", "canonical_name", "position"],
     "expert_eval_snapshots": ["season", "week", "source", "scoring", "canonical_name", "position"],
-    "expert_eval_pool": ["season", "week", "scoring", "canonical_name", "position"],
+    "expert_eval_pool": ["season", "week", "scoring", "canonical_name", "position", "config_version"],
     "expert_eval_scores": ["season", "week", "source", "scoring", "config_version", "position", "tier", "metric"],
     "expert_eval_weights": ["season", "week", "scoring", "weight_set", "source", "position", "tier", "config_version"],
     "expert_eval_backtests": ["run_id"],
@@ -87,6 +87,22 @@ class Store:
         self._mirror(table, rows)
         return len(rows)
 
+    def insert_missing(self, table: str, rows) -> int:
+        """Insert-only: rows whose natural key already exists are left untouched (frozen evidence)."""
+        rows = [{k: _clean(v) for k, v in r.items()} for r in (rows.to_dict("records") if isinstance(rows, pd.DataFrame) else rows)]
+        if not rows:
+            return 0
+        if not self.local_only:
+            on = ",".join(KEYS[table])
+            for i in range(0, len(rows), CHUNK):
+                r = requests.post(f"{self.url}/rest/v1/{table}", params={"on_conflict": on},
+                                  headers=self._headers(Prefer="resolution=ignore-duplicates,return=minimal"),
+                                  json=rows[i:i + CHUNK], timeout=60)
+                if not r.ok:
+                    raise RuntimeError(f"insert {table} failed {r.status_code}: {r.text[:300]}")
+        self._mirror(table, rows, keep="first")
+        return len(rows)
+
     def select(self, table: str, **eq) -> pd.DataFrame:
         """All rows matching equality filters, paginated past PostgREST's 1000-row cap."""
         if self.local_only:
@@ -110,7 +126,7 @@ class Store:
         return pd.DataFrame(out)
 
     # -- local mirror ------------------------------------------------------
-    def _mirror(self, table: str, rows: list) -> None:
+    def _mirror(self, table: str, rows: list, keep: str = "last") -> None:
         p = EXPORT_DIR / f"{table}.csv"
         new = pd.DataFrame(rows)
         if p.exists():
@@ -120,7 +136,7 @@ class Store:
             for c in keys:
                 if c in merged and merged[c].dtype == object:
                     merged[c] = merged[c].astype(str)
-            merged = merged.drop_duplicates(subset=keys, keep="last")
+            merged = merged.drop_duplicates(subset=keys, keep=keep)
         else:
             merged = new
         tmp = p.with_suffix(".csv.tmp")

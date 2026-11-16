@@ -2,7 +2,7 @@ import { useMemo, useState } from 'react'
 import ScoringToggle from '../components/ScoringToggle'
 import type { Scoring } from '../lib/useBlendedRos'
 import {
-  buildPositionEdges, buildSummary, buildTierAccuracy, edgeHistory, evidenceLabel, expertLabel, POSITION_COMPONENTS,
+  buildPositionEdges, buildSummary, buildUnavailable, buildTierAccuracy, edgeHistory, evidenceLabel, expertLabel, POSITION_COMPONENTS,
   TIER_LABELS, TIERS, useExpertEval, weightHistory, type BacktestComparison, type HistoryGrid,
 } from '../lib/expertEval'
 
@@ -72,6 +72,7 @@ function BacktestCard({ comparisons, weeks }: { comparisons: Record<string, Back
               <th className="text-right">Chance it helps</th>
               <th className="text-right">Weeks worse</th>
               <th className="text-right">Worst week</th>
+              <th className="text-right">Random-weights check</th>
               <th>Promotion gate</th>
             </tr>
           </thead>
@@ -86,6 +87,7 @@ function BacktestCard({ comparisons, weeks }: { comparisons: Record<string, Back
                   <td className="text-right">{pct(c.p_improve)}</td>
                   <td className="text-right">{pct(c.share_weeks_worse)}</td>
                   <td className="text-right">{signed(c.worst_week, 1)}</td>
+                  <td className="text-right">{c.perm_p == null ? <span className="subtle">—</span> : `p = ${c.perm_p.toFixed(2)}`}</td>
                   <td>
                     {c.gate == null ? <span className="subtle">n/a</span>
                       : c.gate.pass ? 'Meets thresholds (early evidence)'
@@ -108,6 +110,7 @@ export default function ExpertAccuracy() {
   const summary = useMemo(() => buildSummary(scores, weights), [scores, weights])
   const posEdges = useMemo(() => buildPositionEdges(scores), [scores])
   const tiers = useMemo(() => buildTierAccuracy(scores), [scores])
+  const unavailable = useMemo(() => buildUnavailable(scores), [scores])
   const edgeGrid = useMemo(() => edgeHistory(scores), [scores])
   const weightGrid = useMemo(() => weightHistory(weights, 'six'), [weights])
   const nextWeek = weights.length ? Math.max(...weights.map(w => w.week)) : null
@@ -236,6 +239,26 @@ export default function ExpertAccuracy() {
             </table>
           </div>
           <p className="subtle text-sm">How often the expert ranked the higher scorer first, for same-position players within six spots of each other in consensus. 50% is a coin flip.</p>
+        </div>
+      )}
+
+      {unavailable.length > 0 && (
+        <div className="card p-3 sm:p-4 space-y-2">
+          <span className="label">Late-news exposure</span>
+          <div className="table-wrap">
+            <table className="table">
+              <thead><tr><th className="sticky-col">Expert</th><th className="text-right">Ranked starters later ruled out (per week)</th><th className="text-right">Weeks</th></tr></thead>
+              <tbody>
+                {[...unavailable].sort((a, b) => (a.perWeek ?? 0) - (b.perWeek ?? 0)).map(u => (
+                  <tr key={u.source}><td className="sticky-col">{expertLabel(u.source)}</td><td className="text-right">{u.perWeek == null ? '—' : r1(u.perWeek)}</td><td className="text-right">{u.weeks}</td></tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+          <p className="subtle text-sm">
+            Players who were game-day inactive, on IR or ruled Out are removed from the scored lineups for every expert, so nobody is graded on news they could not have had.
+            This table keeps that cost visible: among each expert's own top picks at each position, how many turned out to be unavailable. Fewer is better.
+          </p>
         </div>
       )}
 

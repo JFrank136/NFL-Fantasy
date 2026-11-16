@@ -7,6 +7,8 @@
 import { useEffect, useState } from 'react'
 import { fetchAllRows, supabase } from './supabase'
 
+export const EVAL_CONFIG_VERSION = 'v1.1'
+
 export type EvalScoring = 'half-ppr' | 'ppr'
 
 export interface ScoreRow {
@@ -44,6 +46,7 @@ export interface BacktestComparison {
   worst_week: number
   n_weeks: number
   turnover: number | null
+  perm_p?: number | null
   gate: { pass: boolean; checks: Record<string, boolean> } | null
 }
 
@@ -132,6 +135,15 @@ export function buildSummary(scores: ScoreRow[], weights: WeightRow[]): ExpertSu
   })
 }
 
+/** Per expert: how many of their own top-ranked players per week were confirmed unavailable (late-news cost). */
+export function buildUnavailable(scores: ScoreRow[]): { source: string; perWeek: number | null; weeks: number }[] {
+  const rows = scores.filter(r => r.metric === 'top_unavailable' && r.value != null)
+  return expertsIn(rows).map(source => {
+    const v = rows.filter(r => r.source === source).map(r => r.value as number)
+    return { source, perWeek: mean(v), weeks: v.length }
+  })
+}
+
 export const POSITION_COMPONENTS = ['QB', 'RB', 'WR', 'TE', 'FLEX'] as const
 
 /** Average per-component regret edge (points/week) by expert: where each expert gains or loses. */
@@ -204,7 +216,7 @@ export interface ExpertEvalData {
   error: string | null
 }
 
-const SCORE_METRICS = ['edge_regret', 'regret', 'pair_acc', 'pair_pts', 'rank_corr', 'coverage', 'n_imputed']
+const SCORE_METRICS = ['edge_regret', 'regret', 'pair_acc', 'pair_pts', 'rank_corr', 'coverage', 'n_imputed', 'top_unavailable']
 
 export function useExpertEval(scoring: EvalScoring): ExpertEvalData {
   const [state, setState] = useState<ExpertEvalData>({ scores: [], weights: [], backtest: null, loading: true, error: null })
@@ -215,11 +227,11 @@ export function useExpertEval(scoring: EvalScoring): ExpertEvalData {
     ;(async () => {
       const scoresP = fetchAllRows<ScoreRow>((from, to) =>
         order(supabase.from('expert_eval_scores').select('season,week,source,position,tier,metric,value,n')
-          .eq('scoring', scoring).eq('config_version', 'v1').in('metric', SCORE_METRICS), ['season', 'week', 'source', 'position', 'tier', 'metric']).range(from, to))
+          .eq('scoring', scoring).eq('config_version', EVAL_CONFIG_VERSION).in('metric', SCORE_METRICS), ['season', 'week', 'source', 'position', 'tier', 'metric']).range(from, to))
       const weightsP = fetchAllRows<WeightRow>((from, to) =>
         order(supabase.from('expert_eval_weights')
           .select('season,week,weight_set,source,weight,equal_weight,skill_mean,skill_sd,p_better,weeks_n,raw_mean,reason')
-          .eq('scoring', scoring).eq('config_version', 'v1').eq('position', 'ALL').eq('tier', 'ALL'), ['season', 'week', 'weight_set', 'source']).range(from, to))
+          .eq('scoring', scoring).eq('config_version', EVAL_CONFIG_VERSION).eq('position', 'ALL').eq('tier', 'ALL'), ['season', 'week', 'weight_set', 'source']).range(from, to))
       const btP = supabase.from('expert_eval_backtests').select('run_id,created_at,summary').eq('scoring', scoring)
         .order('created_at', { ascending: false }).limit(1)
       const [s, w, b] = await Promise.all([scoresP, weightsP, btP])

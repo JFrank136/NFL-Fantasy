@@ -125,12 +125,35 @@ def test_pool_order_round_trips_through_storage_with_ties():
     assert list(again.canon) == list(built.canon)
 
 
-def test_inactive_players_are_excluded_from_the_pool_and_unmatched_are_flagged():
-    snap = pd.DataFrame({"week": 1, "scoring": "ppr", "source": "boone", "canon": ["a", "b", "c"],
-                         "position": "WR", "scaled_rank": [1.0, 2.0, 3.0]})
-    res = pd.DataFrame({"canon": ["a", "b"], "position": "WR", "pts_ppr": [10.0, 0.0], "inactive": [False, True]})
-    pool, unmatched = E.build_pool(snap, res, "ppr")
-    assert list(pool.canon) == ["a", "c"] and unmatched == 1
+def _avail_case():
+    snap = pd.DataFrame({"week": 1, "scoring": "ppr", "source": "boone", "canon": list("abcdef"),
+                         "position": "WR", "scaled_rank": [1.0, 2.0, 3.0, 4.0, 5.0, 6.0]})
+    res = pd.DataFrame({
+        "canon": list("abcde"), "position": "WR", "pts_ppr": [10.0, 0.0, 0.0, 0.0, 0.0],
+        "inactive": [False, True, True, False, False],
+        "status": ["played", "inactive_roster", "inactive_roster", "questionable_dnp", "doubtful_dnp"],
+        "roster_status": [None, "RES", "INA", "ACT", "ACT"],
+        "report_status": [None, None, "Questionable", "Questionable", "Doubtful"]})
+    return snap, res      # f has no result row at all
+
+
+def test_default_policy_excludes_all_confirmed_unavailable_and_tracks_the_rest():
+    pool, counts = E.build_pool(*_avail_case(), "ppr")
+    assert list(pool.canon) == ["a", "d", "e", "f"]            # b (IR) and c (game-day inactive) removed
+    assert counts["pool_excluded_unavailable"] == 2
+    assert counts["pool_sat_questionable"] == 1 and counts["pool_sat_doubtful"] == 1 and counts["pool_no_result"] == 1
+
+
+def test_known_early_policy_keeps_gameday_inactives_eligible_at_zero():
+    from src.expert_eval.config import SPEC
+    old = SPEC["inactive_policy"]
+    try:
+        SPEC["inactive_policy"] = "known_early"
+        pool, counts = E.build_pool(*_avail_case(), "ppr")
+        assert "c" in list(pool.canon) and "b" not in list(pool.canon)
+        assert counts["pool_gameday_inactive_kept"] == 1
+    finally:
+        SPEC["inactive_policy"] = old
 
 
 def test_bootstrap_and_gate_use_weeks_as_the_unit():
@@ -144,3 +167,28 @@ def test_bootstrap_and_gate_use_weeks_as_the_unit():
 def test_store_clean_handles_nan_numpy_and_nested():
     assert _clean({"a": float("nan"), "b": [np.float64(1.5), np.int64(2)], "c": pd.Timestamp("2026-01-01", tz="UTC")}) == {
         "a": None, "b": [1.5, 2], "c": "2026-01-01T00:00:00+00:00"}
+
+
+def test_frozen_tables_are_insert_only_but_results_can_be_corrected(tmp_path, monkeypatch):
+    from src.expert_eval import store as store_mod
+    monkeypatch.setattr(store_mod, "EXPORT_DIR", tmp_path)
+    st = store_mod.Store(local_only=True)
+    key = dict(season=2026, week=1, scoring="ppr", canonical_name="a", position="WR", config_version="v1.1")
+    st.insert_missing("expert_eval_pool", [{**key, "consensus_rank": 1.0}])
+    st.insert_missing("expert_eval_pool", [{**key, "consensus_rank": 9.0}])          # must be ignored
+    assert st.select("expert_eval_pool").consensus_rank.tolist() == [1.0]
+    rk = dict(season=2026, week=1, canonical_name="a", position="WR")
+    st.upsert("expert_eval_results", [{**rk, "pts_ppr": 5.0}])
+    st.upsert("expert_eval_results", [{**rk, "pts_ppr": 7.0}])                       # stat correction
+    assert st.select("expert_eval_results").pts_ppr.tolist() == [7.0]
+
+
+def test_result_changes_counts_stat_corrections_and_status_flips():
+    from src.expert_eval.pipeline import _result_changes
+    k = dict(season=2026, week=1, position="WR")
+    old = pd.DataFrame([{**k, "canonical_name": "a", "pts_ppr": 5.0, "pts_std": 4.0, "status": "played"},
+                        {**k, "canonical_name": "b", "pts_ppr": 0.0, "pts_std": 0.0, "status": "questionable_dnp"}])
+    new = pd.DataFrame([{**k, "canonical_name": "a", "pts_ppr": 6.0, "pts_std": 4.0, "status": "played"},
+                        {**k, "canonical_name": "b", "pts_ppr": 0.0, "pts_std": 0.0, "status": "inactive_roster"}])
+    assert _result_changes(old, new) == 2
+    assert _result_changes(old, old) == 0

@@ -63,3 +63,9 @@ def load_player_stats(season: int) -> pd.DataFrame:
 def load_injuries(season: int) -> pd.DataFrame:
     import nflreadpy
     return nflreadpy.load_injuries([season]).to_pandas()
+
+
+def load_rosters_weekly(season: int) -> pd.DataFrame:
+    import nflreadpy
+    r = nflreadpy.load_rosters_weekly([season]).to_pandas()
+    return r[(r.game_type == "REG") & r.position.isin(OFFENSE) & r.full_name.notna()]

@@ -49,7 +49,7 @@ def load_frozen(store, season: int, scoring: str):
     snap = snaps_from_db(store.select("expert_eval_snapshots", season=season, scoring=scoring))
     res = results_from_db(store.select("expert_eval_results", season=season))
     weeks = sorted(snap.week.unique())
-    pools = {w: pool_from_db(store.select("expert_eval_pool", season=season, week=int(w), scoring=scoring)) for w in weeks}
+    pools = {w: pool_from_db(store.select("expert_eval_pool", season=season, week=int(w), scoring=scoring, config_version=CONFIG_VERSION)) for w in weeks}
     return snap, res, pools
 
 
@@ -129,7 +129,7 @@ COMPARISONS = [("dyn6", "equal6"), ("dyn6p", "equal6"), ("dyn3", "equal3"), ("dy
                ("dyn3", "static3"), ("dyn6", "static3"), ("equal6", "equal3"), ("equal6", "static3"), ("equal3", "static3")]
 
 
-def gate_verdict(stats: dict, turnover: float | None) -> dict:
+def gate_verdict(stats: dict, turnover: float | None, perm_p: float | None = None) -> dict:
     g = SPEC["gate"]
     checks = {
         "improvement": stats["mean"] >= g["min_improvement"],
@@ -138,6 +138,8 @@ def gate_verdict(stats: dict, turnover: float | None) -> dict:
         "worst_week": stats["worst_week"] >= -g["max_worst_week_deficit"],
         "turnover": turnover is None or turnover <= g["max_avg_turnover"],
     }
+    if perm_p is not None:
+        checks["permutation"] = perm_p <= g["max_perm_p"]
     return {"checks": checks, "pass": all(checks.values())}
 
 
@@ -147,7 +149,8 @@ def turnover(tbl: dict, key: str, weeks: list) -> float:
     return float(np.mean(d)) if d else 0.0
 
 
-def backtest(store, season: int, log=print, first_week: int = 2) -> dict:
+def backtest(store, season: int, log=print, first_week: int = 2, permutation: bool = True) -> dict:
+    from src.expert_eval.audit import WeekCache, permutation_test
     frozen = {sc: load_frozen(store, season, sc) for sc in SCORINGS}
     edges = weekly_edges(frozen, season)
     wt = weight_tables(edges)
@@ -164,6 +167,7 @@ def backtest(store, season: int, log=print, first_week: int = 2) -> dict:
         df = pd.DataFrame(reg).T.sort_index()
         weekly[scoring] = df
         use = df[df.index >= first_week]
+        perm = permutation_test(WeekCache(season, scoring, snap, res, pools), edges[scoring], first_week) if permutation else None
         s = {"mean_regret": use.mean().round(3).to_dict(), "weeks": [int(x) for x in use.index], "comparisons": {}}
         for a, b in COMPARISONS:
             if a in use and b in use:
@@ -174,12 +178,17 @@ def backtest(store, season: int, log=print, first_week: int = 2) -> dict:
                     variant = "pool" if a.endswith("p") else "sep"
                     tv = turnover(wt[(scoring, variant)], "six" if a[3] == "6" else "three",
                                   [(season, int(w)) for w in use.index])
-                s["comparisons"][f"{a}_vs_{b}"] = {**st, "turnover": tv, "gate": gate_verdict(st, tv) if a.startswith("dyn") else None}
+                pp = perm["p_value"] if (perm and a == "dyn6" and b == "equal6") else None
+                s["comparisons"][f"{a}_vs_{b}"] = {**st, "turnover": tv, "perm_p": pp,
+                                                   "gate": gate_verdict(st, tv, pp) if a.startswith("dyn") else None}
+        s["permutation"] = perm
         s["indiv_vs_equal6"] = {c: bootstrap((use["equal6"] - use[c]).values) for c in use.columns if c.startswith("indiv_")}
         summary[scoring] = s
         log(f"[{scoring}] weeks {s['weeks'][0]}-{s['weeks'][-1]}")
         for k, v in s["comparisons"].items():
             gt = "" if not v["gate"] else (" GATE PASS" if v["gate"]["pass"] else " gate fail " + ",".join(c for c, ok in v["gate"]["checks"].items() if not ok))
+            if v.get("perm_p") is not None:
+                gt += f"  perm_p={v['perm_p']:.3f}"
             log(f"  {k:22s} saved {v['mean']:+.2f} pts/wk  [{v['lo']:+.2f},{v['hi']:+.2f}]  P>0={v['p_improve']:.2f}  weeks worse {v['share_weeks_worse']:.2f}  worst {v['worst_week']:+.1f}{gt}")
     run_id = "bt-" + datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ-") + uuid.uuid4().hex[:4]
     for scoring in SCORINGS:

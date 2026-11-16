@@ -503,8 +503,27 @@ try {
     # Refresh the ESPN headshot lookup so new players/rookies get photos.
     # Cosmetic only -- a failure here is logged but never fails the pull.
     Log "Running build_player_images.py --push..."
-    & $PythonExe "scriptsuild_player_images.py" --push 2>&1 | ForEach-Object { Log $_ }
+    & $PythonExe "scripts\build_player_images.py" --push 2>&1 | ForEach-Object { Log $_ }
     Log "build_player_images.py exit code: $LASTEXITCODE"
+
+    # Expert accuracy evaluation + shadow weights (src/expert_eval). Idempotent: evaluates weeks whose
+    # games are all final (new ones + the latest two for stat corrections) and does nothing otherwise.
+    # Never fails the pull. A failure is recorded in data\last_expert_eval_status.json and emails once per day.
+    Log "Running run_expert_eval.py..."
+    & $PythonExe "scripts\run_expert_eval.py" 2>&1 | ForEach-Object { Log $_ }
+    $expertEvalExit = $LASTEXITCODE
+    Log "run_expert_eval.py exit code: $expertEvalExit"
+    if ($expertEvalExit -ne 0) {
+        $alertMarker = Join-Path $InSeasonDir "data\expert_eval_alert_date.txt"
+        $today = Get-Date -Format "yyyy-MM-dd"
+        if (-not ((Test-Path $alertMarker) -and ((Get-Content $alertMarker -Raw).Trim() -eq $today))) {
+            $evalErr = ""
+            $evalStatus = Join-Path $InSeasonDir "data\last_expert_eval_status.json"
+            if (Test-Path $evalStatus) { try { $evalErr = (Get-Content $evalStatus -Raw | ConvertFrom-Json).error } catch { } }
+            Send-FailureEmail "Expert accuracy eval FAILED ($today)" "The weekly expert-accuracy evaluation failed (the rankings pull itself is unaffected). Exit code $expertEvalExit.`n`n$evalErr`n`nLog: $LogFile"
+            Set-Content -Path $alertMarker -Value $today
+        }
+    }
 
     $currentWeek = (& $PythonExe -c "import sys; sys.path.insert(0, '.'); from src.season_config import current_week; print(current_week())").Trim()
     $lastWeek = (& $PythonExe -c "import sys; sys.path.insert(0, '.'); from src.season_config import LAST_WEEK; print(LAST_WEEK)").Trim()
