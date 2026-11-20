@@ -15,15 +15,27 @@
 //    these out so an old week's values don't get silently blended in or
 //    displayed as if they were current.
 
-/** Keeps only each source's rows from its own most recent pulled_at. */
-export function dropStaleStragglers<T extends { source: string; pulled_at: string }>(rows: T[]): T[] {
-  const maxBySource = new Map<string, string>()
+/** Keeps only each group's rows from its own most recent pulled_at. Groups by
+ * source unless `groupKey` says otherwise -- sources that publish each
+ * position on a different day (Boone's trade-value charts) need
+ * source+position, or the earlier-published positions look like stragglers
+ * the moment a later one is pulled and vanish. */
+export function dropStaleStragglers<T extends { source: string; pulled_at: string }>(
+  rows: T[],
+  groupKey: (row: T) => string = r => r.source,
+): T[] {
+  const maxByGroup = new Map<string, string>()
   rows.forEach(r => {
-    const cur = maxBySource.get(r.source)
-    if (!cur || r.pulled_at > cur) maxBySource.set(r.source, r.pulled_at)
+    const key = groupKey(r)
+    const cur = maxByGroup.get(key)
+    if (!cur || r.pulled_at > cur) maxByGroup.set(key, r.pulled_at)
   })
-  return rows.filter(r => r.pulled_at === maxBySource.get(r.source))
+  return rows.filter(r => r.pulled_at === maxByGroup.get(groupKey(r)))
 }
+
+/** Group key for trade-value rows: source + position. */
+export const bySourceAndPosition = (r: { source: string; position: string }): string =>
+  `${r.source}|${r.position}`
 
 /** Filters rows to the given week using a caller-supplied accessor (`week`
  * for weekly/trade-value rows, `as_of_week` for ROS rankings) -- a no-op

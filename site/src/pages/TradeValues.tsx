@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { supabase, fetchAllRows, type RosRankingRow, type TradeValueLatestRow } from '../lib/supabase'
 import { pivotTradeValues, sourcesWithData, type Scoring, type TradeValueSourceRow } from '../lib/tradeValues'
-import { dropStaleStragglers, onlyWeek, staleSources } from '../lib/freshness'
+import { bySourceAndPosition, dropStaleStragglers, onlyWeek, staleSources } from '../lib/freshness'
 import { useCurrentWeek } from '../lib/useCurrentWeek'
 import PlayerAvatar from '../components/PlayerAvatar'
 import { identityKey } from '../lib/blend'
@@ -122,7 +122,9 @@ export default function TradeValues() {
         // can be a straggler left behind by an earlier pull once a source
         // stops including that player (dropStaleStragglers) -- see
         // freshness.ts.
-        setRows(dropStaleStragglers(tvRes.data))
+        // Trade values group by source+position: Boone publishes each
+        // position on a different day, so a per-source cutoff dropped TE.
+        setRows(dropStaleStragglers(tvRes.data, bySourceAndPosition))
         setRosRows(dropStaleStragglers(rosRes.data))
       }
       setLoading(false)

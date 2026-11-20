@@ -12,6 +12,19 @@ describe('dropStaleStragglers', () => {
     expect(kept.map(r => r.id).sort()).toEqual(['boone-only', 'ds-new'])
   })
 
+  it('with a groupKey, judges staleness per group so a source publishing positions on different days keeps all of them', () => {
+    // Boone publishes each position's trade-value article on a different day:
+    // TE was pulled a day before QB/RB/WR, which made TE look like a straggler.
+    const rows = [
+      { source: 'boone', position: 'QB', pulled_at: '2026-11-19T21:28:12Z', id: 'qb' },
+      { source: 'boone', position: 'TE', pulled_at: '2026-11-18T22:18:16Z', id: 'te' },
+      { source: 'boone', position: 'TE', pulled_at: '2026-11-17T10:00:00Z', id: 'te-old' },
+    ]
+    expect(dropStaleStragglers(rows).map(r => r.id)).toEqual(['qb'])
+    const kept = dropStaleStragglers(rows, r => `${r.source}|${r.position}`)
+    expect(kept.map(r => r.id).sort()).toEqual(['qb', 'te'])
+  })
+
   it('is a no-op when every source has a single pulled_at', () => {
     const rows = [
       { source: 'a', pulled_at: '2026-09-22T00:00:00Z', id: '1' },

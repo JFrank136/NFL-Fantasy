@@ -9,7 +9,7 @@
 import { useEffect, useState } from 'react'
 import { supabase, fetchAllRows, type RosRankingRow, type TradeValueLatestRow } from './supabase'
 import { blendRosValues, type BlendedRosRow, type RosSourceRow, type BooneRosRow } from './blend'
-import { dropStaleStragglers, onlyWeek } from './freshness'
+import { bySourceAndPosition, dropStaleStragglers, onlyWeek } from './freshness'
 import { useCurrentWeek } from './useCurrentWeek'
 
 export type Scoring = 'ppr' | 'half-ppr'
@@ -80,7 +80,7 @@ export function useBlendedRos(scoring: Scoring): BlendedRosResult {
       // the new NFL week yet (onlyWeek) -- either way, blending it in
       // unlabeled would misrepresent stale data as current.
       const dsRowsAll = dropStaleStragglers((dsRes.data ?? []) as RosRankingRow[])
-      const booneRowsAll = dropStaleStragglers((booneRes.data ?? []) as TradeValueLatestRow[])
+      const booneRowsAll = dropStaleStragglers((booneRes.data ?? []) as TradeValueLatestRow[], bySourceAndPosition)
       const dsRows = onlyWeek(dsRowsAll, currentWeek, r => r.as_of_week)
       const booneRows = onlyWeek(booneRowsAll, currentWeek, r => r.week)
       const currentPulledAt = dsRows.reduce((max, r) => (r.pulled_at > max ? r.pulled_at : max), dsRows[0]?.pulled_at ?? '')
