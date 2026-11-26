@@ -89,11 +89,10 @@ export default function StartSit() {
           <ComparisonTable
             columns={selected.map(p => ({
               key: p.key,
-              avatar: <PlayerAvatar playerKey={p.key} name={p.playerName} size={40} />,
+              avatar: <PlayerAvatar playerKey={p.key} name={p.playerName} size={28} />,
               header: (
                 <span>
-                  {p.playerName}
-                  {p.key === rec.starterKey && <span style={{ color: 'var(--signal-up)' }}> ✓ Start</span>}{' '}
+                  <span className="cmp-name">{p.playerName}</span>{' '}
                   <button
                     className="subtle"
                     style={{ cursor: 'pointer' }}
@@ -104,7 +103,12 @@ export default function StartSit() {
                   </button>
                 </span>
               ),
-              subheader: `${p.position}${p.team ? ` · ${p.team}` : ''}${p.isBye ? ' · BYE' : ''}`,
+              subheader: (
+                <>
+                  {p.key === rec.starterKey && <span style={{ color: 'var(--signal-up)' }}>✓ Start · </span>}
+                  {p.position}{p.team ? ` · ${p.team}` : ''}{p.isBye ? ' · BYE' : ''}
+                </>
+              ),
             }))}
             rows={rows.map(r => ({
               id: r.id,

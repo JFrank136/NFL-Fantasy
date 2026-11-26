@@ -26,8 +26,8 @@ export default function ComparisonTable({
   rows: ComparisonTableRow[]
 }) {
   return (
-    <div className="table-wrap">
-      <table className="table">
+    <div className="table-wrap cmp-wrap">
+      <table className="table cmp-table">
         <thead>
           <tr>
             <th className="sticky-col" />
@@ -35,7 +35,7 @@ export default function ComparisonTable({
               <th key={c.key} className="text-right" style={{ textTransform: 'none' }}>
                 {c.avatar && <div className="flex justify-end mb-1">{c.avatar}</div>}
                 <div style={{ color: 'var(--text-primary)' }} className="font-semibold text-sm">{c.header}</div>
-                {c.subheader && <div>{c.subheader}</div>}
+                {c.subheader && <div className="subtle">{c.subheader}</div>}
               </th>
             ))}
           </tr>

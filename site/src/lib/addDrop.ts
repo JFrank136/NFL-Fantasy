@@ -88,14 +88,14 @@ interface RowSpec {
 }
 
 const ROW_SPECS: RowSpec[] = [
-  { id: 'blended', label: 'Blended ROS value', format: 'value', better: 'higher', pick: p => p.blended },
-  { id: 'ceiling', label: 'DS ceiling (upside)', format: 'value', better: 'higher', pick: p => p.ceiling },
-  { id: 'trend', label: 'ROS trend', format: 'signed', better: 'higher', pick: p => p.trend },
+  { id: 'blended', label: 'Blended value', format: 'value', better: 'higher', pick: p => p.blended },
+  { id: 'ceiling', label: 'Ceiling (upside)', format: 'value', better: 'higher', pick: p => p.ceiling },
+  { id: 'trend', label: 'Trend', format: 'signed', better: 'higher', pick: p => p.trend },
   // Direction of Draft Sharks' SOS percentage isn't documented: context only.
-  { id: 'sos', label: 'Strength of schedule', format: 'text', better: null, pick: p => p.sos },
-  { id: 'weekProjection', label: 'This week: DS projection', format: 'value', better: 'higher', pick: (_p, w) => (w && !w.isBye ? w.dsProjection : null) },
-  { id: 'weekPositionRank', label: 'This week: position rank', format: 'rank', better: 'lower', pick: (_p, w) => (w && !w.isBye ? w.positionRank : null) },
-  { id: 'weekFlexRank', label: 'This week: FLEX rank', format: 'rank', better: 'lower', pick: (_p, w) => (w && !w.isBye ? w.flexRank : null) },
+  { id: 'sos', label: 'SOS', format: 'text', better: null, pick: p => p.sos },
+  { id: 'weekProjection', label: 'Wk projection', format: 'value', better: 'higher', pick: (_p, w) => (w && !w.isBye ? w.dsProjection : null) },
+  { id: 'weekPositionRank', label: 'Wk pos rank', format: 'rank', better: 'lower', pick: (_p, w) => (w && !w.isBye ? w.positionRank : null) },
+  { id: 'weekFlexRank', label: 'Wk FLEX rank', format: 'rank', better: 'lower', pick: (_p, w) => (w && !w.isBye ? w.flexRank : null) },
 ]
 
 /**

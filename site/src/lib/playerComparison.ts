@@ -108,16 +108,16 @@ interface RowSpec {
 }
 
 const ROW_SPECS: RowSpec[] = [
-  { id: 'blended', label: 'Blended ROS value', format: 'value', better: 'higher', pick: p => p.blended },
-  { id: 'ds', label: 'Draft Sharks ROS value', format: 'value', better: 'higher', pick: p => p.ds },
-  { id: 'boone', label: 'Boone ROS value', format: 'value', better: 'higher', pick: p => p.boone },
-  { id: 'ceiling', label: 'DS ceiling', format: 'value', better: 'higher', pick: p => p.ceiling },
+  { id: 'blended', label: 'Blended value', format: 'value', better: 'higher', pick: p => p.blended },
+  { id: 'ds', label: 'DS value', format: 'value', better: 'higher', pick: p => p.ds },
+  { id: 'boone', label: 'Boone value', format: 'value', better: 'higher', pick: p => p.boone },
+  { id: 'ceiling', label: 'Ceiling', format: 'value', better: 'higher', pick: p => p.ceiling },
   { id: 'overallRank', label: 'ROS rank', format: 'rank', better: 'lower', pick: p => p.overallRank },
-  { id: 'positionRank', label: 'Position rank', format: 'rank', better: 'lower', pick: p => p.positionRank },
-  { id: 'trend', label: 'ROS trend', format: 'signed', better: 'higher', pick: p => p.trend },
+  { id: 'positionRank', label: 'Pos rank', format: 'rank', better: 'lower', pick: p => p.positionRank },
+  { id: 'trend', label: 'Trend', format: 'signed', better: 'higher', pick: p => p.trend },
   // Direction of Draft Sharks' SOS percentage isn't documented, so it is
   // shown as context only, never highlighted.
-  { id: 'sos', label: 'Strength of schedule', format: 'text', better: null, pick: p => p.sos },
+  { id: 'sos', label: 'SOS', format: 'text', better: null, pick: p => p.sos },
   { id: 'disagreement', label: 'Boone vs DS', format: 'signed', better: null, pick: p => p.disagreement },
 ]
 

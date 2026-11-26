@@ -121,6 +121,41 @@ body {
     box-shadow: 4px 0 6px -4px rgba(0, 0, 0, 0.5);
   }
 }
+
+/* Comparison tables (Player Comparison, Start/Sit, Add/Drop): row labels and
+   player headers are long enough that even two columns need a phone's full
+   width, forcing a sideways scroll before any player data is visible. On
+   mobile only, tighten the label column and headers so two players fit
+   without scrolling; three or more still scroll, just less of it. */
+@media (max-width: 640px) {
+  .cmp-wrap .cmp-table th,
+  .cmp-wrap .cmp-table td {
+    padding-left: 0.4rem;
+    padding-right: 0.4rem;
+    font-size: 12px;
+  }
+  .cmp-wrap .cmp-table th.sticky-col,
+  .cmp-wrap .cmp-table td.sticky-col {
+    max-width: 84px;
+    white-space: normal;
+    line-height: 1.15;
+    font-size: 11px;
+  }
+  .cmp-wrap .cmp-table th {
+    white-space: normal;
+    max-width: 92px;
+  }
+  .cmp-wrap .cmp-table .player-avatar {
+    width: 24px !important;
+    height: 24px !important;
+  }
+  .cmp-wrap .cmp-table .cmp-name {
+    max-width: 72px;
+  }
+}
+.cmp-name {
+  @apply inline-block truncate align-bottom;
+}
 .badge {
   @apply inline-flex items-center px-2 py-0.5 rounded-md text-xs border;
   background: var(--bg-card);

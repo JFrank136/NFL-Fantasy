@@ -59,10 +59,10 @@ export default function PlayerComparison() {
           <ComparisonTable
             columns={selected.map(p => ({
               key: p.key,
-              avatar: <PlayerAvatar playerKey={p.key} name={p.playerName} size={40} />,
+              avatar: <PlayerAvatar playerKey={p.key} name={p.playerName} size={28} />,
               header: (
                 <span>
-                  {p.playerName}{' '}
+                  <span className="cmp-name">{p.playerName}</span>{' '}
                   <button
                     className="subtle"
                     style={{ cursor: 'pointer' }}
